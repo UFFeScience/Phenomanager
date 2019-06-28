@@ -1,0 +1,48 @@
+<div class="modal stick-up fade" tabindex="-1" id="save-model-metadata-extractor" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">{{ vm.modelMetadataExtractorSaveTitle }}</h4>
+            </div>
+            <form name="modelMetadataExtractorForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Tag</label>
+                            <input autocomplete="off" type="text" name="tag" class="form-control" ng-model="vm.modelMetadataExtractor.tag" required>
+                        </div>
+                        <p ng-show="modelMetadataExtractorForm.tag.$invalid && !modelMetadataExtractorForm.tag.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <label ng-class="{ 'disabled': loadingUpload }" class="next-step text-left full-width btn btn-default ng-binding" style="margin-top: 10px; margin-bottom: 10px;">
+                            Upload extractor (executable)
+                            
+                            <i ng-if="!vm.loadingUpload" class="fa fa-upload"></i>
+                            <loading-small ng-if="vm.loadingUpload"></loading-small>
+
+                            <input title="file input" multiple="" type="file" hidden name="files" onchange="angular.element(this).scope().setExtractor(this)">
+                        </label>
+
+                        <p ng-if="vm.errorUploadSize" class="error help-block">Size of file exceed limit allowed (50 mb)</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Execution command</label>
+                            <textarea autocomplete="off" name="executionCommand" class="form-control default-textarea" ng-model="vm.modelMetadataExtractor.executionCommand" required></textarea>
+                        </div>
+                        <p ng-show="modelMetadataExtractorrForm.executionCommand.$invalid && !modelMetadataExtractorrForm.executionCommand.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doSaveModelMetadataExtractor()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="modelMetadataExtractorrForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

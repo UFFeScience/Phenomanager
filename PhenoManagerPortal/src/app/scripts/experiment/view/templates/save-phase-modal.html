@@ -1,0 +1,27 @@
+<div class="modal stick-up fade" tabindex="-1" id="save-phase" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">{{ vm.phaseSaveTitle }}</h4>
+            </div>
+            <form name="phaseForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Name</label>
+                            <input autocomplete="off" type="text" name="name" class="form-control" ng-model="vm.phase.name" required>
+                        </div>
+                        <p ng-show="phaseForm.name.$invalid && !phaseForm.name.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doSavePhase()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="phaseForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

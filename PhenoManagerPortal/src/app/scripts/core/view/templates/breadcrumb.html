@@ -1,0 +1,16 @@
+<!-- START JUMBOTRON -->
+<div class="jumbotron" data-pages="parallax">
+	<div class=" container-fluid container-fixed-lg sm-p-l-0 sm-p-r-0">
+		<div class="inner">
+			<!-- START BREADCRUMB -->
+			<ol class="breadcrumb">
+				<li ng-repeat="breadcrumb in breadcrumbItems" class="breadcrumb-item" ng-class="{active: $last}">
+					<a ng-if="!$last" ui-sref="{{breadcrumb.state}}">{{breadcrumb.title | translate}}</a>
+					<span ng-show="$last">{{breadcrumb.title | translate}}</span>
+				</li>
+			</ol>
+			<!-- END BREADCRUMB -->
+		</div>
+	</div>
+</div>
+<!-- END JUMBOTRON -->

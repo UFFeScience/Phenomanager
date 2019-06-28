@@ -1,0 +1,485 @@
+<div id="breadcrumb-filter-content">
+    <ol ng-if="!vm.experiment || !vm.experiment.hypothesis || !vm.experiment.hypothesis.phenomenon || !vm.experiment.hypothesis.phenomenon.project" class="breadcrumb">
+        <li ui-sref="list-projects" class="breadcrumb-item"><a href="javascript:;">Projects</a></li>
+    </ol>
+    <ol ng-if="vm.experiment && vm.experiment.hypothesis && vm.experiment.hypothesis.phenomenon && vm.experiment.hypothesis.phenomenon.project" class="breadcrumb">
+        <li ui-sref="list-projects" class="breadcrumb-item"><a href="javascript:;">Projects</a></li>
+        
+        <li class="breadcrumb-item text-primary-dark"><a ui-sref="project-details({slug: vm.experiment.hypothesis.phenomenon.project.slug})" href="javascript:;">{{ vm.experiment.hypothesis.phenomenon.project.name }}</a></li>
+        
+        <li class="breadcrumb-item text-primary-dark"><a ui-sref="phenomenon-details({slug: vm.experiment.hypothesis.phenomenon.slug})" href="javascript:;">{{ vm.experiment.hypothesis.phenomenon.name }}</a></li>
+        
+        <li class="breadcrumb-item text-primary-dark"><a ui-sref="hypothesis-details({slug: vm.experiment.hypothesis.slug})" href="javascript:;">{{ vm.experiment.hypothesis.name }}</a></li>
+        
+        <li class="breadcrumb-item active text-primary-dark">{{ vm.experiment.name }}</li>
+    </ol>
+</div>
+
+<div class="container-dashboard">
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card card-borderless">
+                <ul tabs class="nav nav-tabs nav-tabs-simple hidden-sm-down" role="tablist" data-init-reponsive-tabs="dropdownfx">
+                    <li class="nav-item">
+                        <a ng-click="vm.changeComputationalModelPage()" class="active nav-tabs-primary" data-toggle="tab" role="tab" data-target="#computational-models" href="#"><i class="fa fa-cube"></i> Computational Models</a>
+                    </li>
+                    <li class="nav-item">
+                        <a ng-click="vm.changePhasePage()" class="nav-tabs-primary" href="#" data-toggle="tab" role="tab" data-target="#phases"><i class="fa fa-list-ol"></i> Phases</a>
+                    </li>
+                    <li class="nav-item">
+                        <a ng-click="vm.changeConceptualParamPage()" class="nav-tabs-primary" href="#" data-toggle="tab" role="tab" data-target="#conceptual-params"><i class="fa fa-sliders"></i> Conceptual Params</a>
+                    </li>
+                    <li class="nav-item">
+                        <a ng-click="vm.changeValidationItemPage()" class="nav-tabs-primary" href="#" data-toggle="tab" role="tab" data-target="#validation-items"><i class="fa fa-check-square"></i> Validation Items</a>
+                    </li>
+                    <li class="nav-item">
+                        <a ng-click="vm.changePermissionPage()" class="nav-tabs-primary" href="#" data-toggle="tab" role="tab" data-target="#permissions"><i class="fa fa-lock"></i> Permissions</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="computational-models">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-left">
+                                    <input autocomplete="off" type="text" name="filter" placeholder="Search models" class="form-control filter-form" ng-model="vm.filterComputationalModels" ng-change="vm.changeComputationalModelPage()" 
+                                    ng-model-options="{ debounce: 1800 }">
+                                </div>
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertComputationalModel()" data-target="#save-computational-model" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Version</th>
+                                                <th>Type</th>
+                                                <th>Creation Date</th>
+                                                <th class="h-align-right"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="computationalModel in vm.computationalModels">
+                                                <td class="v-align-middle ">
+                                                    <p>{{ computationalModel.name }}</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p>{{ computationalModel.currentVersion }}</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p ng-if="computationalModel.type === 'WORKFLOW'">
+                                                        <span><b>Workflow</b></span>
+                                                    </p>
+                                                    <p ng-if="computationalModel.type === 'EXECUTABLE'">
+                                                        <span><b>Executable</b></span>
+                                                    </p>
+                                                    <p ng-if="computationalModel.type === 'COMMAND'">
+                                                        <span><b>Command</b></span>
+                                                    </p>
+                                                    <p ng-if="computationalModel.type === 'HTTP'">
+                                                        <span><b>Http</b></span>
+                                                    </p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p>{{ computationalModel.parsedInsertDate | date : 'dd/MM/y' }}</p>
+                                                </td>
+                                                <td class="text-right">
+                                                    <a uib-tooltip="Details" ng-if="vm.hasReadAccess(computationalModel)" ui-sref="computational-model-details({slug: computationalModel.slug})" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-folder-open"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAccess(computationalModel)" data-toggle="modal" ng-click="vm.editComputationalModel(computationalModel.slug)" data-target="#save-computational-model" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization" ng-click="vm.deleteComputationalModel(computationalModel.slug)" data-toggle="modal" data-target="#delete-computational-model" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                
+                                    <div ng-if="!vm.loadingComputationalModel && vm.computationalModels !== undefined && vm.computationalModels.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalComputationalModelCount" 
+                                        ng-model="vm.computationalModelCurrentPage" 
+                                        ng-change="vm.changeComputationalModelPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingComputationalModel"></loading>
+                    </div>
+                    <div class="tab-pane" id="conceptual-params">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-left">
+                                    <input autocomplete="off" type="text" name="filter" placeholder="Search params" class="form-control filter-form" ng-model="vm.filterConceptualParams" ng-change="vm.changeConceptualParamPage()" 
+                                    ng-model-options="{ debounce: 1800 }">
+                                </div>
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertConceptualParam()" data-target="#save-conceptual-param" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Key</th>
+                                                <th>Description</th>
+                                                <th>Creation Date</th>
+                                                <th class="h-align-right"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="conceptualParam in vm.conceptualParams">
+                                                <td class="v-align-middle ">
+                                                    <p>{{ conceptualParam.key }}</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p>{{ conceptualParam.description }}</p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p>{{ conceptualParam.parsedInsertDate | date : 'dd/MM/y' }}</p>
+                                                </td>
+                                                <td class="text-right">
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization" data-toggle="modal" ng-click="vm.editConceptualParam(conceptualParam.slug)" data-target="#save-conceptual-param" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization" ng-click="vm.deleteConceptualParam(conceptualParam.slug)" data-toggle="modal" data-target="#delete-conceptual-param" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                
+                                    <div ng-if="!vm.loadingConceptualParam && vm.conceptualParams !== undefined && vm.conceptualParams.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalConceptualParamCount" 
+                                        ng-model="vm.conceptualParamCurrentPage" 
+                                        ng-change="vm.changeConceptualParamPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingConceptualParam"></loading>
+                    </div>
+                    <div class="tab-pane" id="validation-items">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertValidationItem()" data-target="#save-validation-item" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Validated</th>
+                                                <th>Expected value description</th>
+                                                <th>Evidence</th>
+                                                <th class="h-align-right"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="validationItem in vm.validationItems">
+                                                <td class="text-left">
+                                                    <a ng-if="validationItem.validated" uib-tooltip="Unvalidate item" data-toggle="modal" ng-click="vm.editValidationItem(validationItem.slug)" data-target="#unvalidate-item" class="pointer btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-check-square-o"></i>
+                                                    </a>
+                                                    <a ng-if="!validationItem.validated" uib-tooltip="Validate item" data-toggle="modal" ng-click="vm.editValidationItem(validationItem.slug)" data-target="#validate-item" class="pointer btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-square-o"></i>
+                                                    </a>
+                                                </td>
+                                                <td class="v-align-middle " ng-class="{'text-risked' : validationItem.validated }">
+                                                    <p>{{ validationItem.expectedValueDescription }}</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p ng-if="validationItem.validated && !validationItem.validationEvidenceFileId">
+                                                        <a uib-tooltip="Upload evidence" ng-if="vm.hasWriteAuthorization" data-toggle="modal" ng-click="vm.editValidationItem(validationItem.slug)" data-target="#validate-item" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                            <i class="fa fa-upload"></i>
+                                                        </a>
+                                                    </p>
+                                                    <p ng-if="validationItem.validated && validationItem.validationEvidenceFileId">
+                                                        <a uib-tooltip="Download evidence" ng-click="vm.downloadValidationEvidence(validationItem.slug)" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                            <i class="fa fa-download"></i>
+                                                        </a>
+                                                    </p>
+                                                </td>
+                                                <td class="text-right">
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization" data-toggle="modal" ng-click="vm.editValidationItem(validationItem.slug)" data-target="#save-validation-item" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization" ng-click="vm.deleteValidationItem(validationItem.slug)" data-toggle="modal" data-target="#delete-validation-item" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                
+                                    <div ng-if="!vm.loadingValidationItem && vm.validationItems !== undefined && vm.validationItems.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalValidationItemCount" 
+                                        ng-model="vm.validationItemCurrentPage" 
+                                        ng-change="vm.changeValidationItemPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingValidationItem"></loading>
+                    </div>
+                    <div class="tab-pane" id="phases">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-left">
+                                    <input autocomplete="off" type="text" name="filter" placeholder="Search phases" class="form-control filter-form" ng-model="vm.filterPhases" ng-change="vm.changePhasePage()" 
+                                    ng-model-options="{ debounce: 1800 }">
+                                </div>
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertPhase()" data-target="#save-phase" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Creation Date</th>
+                                                <th class="h-align-right"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="phase in vm.phases">
+                                                <td class="v-align-middle ">
+                                                    <p>{{ phase.name }}</p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p>{{ phase.parsedInsertDate | date : 'dd/MM/y' }}</p>
+                                                </td>
+                                                <td class="text-right">
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization" data-toggle="modal" ng-click="vm.editPhase(phase.slug)" data-target="#save-phase" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization" ng-click="vm.deletePhase(phase.slug)" data-toggle="modal" data-target="#delete-phase" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                
+                                    <div ng-if="!vm.loadingPhase && vm.phases !== undefined && vm.phases.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalPhaseCount" 
+                                        ng-model="vm.phaseCurrentPage" 
+                                        ng-change="vm.changePhasePage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingPhase"></loading>
+                    </div>
+                    <div class="tab-pane " id="permissions">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertPermission()" data-target="#save-permission" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="basicTable">
+                                        <thead>
+                                            <tr>
+                                                <th>User/Team</th>
+                                                <th>Permission</th>
+                                                <th style="min-width: 155px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="permission in vm.permissions">
+                                                <td class="v-align-middle">
+                                                    <p ng-if="permission.team">{{ permission.team.name }}</p>
+
+                                                    <div uib-tooltip="{{ permission.user.name }}" ng-if="!permission.team && permission.user" class="thumbnail-wrapper d32 circular">
+                                                        <img ng-if="permission.user.profileImageFileId" width="40" height="40" ng-src="https://drive.google.com/uc?export=view&id={{ permission.user.profileImageFileId }}" alt="">
+
+                                                        <img ng-if="!permission.user.profileImageFileId" width="40" height="40" src="/images/default-user.png" data-src="/images/default-user.png" data-src-retina="/images/default-user.png" alt="">
+                                                    </div>
+
+                                                    <p ng-if="!permission.team && !permission.user">--</p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p ng-if="permission.role === 'READ'">
+                                                        <span><b>Read</b></span>
+                                                    </p>
+                                                    <p ng-if="permission.role === 'WRITE'">
+                                                        <span><b>Write</b></span>
+                                                    </p>
+                                                    <p ng-if="permission.role === 'ADMIN'">
+                                                        <span><b>Admin</b></span>
+                                                    </p>
+                                                </td>
+                                                <td class="text-right">
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && !vm.permissionAffectsLoggedUser(permission)" data-toggle="modal" ng-click="vm.editPermission(permission.slug)" data-target="#save-permission" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization && !vm.permissionAffectsLoggedUser(permission)" ng-click="vm.deletePermission(permission.slug)" data-toggle="modal" data-target="#delete-permission" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <div ng-if="!vm.loadingPermissions && vm.permissions !== undefined && vm.permissions.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalPermissionCount" 
+                                        ng-model="vm.permissionCurrentPage" 
+                                        ng-change="vm.changePermissionPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingPermissions"></loading>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card card-default average-ticket-card p-b-25 widget-loader-bar">
+                <div class="card-header">
+                    <div class="card-title full-width">
+                        <i class="fa fa-flask"></i> Details
+
+                        <a data-toggle="modal" ng-if="vm.hasWriteAuthorization" uib-tooltip="Edit" data-target="#save-experiment" class="btn btn-primary-dark btn-cons btn-actions pull-right" href="javascript:;">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="widget-11-table auto-overflow">
+                    <div class="col-lg-12 m-t-15">
+                        <p>
+                            <label><b>Name</b></label>
+                            <br />
+                            <span ng-if="!vm.experiment">--</span>
+                            <span ng-if="vm.experiment">{{ vm.experiment.name }}</span>
+                        </p>
+                        <p>
+                            <label><b>Creation Date</b></label>
+                            <br />
+                            <span ng-if="!vm.experiment">--</span>
+                            <span ng-if="vm.experiment">{{ vm.experiment.parsedInsertDate | date : 'dd/MM/y' }}</span>
+                        </p>
+                        <p>
+                            <label><b>Description</b></label>
+                            <br />
+                            <span ng-if="!vm.experiment">--</span>
+                            <span ng-if="vm.experiment">{{ vm.experiment.description }}</span>
+                        </p> 
+                    </div>
+                </div>
+                <loading ng-if="vm.loadingExperiment"></loading>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-include src="'/scripts/experiment/view/templates/save-experiment-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/save-computational-model-modal.html'"></ng-include>
+<ng-include src="'/scripts/permission/view/templates/save-permission-modal.html'"></ng-include>
+<ng-include src="'/scripts/experiment/view/templates/save-phase-modal.html'"></ng-include>
+<ng-include src="'/scripts/experiment/view/templates/save-conceptual-param-modal.html'"></ng-include>
+<ng-include src="'/scripts/experiment/view/templates/save-validation-item-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/delete-computational-model-modal.html'"></ng-include>
+<ng-include src="'/scripts/permission/view/templates/delete-permission-modal.html'"></ng-include>
+<ng-include src="'/scripts/experiment/view/templates/delete-phase-modal.html'"></ng-include>
+<ng-include src="'/scripts/experiment/view/templates/delete-conceptual-param-modal.html'"></ng-include>
+<ng-include src="'/scripts/experiment/view/templates/delete-validation-item-modal.html'"></ng-include>
+<ng-include src="'/scripts/experiment/view/templates/validate-item-modal.html'"></ng-include>
+<ng-include src="'/scripts/experiment/view/templates/unvalidate-item-modal.html'"></ng-include>

@@ -1,0 +1,40 @@
+<div class="modal stick-up fade" tabindex="-1" id="save-team" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">{{ vm.teamSaveTitle }}</h4>
+            </div>
+            <form name="teamForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Name</label>
+                            <input autocomplete="off" type="text" name="name" class="form-control" ng-model="vm.team.name" required>
+                        </div>
+                        <p ng-show="teamForm.name.$invalid && !teamForm.name.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <label class="required">Team users</label>
+                        <select autocomplete-select required class="full-width" 
+                                multiple
+                                data="vm.team.teamUsers" 
+                                api-endpoint="/v1/users"
+                                dropdown-parent="#save-team"
+                                label-select-text="name"
+                                array-value="true"
+                                api-filters="name,email">
+                        </select>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doSave()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="teamForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

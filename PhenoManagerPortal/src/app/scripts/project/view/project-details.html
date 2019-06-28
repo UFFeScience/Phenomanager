@@ -1,0 +1,258 @@
+<div id="breadcrumb-filter-content">
+    <ol class="breadcrumb">
+        <li ui-sref="list-projects" class="breadcrumb-item"><a href="javascript:;">Projects</a></li>
+        
+        <li ng-if="!vm.project" class="breadcrumb-item active text-primary-dark">--</li>
+        
+        <li ng-if="vm.project" class="breadcrumb-item active text-primary-dark">{{ vm.project.name }}</li>
+    </ol>
+</div>
+
+<div class="container-dashboard">
+	<div class="row">
+		<div class="col-lg-9">
+		    <div class="card card-borderless">
+		  		<ul tabs class="nav nav-tabs nav-tabs-simple hidden-sm-down" role="tablist" data-init-reponsive-tabs="dropdownfx">
+		        	<li class="nav-item">
+		          		<a ng-click="vm.changePhenomenonPage()" class="active nav-tabs-primary" data-toggle="tab" role="tab" data-target="#phenomenons" href="#"><i class="fa fa-snowflake-o"></i> Phenomenons</a>
+		        	</li>
+		        	<li class="nav-item">
+		          		<a ng-click="vm.changePermissionPage()" class="nav-tabs-primary" href="#" data-toggle="tab" role="tab" data-target="#permissions"><i class="fa fa-lock"></i> Permissions</a>
+		        	</li>
+		  		</ul>
+
+			  	<div class="tab-content">
+			    	<div class="tab-pane active" id="phenomenons">
+			      		<div class="row">
+			            	<div class="col-lg-12">
+								<div class="pull-left">
+									<input autocomplete="off" type="text" name="filter" placeholder="Search phenomenons" class="form-control filter-form" ng-model="vm.filterPhenomenons" ng-change="vm.changePhenomenonPage()" 
+									ng-model-options="{ debounce: 1800 }">
+								</div>
+			            		<div class="pull-right" ng-if="vm.hasWriteAuthorization">
+						            <button data-toggle="modal" ng-click="vm.insertPhenomenon()" data-target="#save-phenomenon" class="btn btn-primary-dark btn-cons">
+						            	<i class="fa fa-plus"></i> New
+						        	</button>
+						        </div>
+
+			            		<div class="table-responsive">
+					                <table class="table table-hover" id="basicTable">
+					                    <thead>
+					                        <tr>
+					                            <th>Name</th>
+					                            <th>Research Domain</th>
+					                            <th>Creation Date</th>
+					                            <th style="min-width: 155px;"></th>
+					                        </tr>
+					                    </thead>
+					                    <tbody>
+					                        <tr ng-repeat="phenomenon in vm.phenomenons">
+					                            <td class="v-align-middle ">
+					                                <p>{{ phenomenon.name }}</p>
+					                            </td>
+					                            <td class="v-align-middle ">
+					                                <p ng-if="phenomenon.researchDomain === 'MATH'">
+                                                        <span><b>Math</b></span>
+                                                    </p>
+                                                    <p ng-if="phenomenon.researchDomain === 'PHYSICS'">
+                                                        <span><b>Phisics</b></span>
+                                                    </p>
+                                                    <p ng-if="phenomenon.researchDomain === 'BIOLOGY'">
+                                                        <span><b>Biology</b></span>
+                                                    </p>
+                                                    <p ng-if="phenomenon.researchDomain === 'CHEMISTRY'">
+                                                        <span><b>Chemistry</b></span>
+                                                    </p>
+                                                    <p ng-if="phenomenon.researchDomain === 'BIOCHEMISTRY'">
+                                                        <span><b>Biochemistry</b></span>
+                                                    </p>
+                                                    <p ng-if="phenomenon.researchDomain === 'ASTRONOMY'">
+                                                        <span><b>Astronomy</b></span>
+                                                    </p>
+                                                    <p ng-if="phenomenon.researchDomain === 'COMPUTER_SCIENCE'">
+                                                        <span><b>Computer Science</b></span>
+                                                    </p>
+                                                    <p ng-if="phenomenon.researchDomain === 'LINGUISTICS'">
+                                                        <span><b>Linguistics</b></span>
+                                                    </p>
+                                                    <p ng-if="phenomenon.researchDomain === 'OTHER'">
+                                                        <span><b>Other</b></span>
+                                                    </p>
+					                            </td>
+					                            <td class="v-align-middle">
+					                                <p>{{ phenomenon.parsedInsertDate | date : 'dd/MM/y' }}</p>
+					                            </td>
+					                            <td class="text-right">
+					                                <a uib-tooltip="Details" ng-if="vm.hasReadAccess(phenomenon)" class="btn btn-primary-dark btn-cons btn-actions" ui-sref="phenomenon-details({slug: phenomenon.slug})" href="javascript:;">
+					                                    <i class="fa fa-folder-open"></i>
+					                                </a>
+					                                <a uib-tooltip="Edit" ng-if="vm.hasWriteAccess(phenomenon)" data-toggle="modal" ng-click="vm.editPhenomenon(phenomenon.slug)" data-target="#save-phenomenon" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+					                                    <i class="fa fa-pencil"></i>
+					                                </a>
+					                                <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization" ng-click="vm.deletePhenomenon(phenomenon.slug)" data-toggle="modal" data-target="#delete-phenomenon" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+					                                    <i class="fa fa-trash"></i>
+					                                </a>
+					                            </td>
+					                        </tr>
+					                    </tbody>
+					                </table>
+
+					                <div ng-if="!vm.loadingPhenomenons && vm.phenomenons !== undefined && vm.phenomenons.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+
+					            </div>
+					            <div class="pull-right">
+					                <ul uib-pagination 
+					                    max-size="5" 
+					                    rotate="true" 
+					                    class="pagination-sm" 
+					                    boundary-links="true" 
+					                    force-ellipses="true" 
+					                    previous-text="&lsaquo;" 
+					                    next-text="&rsaquo;" 
+					                    first-text="&laquo;" 
+					                    last-text="&raquo;"
+					                    items-per-page="vm.limit"
+					                    total-items="vm.totalPhenomenonCount" 
+					                    ng-model="vm.phenomenonCurrentPage" 
+					                    ng-change="vm.changePhenomenonPage()"></ul>
+					            </div>
+					        </div>
+			          	</div>
+			          	<loading ng-if="vm.loadingPhenomenon"></loading>
+			        </div>
+			        <div class="tab-pane " id="permissions">
+			      		<div class="row">
+			            	<div class="col-lg-12">
+			            		<div class="pull-right" ng-if="vm.hasWriteAuthorization">
+						            <button data-toggle="modal" ng-click="vm.insertPermission()" data-target="#save-permission" class="btn btn-primary-dark btn-cons">
+						            	<i class="fa fa-plus"></i> New
+						        	</button>
+						        </div>
+
+			            		<div class="table-responsive">
+					                <table class="table table-hover" id="basicTable">
+					                    <thead>
+					                        <tr>
+					                            <th>User/Team</th>
+					                            <th>Permission</th>
+					                            <th style="min-width: 155px;"></th>
+					                        </tr>
+					                    </thead>
+					                    <tbody>
+					                        <tr ng-repeat="permission in vm.permissions">
+					                        	<td class="v-align-middle">
+													<p ng-if="permission.team">{{ permission.team.name }}</p>
+
+													<div uib-tooltip="{{ permission.user.name }}" ng-if="!permission.team && permission.user" class="thumbnail-wrapper d32 circular">
+								                        <img ng-if="permission.user.profileImageFileId" width="40" height="40" ng-src="https://drive.google.com/uc?export=view&id={{ permission.user.profileImageFileId }}" alt="">
+
+                                                        <img ng-if="!permission.user.profileImageFileId" width="40" height="40" src="/images/default-user.png" data-src="/images/default-user.png" data-src-retina="/images/default-user.png" alt="">
+							                      	</div>
+
+							                      	<p ng-if="!permission.team && !permission.user">--</p>
+												</td>
+					                            <td class="v-align-middle">
+	                                                <p ng-if="permission.role === 'READ'">
+	                                                    <span><b>Read</b></span>
+	                                                </p>
+	                                                <p ng-if="permission.role === 'WRITE'">
+	                                                    <span><b>Write</b></span>
+	                                                </p>
+	                                                <p ng-if="permission.role === 'ADMIN'">
+	                                                    <span><b>Admin</b></span>
+	                                                </p>
+	                                            </td>
+					                            <td class="text-right">
+					                            	<a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && !vm.permissionAffectsLoggedUser(permission)" data-toggle="modal" ng-click="vm.editPermission(permission.slug)" data-target="#save-permission" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+					                                    <i class="fa fa-pencil"></i>
+					                                </a>
+					                                <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization && !vm.permissionAffectsLoggedUser(permission)" ng-click="vm.deletePermission(permission.slug)" data-toggle="modal" data-target="#delete-permission" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+					                                    <i class="fa fa-trash"></i>
+					                                </a>
+					                            </td>
+					                        </tr>
+					                    </tbody>
+					                </table>
+
+					                <div ng-if="!vm.loadingPermissions && vm.permissions !== undefined && vm.permissions.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                    
+					            </div>
+					            <div class="pull-right">
+					                <ul uib-pagination 
+					                    max-size="5" 
+					                    rotate="true" 
+					                    class="pagination-sm" 
+					                    boundary-links="true" 
+					                    force-ellipses="true" 
+					                    previous-text="&lsaquo;" 
+					                    next-text="&rsaquo;" 
+					                    first-text="&laquo;" 
+					                    last-text="&raquo;"
+					                    items-per-page="vm.limit"
+					                    total-items="vm.totalPermissionCount" 
+					                    ng-model="vm.permissionCurrentPage" 
+					                    ng-change="vm.changePermissionPage()"></ul>
+					            </div>
+			            	</div>
+			     	 	</div>
+			     	 	<loading ng-if="vm.loadingPermissions"></loading>
+			        </div>
+			  	</div>
+			</div>
+		</div>
+
+		<div class="col-lg-3">
+	        <div class="card card-default average-ticket-card p-b-25 widget-loader-bar">
+	            <div class="card-header">
+	                <div class="card-title full-width">
+	                	<i class="fa fa-cubes"></i> Details 
+
+	                	<a data-toggle="modal" ng-if="vm.hasWriteAuthorization" uib-tooltip="Edit" data-target="#save-project" class="btn btn-primary-dark btn-cons btn-actions pull-right" href="javascript:;">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+
+                        <a data-toggle="modal" ng-if="vm.hasWriteAuthorization" uib-tooltip="Sync with SciManager" ng-click="vm.syncSciManager(project.slug)" data-target="#sync-project" class="btn btn-primary-dark btn-cons btn-actions pull-right m-r-10" href="javascript:;">
+                            <i class="fa fa-exchange"></i>
+                        </a>
+	                </div>
+	                <div class="clearfix"></div>
+	            </div>
+
+	            <div class="widget-11-table auto-overflow">
+            		<div class="col-lg-12 m-t-15">
+            			<p>
+							<label><b>Name</b></label>
+							<br />
+							<span ng-if="!vm.project">--</span>
+							<span ng-if="vm.project">{{ vm.project.name }}</span>
+						</p>
+						<p>
+                            <label><b>Creation Date</b></label>
+                            <br />
+                            <span ng-if="!vm.project">--</span>
+                            <span ng-if="vm.project">{{ vm.project.parsedInsertDate | date : 'dd/MM/y' }}</span>
+                        </p>
+						<p>
+							<label><b>Description</b></label>
+							<br />
+							<span ng-if="!vm.project">--</span>
+							<span ng-if="vm.project">{{ vm.project.description }}</span>
+						</p> 
+	                </div>
+	            </div>
+	            <loading ng-if="vm.loadingProject"></loading>
+	        </div>
+	    </div>
+	</div>
+</div>
+
+<ng-include src="'/scripts/project/view/templates/sync-project-modal.html'"></ng-include>
+<ng-include src="'/scripts/project/view/templates/save-project-modal.html'"></ng-include>
+<ng-include src="'/scripts/phenomenon/view/templates/save-phenomenon-modal.html'"></ng-include>
+<ng-include src="'/scripts/permission/view/templates/save-permission-modal.html'"></ng-include>
+<ng-include src="'/scripts/phenomenon/view/templates/delete-phenomenon-modal.html'"></ng-include>
+<ng-include src="'/scripts/permission/view/templates/delete-permission-modal.html'"></ng-include>

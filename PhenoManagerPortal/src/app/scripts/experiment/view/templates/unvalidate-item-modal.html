@@ -1,0 +1,19 @@
+<div class="modal stick-up fade" tabindex="-1" id="unvalidate-item" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">Unalidate Itemt</h4>
+            </div>
+            <div class="modal-body">
+                <div class="col-lg-12 row form-group">
+                    <p>If you confirm, any possible evidence for this validation item will be erased.</p>
+                    <p>Do you wish to unvalidate item?</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="submit" ng-click="vm.doUnvalidateItem(vm.experimentSlug)" data-dismiss="modal" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>

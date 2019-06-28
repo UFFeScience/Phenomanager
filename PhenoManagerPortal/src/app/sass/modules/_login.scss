@@ -1,0 +1,99 @@
+/*------------------------------------------------------------------
+[22. Login]
+*/
+
+
+.login-wrapper{
+	height: 100%;
+	& > * {
+		height: 100%;
+	}
+	.action-title {
+		font-weight: bolder; 
+	}
+	.bg-pic{
+		background: url("#{$base-img-url}/login_background.png") 0 0 ;
+        background-repeat: no-repeat;
+		background-size: cover;
+		position: absolute;
+		width: 50%;
+		overflow: hidden;
+		display: inline-block;
+		padding: 75px 100px;
+		color: #fff;
+		.heading-logo {
+			color: #fff;
+			font-weight: bolder;
+			margin-top: 300px;
+		}
+		.heading-smaller-logo {
+			color: #fff;
+		}
+	}
+	.login-container{
+		width: 50%;
+		display: block;
+		position: relative;
+		float:right;
+	}
+	.btn-complete-dark {
+		min-height: 50px;
+	}
+	.logo-mobile {
+		margin-top: 70px;
+		margin-bottom: 50px;
+	}
+	@media (min-width: 1290px) {
+		.login-data {
+			margin-top: calc(50% - 325px);
+			padding: 120px;
+		}
+	}
+	@media (max-width: 1289px) {
+		.login-data {
+			margin-top: calc(50% - 325px);
+			padding: 120px 40px;
+		}
+	}
+	.bg-caption{
+		width: 500px;
+	}
+}
+.register-container{
+	width: 550px;
+	margin: auto;
+	height: 100%;
+}
+
+
+/* Responsive handlers : Login
+------------------------------------
+*/
+@media (min-width: 769px) {
+	.logo-mobile {
+		display: none;
+	}
+}
+
+@media (max-width: 768px) {
+	.logo-mobile {
+		display: block;
+	}
+	.login-wrapper{
+		.login-container{
+			width: 100%;
+		}
+	}
+	.register-container{
+		width: 100%;
+		padding: 15px;
+	}
+}
+
+@media only screen and (max-width : 321px) {
+	.login-wrapper{
+		.login-container{
+			width: 100%;
+		}
+	}
+}

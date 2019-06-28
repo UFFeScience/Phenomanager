@@ -1,0 +1,83 @@
+{
+	"title": "PehenoManager Platform",
+	"copyright": "Copyright © 2018",
+	"all_rights": "Todos os direitos reservados. ",
+	"loading" : "Carregando...",
+	"logout" : "Sair",
+	"message": {
+		"error": "Erro",
+		"warning": "Alerta",
+		"success": "Sucesso",
+		"info": "Informação",
+		"duplicate_user_mail": "Já existe usuário cadastrado com este email",
+		"unexpected_error": "Erro inesperado ao processar ação",
+		"success_action": "Ação realizada com sucesso",
+		"success_async_refresh": "Ação está sendo processada",
+		"success_plan_request": "Plano solicitado com sucesso! Em 24 horas nossa equipe entrará em contato com você para migração do plano :)"
+	},
+	"button": {
+		"new": "Novo",
+		"actions": "Ações",
+		"export": "Exportar",
+		"filter": "Filtrar",
+		"filters": "Filtros",
+		"search": "Buscar",
+		"clear": "Limpar"
+	},
+	"form": {
+		"save": "Salvar",
+		"register": "Cadastrar",
+		"register_case": "Cadastrar caso",
+		"cancel": "Cancel",
+		"select": "Selecione",
+		"select_date": "Selecione data",
+		"select_start_date": "Início",
+		"select_end_date": "Fim",
+		"error": {
+			"required": "Campo é obrigatório",
+			"too_short": "Valor muito pequeno para o campo",
+			"too_large": "Valor muito grande para o campo",
+			"invalid_email": "Email inválido"
+		}
+	},
+	"admin": {
+		"title": "Admin"
+	},
+	"users": {
+		"title": "Usuários",
+		"insert": "Criar Usuário",
+		"update": "Atualizar Usuário",
+		"fields": {
+			"name": "Nome",
+			"email": "E-mail",
+			"phone": "Telefone",
+			"sheet_id": "ID da planilha",
+			"company_name": "Nome da empresa",
+			"password": "Senha",
+			"sheet_name_range": "Dados da planilha",
+			"tab_name": "Nome da aba",
+			"first_column": "Primeira coluna",
+			"last_column": "Última coluna",
+			"role": "Perfil"
+		},
+		"roles": {
+			"admin": "Administrador",
+			"customer_trial": "Cliente Free",
+			"customer_pro": "Cliente Pro",
+			"customer_custom": "Cliente Sobmedida",
+			"select_label": "Selecione Perfil"
+		}
+	},
+	"login": {
+		"title": "Login",
+		"type_data": "Digite seus dados de acesso",
+		"email": "E-mail",
+		"password": "Senha",
+		"enter": "Entrar",
+		"error": "Login ou senha inválidos"
+	},
+	"filter": {
+		"start_date": "Data de início",
+		"end_date": "Data de fim"
+	}
+}

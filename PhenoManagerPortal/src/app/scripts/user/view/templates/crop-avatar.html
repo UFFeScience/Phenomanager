@@ -1,0 +1,66 @@
+<div>
+    <form name="changeAvatarForm" novalidate>
+        <div class="modal-body">
+
+            <div class="avatar-body">
+                <!-- Upload image and data -->
+                <div class="avatar-upload">
+                    <input class="avatar-src" name="avatar_src" type="hidden" />
+                    <input class="avatar-data" name="avatar_data" type="hidden" />
+                    <label title="Upload image file" for="inputImage" class="btn btn-primary">
+                        <input type="file" accept="image/*" name="file" id="inputImage" class="hide" />
+                        Upload avatar
+                    </label>
+                </div>
+
+                <!-- Crop and preview -->
+                <div class="row">
+                    <div class="col-md-9">
+                        <div class="img-container avatar-wrapper">
+                            <img src="" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="img-preview preview-lg"></div>
+                        <div class="img-preview preview-md"></div>
+                        <div class="img-preview preview-sm"></div>
+                        <div class="img-preview preview-xs"></div>
+                    </div>
+                </div>
+
+                <div class="row avatar-btns">
+                    <div class="col-md-12">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" data-method="zoom" data-option="0.1" type="button" title="Zoom In">
+                                <span class="docs-tooltip" data-toggle="tooltip" title="Zoom in">
+                                    <span class="fa fa-search-plus"></span>
+                                </span>
+                            </button>
+                            <button class="btn btn-primary" data-method="zoom" data-option="-0.1" type="button" title="Zoom Out">
+                                <span class="docs-tooltip" data-toggle="tooltip" title="Zoom out">
+                                    <span class="fa fa-search-minus"></span>
+                                </span>
+                            </button>
+                            <button class="btn btn-primary" data-method="rotate" data-option="-45" type="button" title="Rotate Left">
+                                <span class="docs-tooltip" data-toggle="tooltip" title="Rotate left">
+                                   <span class="fa fa-rotate-left"></span>
+                                 </span>
+                            </button>
+                            <button class="btn btn-primary" data-method="rotate" data-option="45" type="button" title="Rotate Right">
+                                 <span class="docs-tooltip" data-toggle="tooltip" title="Rotate right">
+                                     <span class="fa fa-rotate-right"></span>
+                                 </span>
+                            </button>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button data-method="getDataURL" type="submit" ng-click="doUpdateUserAvatar()" data-dismiss="modal" class="btn btn-primary-dark" 
+                ng-disabled="changeAvatarForm.$invalid">Save</button>
+        </div>
+    </form>
+</div>

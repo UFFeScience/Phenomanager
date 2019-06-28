@@ -1,0 +1,63 @@
+<div class="modal stick-up fade" tabindex="-1" id="save-computational-model" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">{{ vm.computationalModelSaveTitle }}</h4>
+            </div>
+            <form name="computationalModelForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Name</label>
+                            <input autocomplete="off" type="text" name="name" class="form-control" ng-model="vm.computationalModel.name" required>
+                        </div>
+                        <p ng-show="computationalModel.name.$invalid && !computationalModelForm.name.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group" ng-if="!vm.updateComputationalModel">
+                        <div class="form-group form-group-default required">
+                            <label>Type</label>
+                            <select class="form-control" ng-model="vm.computationalModel.type" required ng-options="type.value as type.name for type in vm.types">
+                                <option disabled selected value="">Select type</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div ng-if="vm.updateComputationalModel" class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Current Version</label>
+                            <input autocomplete="off" type="text" name="currentVersion" class="form-control" ng-model="vm.computationalModel.currentVersion" required>
+                        </div>
+                        <p ng-show="computationalModelForm.currentVersion.$invalid && !computationalModelForm.currentVersion.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default">
+                            <label>Description</label>
+                            <textarea autocomplete="off" name="description" class="form-control default-textarea" ng-model="vm.computationalModel.description"></textarea>
+                        </div>
+                    </div>
+
+                    <div ng-if="vm.updateComputationalModel" class="row form-group">
+                        <div class="radio radio-primary">
+
+                            <input type="radio" name="publicData" id="publicData" ng-value="true" ng-model="vm.computationalModel.isPublicData">
+                            <label for="publicData">Public</label>
+
+                            <input type="radio" name="notPublicData" id="notPublicData" ng-value="false" ng-model="vm.computationalModel.isPublicData">
+                            <label for="notPublicData">Not public</label>
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doSaveComputationalModel()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="computationalModelForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

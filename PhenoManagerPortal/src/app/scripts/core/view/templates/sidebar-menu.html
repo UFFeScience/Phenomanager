@@ -1,0 +1,53 @@
+<!-- BEGIN SIDEBPANEL-->
+<nav class="page-sidebar" data-pages="sidebar">
+	<!-- BEGIN SIDEBAR MENU HEADER-->
+	<div class="sidebar-header">
+		<a ui-sref="dashboard"> 
+			<img src="/images/logo_white.png" alt="logo" class="brand" data-src="/images/logo_white.png" data-src-retina="/images/logo_white.png" height="34">
+		</a>
+		<div class="sidebar-header-controls" style="position: relative; bottom: 13px; height: 5px;">
+			<button type="button" class="btn btn-link hidden-md-down" data-toggle-pin="sidebar"><i class="fa fs-12"></i>
+			</button>
+		</div>
+	</div>
+	<!-- END SIDEBAR MENU HEADER-->
+	<!-- START SIDEBAR MENU -->
+	<div class="sidebar-menu">
+		<!-- BEGIN SIDEBAR MENU ITEMS-->
+		<ul class="menu-items">
+			<li ng-class="getActiveClass('/dashboard')" class="m-t-30" role="button">
+				<a ui-sref="dashboard" class="detailed">
+					<span class="title">Dashboard</span>
+				</a>
+				<span ng-class="getActiveSpanClass('/dashboard')" class="icon-thumbnail"><i class="fa fa-home"></i></span>
+			</li>
+			<li ng-class="getActiveClass('/projects')" role="button">
+				<a ui-sref="list-projects" class="detailed">
+					<span class="title">Projects</span>
+				</a>
+				<span ng-class="getActiveSpanClass('/projects')" class="icon-thumbnail"><i class="fa fa-cubes"></i></span>
+			</li>
+			<li ng-show="allowAdminAccess()" role="button">
+				<a href="javascript:;">
+					<span class="title">Admin</span>
+					<span class=" arrow"></span>
+				</a>
+				<span class="icon-thumbnail"><i class="fa fa-lock"></i></span>
+				<ul class="sub-menu">
+					<li ng-class="getActiveClass('/users')" role="button">
+						<a ui-sref="list-users">Users</a>
+						<span ng-class="getActiveClass('/users')" class="icon-thumbnail"><i class="fa fa-user"></i></span>
+					</li>
+					<li ng-class="getActiveClass('/teams')" role="button">
+						<a ui-sref="list-teams">Teams</a>
+						<span ng-class="getActiveClass('/teams')" class="icon-thumbnail"><i class="fa fa-users"></i></span>
+					</li>
+				</ul>
+			</li>
+		</ul>
+		<div class="clearfix"></div>
+	</div>
+	<!-- END SIDEBAR MENU -->
+</nav>
+<!-- END SIDEBAR -->
+<!-- END SIDEBPANEL-->

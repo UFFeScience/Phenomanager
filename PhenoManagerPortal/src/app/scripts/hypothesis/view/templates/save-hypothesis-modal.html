@@ -1,0 +1,44 @@
+<div class="modal stick-up fade" tabindex="-1" id="save-hypothesis" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">{{ vm.hypothesisSaveTitle }}</h4>
+            </div>
+            <form name="hypothesisForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Name</label>
+                            <input autocomplete="off" type="text" name="name" class="form-control" ng-model="vm.hypothesis.name" required>
+                        </div>
+                        <p ng-show="hypothesisForm.name.$invalid && !hypothesisForm.name.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div ng-if="vm.updateHypothesis" class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>State</label>
+                            <select class="form-control" ng-model="vm.hypothesis.state" ng-options="state.value as state.name for state in vm.states">
+                                <option disabled selected value="">Select state</option>
+                            </select>
+                        </div>
+                        <p ng-show="hypothesisForm.state.$invalid && !hypothesisForm.state.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default">
+                            <label>Description</label>
+                            <textarea autocomplete="off" name="description" class="form-control default-textarea" ng-model="vm.hypothesis.description"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doSaveHypothesis()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="hypothesisForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

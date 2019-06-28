@@ -1,0 +1,78 @@
+<div class="modal stick-up fade" tabindex="-1" id="save-instance-param" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">{{ vm.instanceParamSaveTitle }}</h4>
+            </div>
+            <form name="instanceParamForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Key</label>
+                            <input autocomplete="off" type="text" name="key" class="form-control" ng-model="vm.instanceParam.key" required>
+                        </div>
+                        <p ng-show="instanceParamForm.key.$invalid && !instanceParamForm.key.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default">
+                            <label>Description</label>
+                            <textarea autocomplete="off" name="description" class="form-control default-textarea" ng-model="vm.instanceParam.description"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <label class="required">Conceptual Param</label>
+                        <select autocomplete-select class="full-width" 
+                                data="vm.instanceParam.conceptualParam" 
+                                api-endpoint="/v1/experiments/{{ vm.computationalModel.experiment.slug }}/conceptual_params"
+                                dropdown-parent="#save-instance-param"
+                                label-select-text="key"
+                                array-value="false"
+                                api-filters="key,description">
+                        </select>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="radio radio-primary">
+
+                            <input type="radio" name="value" id="value" ng-value="false" ng-model="vm.instanceParam.hasValueFile">
+                            <label for="value">Text Value</label>
+
+                            <input type="radio" name="fileValue" id="fileValue" ng-value="true" ng-model="vm.instanceParam.hasValueFile">
+                            <label for="fileValue">File Value</label>
+
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.instanceParam.hasValueFile === false">
+                        <div class="form-group form-group-default">
+                            <label>Value</label>
+                            <input autocomplete="off" type="text" name="value" class="form-control" ng-model="vm.instanceParam.value" required>
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.instanceParam.hasValueFile === true">
+                        <label ng-class="{ 'disabled': loadingUpload }" class="next-step text-left full-width btn btn-default ng-binding" style="margin-top: 10px; margin-bottom: 10px;">
+                            Upload value file
+                            
+                            <i ng-if="!vm.loadingUpload" class="fa fa-upload"></i>
+                            <loading-small ng-if="vm.loadingUpload"></loading-small>
+
+                            <input title="file input" multiple="" type="file" accept="text/plain, application/pdf, image/*" hidden name="files" onchange="angular.element(this).scope().setValueFile(this)">
+                        </label>
+
+                        <p ng-if="vm.errorUploadSize" class="error help-block">Size of file exceed limit allowed (50 mb)</p>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doSaveInstanceParam()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="instanceParamForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

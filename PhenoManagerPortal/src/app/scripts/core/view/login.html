@@ -1,0 +1,45 @@
+<div class="login-wrapper ">
+    <!-- START Login Background Pic Wrapper-->
+    <div class="bg-pic">
+        <!-- START Background Pic-->
+        <img src="/images/logo_white.png" alt="logo" data-src="/images/logo_white.png" data-src-retina="/images/logo_white.png" height="50">
+        <!-- END Background Pic-->
+    </div>
+    <!-- END Login Background Pic Wrapper-->
+    <!-- START Login Right Container-->
+    <div class="login-container bg-white">
+        <div class="login-data">
+            <!-- START Login Form -->
+            <form id="form-login" class="p-t-15" role="form" name="loginForm" novalidate ng-submit="loginForm.$valid">
+                <!-- START Form Control-->
+                <img class="logo-mobile" src="/images/logo_dark.png" alt="logo" data-src="/images/logo_dark.png" data-src-retina="/images/logo_dark.png" height="50">
+                
+                <h2 class="action-title">Login</h2>
+                <h5 class="hint-text">Enter your data</h5>
+                <div class="form-group form-group-default m-t-15">
+                    <label>Email</label>
+                    <div class="controls">
+                        <input type="text" name="email" placeholder="Email" class="form-control" required autocomplete="off" ng-model="vm.user.email">
+                    </div>
+                </div>
+                <!-- END Form Control-->
+                <!-- START Form Control-->
+                <div class="form-group form-group-default">
+                    <label>Password</label>
+                    <div class="controls">
+                        <input type="password" class="form-control" name="password" placeholder="Password" required autocomplete="off" ng-model="vm.user.password">
+                    </div>
+                </div>
+
+                <loading ng-if="vm.loading"></loading>
+                <p ng-if="error" class="error help-block">Invalid email or password</p>
+                
+                <button class="btn full-width btn-primary-dark btn-cons m-t-10" type="submit" ng-click="vm.login()" ng-class="{'disabled': loginForm.$invalid}">
+                    <h5 class="text-white">Enter</h5>
+                </button>
+            </form>
+        <!--END Login Form-->
+        </div>
+    <!-- END Login Right Container-->
+    </div>
+</div>

@@ -1,0 +1,75 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath('org.springframework.boot:spring-boot-gradle-plugin:1.5.9.RELEASE') 
+    }
+}
+
+version = '1.0.0'
+
+apply plugin: 'java'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'idea' 
+apply plugin: 'org.springframework.boot' 
+
+springBoot {
+    mainClass = 'com.uff.phenomanager.PhenoManagerApiApplication'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+	//spring
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.boot:spring-boot-starter-actuator')
+    compile('org.springframework.boot:spring-boot-starter-data-rest')
+    compile('org.springframework.boot:spring-boot-starter-data-jpa')
+    compile("org.springframework.boot:spring-boot-starter-security")
+    compile('org.springframework.boot:spring-boot-starter-mail')
+	compile('org.springframework:spring-test')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+    
+    //database
+    compile('org.postgresql:postgresql:42.2.2')
+    
+    //jwt
+	compile('io.jsonwebtoken:jjwt:0.9.0')
+	
+    //rabbitMq
+    compile('org.springframework.boot:spring-boot-starter-amqp')
+    
+    //google api
+	compile('com.google.api-client:google-api-client:1.23.0')
+	compile('com.google.apis:google-api-services-drive:v3-rev110-1.23.0')
+    
+    //util
+    compile('com.google.guava:guava:27.1-jre')
+    compile('org.apache.tika:tika-core:1.20')
+}
+
+eclipse {
+    classpath {
+         containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.9'
+}
+
+jar {
+  	manifest {
+    	attributes(
+      		'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+      		'Main-Class': 'com.uff.phenomanager.PhenoManagerApiApplication'
+    	)
+  	}
+  	baseName 'pheno-manager-api'
+}

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR" ng-app="pheno-manager">
+	<head>
+        <!-- inject:css -->
+        <!-- endinject -->
+
+        <!-- bower:css -->
+        <!-- endbower -->
+
+	    <link href="/styles/main.css" rel="stylesheet" />
+        <!--<link href="styles/responsive.css" rel="stylesheet" />-->
+	    <link rel="shortcut icon" href="/images/favicon.ico">
+	    <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>PhenoManager</title>       
+	</head>
+	<body>
+        <load-overlay ng-if="isLoading"></load-overlay>
+		<div class="content-wrapper full-container">
+            <!-- Main content -->
+            <section class="content" id="container" ui-view>
+
+            </section><!-- /.content -->
+        </div><!-- /.content-wrapper -->
+	</body>
+
+    <!-- REQUIRED JS SCRIPTS -->
+
+    <!-- bower:js -->
+    <!-- endbower -->
+
+    <!-- inject:js -->
+    <!-- endinject -->
+
+    <!-- build:js /scripts/app.js type="text/javascript" -->
+    <!-- Manager -->
+    <script src="/scripts/pheno-manager.module.js"></script>
+    <!-- Core -->
+    <script src="/scripts/core/core.module.js"></script>
+    <!-- Module -->
+    <script src="/scripts/user/user.module.js"></script>
+    <script src="/scripts/team/team.module.js"></script>
+    <script src="/scripts/project/project.module.js"></script>
+    <script src="/scripts/phenomenon/phenomenon.module.js"></script>
+    <script src="/scripts/hypothesis/hypothesis.module.js"></script>
+    <script src="/scripts/experiment/experiment.module.js"></script>
+    <script src="/scripts/computationalModel/computational-model.module.js"></script>
+    <script src="/scripts/permission/permission.module.js"></script>
+    <script src="/scripts/dashboard/dashboard.module.js"></script>
+    <!-- Services -->
+    <script src="/scripts/core/service/auth-login.service.js"></script>
+    <script src="/scripts/core/service/local-storage.service.js"></script>
+    <script src="/scripts/user/service/user.service.js"></script>
+    <script src="/scripts/team/service/team.service.js"></script>
+    <script src="/scripts/project/service/project.service.js"></script>
+    <script src="/scripts/phenomenon/service/phenomenon.service.js"></script>
+    <script src="/scripts/hypothesis/service/hypothesis.service.js"></script>
+    <script src="/scripts/experiment/service/experiment.service.js"></script>
+    <script src="/scripts/computationalModel/service/computational-model.service.js"></script>
+    <script src="/scripts/permission/service/permission.service.js"></script>
+    <!-- Controllers -->
+    <script src="/scripts/core/controller/root.controller.js"></script>
+    <script src="/scripts/core/controller/login.controller.js"></script>
+    <script src="/scripts/user/controller/user.controller.js"></script>
+    <script src="/scripts/team/controller/team.controller.js"></script>
+    <script src="/scripts/project/controller/project.controller.js"></script>
+    <script src="/scripts/project/controller/project-details.controller.js"></script>
+    <script src="/scripts/phenomenon/controller/phenomenon-details.controller.js"></script>
+    <script src="/scripts/hypothesis/controller/hypothesis-details.controller.js"></script>
+    <script src="/scripts/experiment/controller/experiment-details.controller.js"></script>
+    <script src="/scripts/computationalModel/controller/computational-model-details.controller.js"></script>
+    <script src="/scripts/dashboard/controller/dashboard.controller.js"></script>
+    <!-- Config -->
+    <script src="/scripts/core/config/url-base.config.js"></script>
+    <script src="/scripts/core/config/route.config.js"></script>
+    <script src="/scripts/user/config/route.config.js"></script>
+    <script src="/scripts/team/config/route.config.js"></script>
+    <script src="/scripts/project/config/route.config.js"></script>
+    <script src="/scripts/phenomenon/config/route.config.js"></script>
+    <script src="/scripts/hypothesis/config/route.config.js"></script>
+    <script src="/scripts/experiment/config/route.config.js"></script>
+    <script src="/scripts/computationalModel/config/route.config.js"></script>
+    <script src="/scripts/dashboard/config/route.config.js"></script>
+    <!-- Directives -->
+    <script src="/scripts/core/directive/sidebar-menu.directive.js"></script>
+    <script src="/scripts/core/directive/tabs.directive.js"></script>
+    <script src="/scripts/core/directive/header-top.directive.js"></script>
+    <script src="/scripts/core/directive/load-overlay-directive.js"></script>
+    <script src="/scripts/core/directive/loading.directive.js"></script>
+    <script src="/scripts/core/directive/loading-small.directive.js"></script>
+    <script src="/scripts/core/directive/autocomplete-select.directive.js"></script>
+    <script src="/scripts/core/directive/input-mask.directive.js"></script>
+    <script src="/scripts/user/directive/crop-avatar.directive.js"></script>
+    <!-- Interceptors -->
+    <script src="/scripts/core/interceptors/auth.interceptor.js"></script>
+    <!-- endbuild -->
+</html>

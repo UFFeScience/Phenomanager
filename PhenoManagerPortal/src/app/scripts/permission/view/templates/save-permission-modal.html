@@ -1,0 +1,64 @@
+<div class="modal stick-up fade" tabindex="-1" id="save-permission" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">{{ vm.permissionSaveTitle }}</h4>
+            </div>
+            <form name="permissionForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Permission</label>
+                            <select class="form-control" ng-model="vm.permission.role" required ng-options="role.value as role.name for role in vm.roles">
+                                <option disabled selected value="">Select permission</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div ng-if="!vm.updatePermission" class="row form-group">
+                        <div class="radio radio-primary">
+
+                            <input type="radio" name="user" id="user" ng-value="true" ng-model="vm.permission.isUserPermission">
+                            <label for="user">User</label>
+
+                            <input type="radio" name="group" id="group" ng-value="false" ng-model="vm.permission.isUserPermission">
+                            <label for="group">Team</label>
+
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.permission.isUserPermission === true && !vm.updatePermission">
+                        <label class="required">Users</label>
+                        <select autocomplete-select required class="full-width" 
+                                data="vm.permission.user" 
+                                api-endpoint="/v1/users"
+                                dropdown-parent="#save-permission"
+                                label-select-text="name"
+                                array-value="false"
+                                api-filters="name,email">
+                        </select>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.permission.isUserPermission === false && !vm.updatePermission">
+                        <label class="required">Team</label>
+                        <select autocomplete-select required class="full-width" 
+                                data="vm.permission.team" 
+                                api-endpoint="/v1/teams"
+                                dropdown-parent="#save-permission"
+                                label-select-text="name"
+                                array-value="false"
+                                api-filters="name">
+                        </select>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doSavePermission()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="permissionForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

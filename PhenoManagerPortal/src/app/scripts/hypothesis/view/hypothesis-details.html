@@ -1,0 +1,339 @@
+<div id="breadcrumb-filter-content">
+    <ol ng-if="!vm.hypothesis || !vm.hypothesis.phenomenon || !vm.hypothesis.phenomenon.project" class="breadcrumb">
+        <li ui-sref="list-projects" class="breadcrumb-item"><a href="javascript:;">Projects</a></li>
+    </ol>
+    <ol ng-if="vm.hypothesis && vm.hypothesis.phenomenon && vm.hypothesis.phenomenon.project" class="breadcrumb">
+        <li ui-sref="list-projects" class="breadcrumb-item"><a href="javascript:;">Projects</a></li>
+        
+        <li class="breadcrumb-item text-primary-dark"><a ui-sref="project-details({slug: vm.hypothesis.phenomenon.project.slug})" href="javascript:;">{{ vm.hypothesis.phenomenon.project.name }}</a></li>
+        
+        <li class="breadcrumb-item text-primary-dark"><a ui-sref="phenomenon-details({slug: vm.hypothesis.phenomenon.slug})" href="javascript:;">{{ vm.hypothesis.phenomenon.name }}</a></li>
+        
+        <li class="breadcrumb-item active text-primary-dark">{{ vm.hypothesis.name }}</li>
+    </ol>
+</div>
+
+<div class="container-dashboard">
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card card-borderless">
+                <ul tabs class="nav nav-tabs nav-tabs-simple hidden-sm-down" role="tablist" data-init-reponsive-tabs="dropdownfx">
+                    <li class="nav-item">
+                        <a ng-click="vm.changeExperimentPage()" class="active nav-tabs-primary" data-toggle="tab" role="tab" data-target="#experiments" href="#"><i class="fa fa-flask"></i> Experiments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a ng-click="vm.changeHypothesisChildrenPage()" class="nav-tabs-primary" data-toggle="tab" role="tab" data-target="#hypotheses-children" href="#"><i class="fa fa-sitemap"></i> Children hypotheses</a>
+                    </li>
+                    <li class="nav-item">
+                        <a ng-click="vm.changePermissionPage()" class="nav-tabs-primary" href="#" data-toggle="tab" role="tab" data-target="#permissions"><i class="fa fa-lock"></i> Permissions</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="experiments">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-left">
+                                    <input autocomplete="off" type="text" name="filter" placeholder="Search experiments" class="form-control filter-form" ng-model="vm.filterExperiments" ng-change="vm.changeExperimentPage()" 
+                                    ng-model-options="{ debounce: 1800 }">
+                                </div>
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertExperiment()" data-target="#save-experiment" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Creation Date</th>
+                                                <th class="h-align-right"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="experiment in vm.experiments">
+                                                <td class="v-align-middle ">
+                                                    <p>{{ experiment.name }}</p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p>{{ experiment.parsedInsertDate | date : 'dd/MM/y' }}</p>
+                                                </td>
+                                                <td class="text-right">
+                                                    <a uib-tooltip="Details" ng-if="vm.hasReadAccess(experiment)" ui-sref="experiment-details({slug: experiment.slug})" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-folder-open"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAccess(experiment)" data-toggle="modal" ng-click="vm.editExperiment(experiment.slug)" data-target="#save-experiment" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization || vm.hasAdminAccess(experiment)" ng-click="vm.deleteExperiment(experiment.slug)" data-toggle="modal" data-target="#delete-experiment" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                
+                                    <div ng-if="!vm.loadingExperiment && vm.experiments !== undefined && vm.experiments.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalExperimentCount" 
+                                        ng-model="vm.experimentCurrentPage" 
+                                        ng-change="vm.changeExperimentPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingExperiment"></loading>
+                    </div>
+                    <div class="tab-pane" id="hypotheses-children">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-left">
+                                    <input autocomplete="off" type="text" name="filter" placeholder="Search hypotheses" class="form-control filter-form" ng-model="vm.filterHypotheses" ng-change="vm.changeHypothesisPage()" 
+                                    ng-model-options="{ debounce: 1800 }">
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>State</th>
+                                                <th>Creation Date</th>
+                                                <th class="h-align-right"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="hypothesis in vm.hypothesesChildren">
+                                                <td class="v-align-middle ">
+                                                    <p>{{ hypothesis.name }}</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p ng-if="hypothesis.state === 'FORMULATED'">
+                                                        <span><b>Formulated</b></span>
+                                                    </p>
+                                                    <p ng-if="hypothesis.state === 'VALIDATED'">
+                                                        <span><b>Validated</b></span>
+                                                    </p>
+                                                    <p ng-if="hypothesis.state === 'CONFIRMED'">
+                                                        <span><b>Confirmed</b></span>
+                                                    </p>
+                                                    <p ng-if="hypothesis.state === 'IMPROVED'">
+                                                        <span><b>Improved</b></span>
+                                                    </p>
+                                                    <p ng-if="hypothesis.state === 'REFUTED'">
+                                                        <span><b>Refuted</b></span>
+                                                    </p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p>{{ hypothesis.parsedInsertDate | date : 'dd/MM/y' }}</p>
+                                                </td>
+                                                <td class="text-right">
+                                                    <a uib-tooltip="Create branch" ng-if="vm.hasWriteAuthorization" data-toggle="modal" data-target="#save-child-hypothesis" ng-click="vm.insertBranchHypothesis(hypothesis)" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-code-fork"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Details" ng-if="vm.hasReadAccess(hypothesis)" ui-sref="hypothesis-details({slug: hypothesis.slug})" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-folder-open"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization" data-toggle="modal" ng-click="vm.editChildHypothesis(hypothesis.slug)" data-target="#save-child-hypothesis" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization" ng-click="vm.deleteHypothesis(hypothesis.slug)" data-toggle="modal" data-target="#delete-hypothesis" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                
+                                    <div ng-if="!vm.loadingHypothesisChildren && vm.hypothesesChildren !== undefined && vm.hypothesesChildren.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalHypothesisChildrenCount" 
+                                        ng-model="vm.hypothesisChildrenCurrentPage" 
+                                        ng-change="vm.changeHypothesisChildrenPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingHypothesisChildren"></loading>
+                    </div>
+                    <div class="tab-pane " id="permissions">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertPermission()" data-target="#save-permission" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="basicTable">
+                                        <thead>
+                                            <tr>
+                                                <th>User/Team</th>
+                                                <th>Permission</th>
+                                                <th style="min-width: 155px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="permission in vm.permissions">
+                                                <td class="v-align-middle">
+                                                    <p ng-if="permission.team">{{ permission.team.name }}</p>
+
+                                                    <div uib-tooltip="{{ permission.user.name }}" ng-if="!permission.team && permission.user" class="thumbnail-wrapper d32 circular">
+                                                        <img ng-if="permission.user.profileImageFileId" width="40" height="40" ng-src="https://drive.google.com/uc?export=view&id={{ permission.user.profileImageFileId }}" alt="">
+
+                                                        <img ng-if="!permission.user.profileImageFileId" width="40" height="40" src="/images/default-user.png" data-src="/images/default-user.png" data-src-retina="/images/default-user.png" alt="">
+                                                    </div>
+
+                                                    <p ng-if="!permission.team && !permission.user">--</p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p ng-if="permission.role === 'READ'">
+                                                        <span><b>Read</b></span>
+                                                    </p>
+                                                    <p ng-if="permission.role === 'WRITE'">
+                                                        <span><b>Write</b></span>
+                                                    </p>
+                                                    <p ng-if="permission.role === 'ADMIN'">
+                                                        <span><b>Admin</b></span>
+                                                    </p>
+                                                </td>
+                                                <td class="text-right">
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && !vm.permissionAffectsLoggedUser(permission)" data-toggle="modal" ng-click="vm.editPermission(permission.slug)" data-target="#save-permission" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization && !vm.permissionAffectsLoggedUser(permission)" ng-click="vm.deletePermission(permission.slug)" data-toggle="modal" data-target="#delete-permission" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <div ng-if="!vm.loadingPermissions && vm.permissions !== undefined && vm.permissions.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalPermissionCount" 
+                                        ng-model="vm.permissionCurrentPage" 
+                                        ng-change="vm.changePermissionPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingPermissions"></loading>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card card-default average-ticket-card p-b-25 widget-loader-bar">
+                <div class="card-header">
+                    <div class="card-title full-width">
+                        <i class="fa fa-lightbulb-o"></i> Details
+
+                        <a data-toggle="modal" ng-if="vm.hasWriteAuthorization" uib-tooltip="Edit" data-target="#save-hypothesis" class="btn btn-primary-dark btn-cons btn-actions pull-right" href="javascript:;">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+
+                        <a data-toggle="modal" ng-if="vm.hasWriteAuthorization" uib-tooltip="Create branch" ng-click="vm.insertBranchHypothesis(vm.hypothesis)" data-target="#save-child-hypothesis" class="btn btn-primary-dark btn-cons btn-actions pull-right m-r-10" href="javascript:;">
+                            <i class="fa fa-code-fork"></i>
+                        </a>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="widget-11-table auto-overflow">
+                    <div class="col-lg-12 m-t-15">
+                        <p>
+                            <label><b>Name</b></label>
+                            <br />
+                            <span ng-if="!vm.hypothesis">--</span>
+                            <span ng-if="vm.hypothesis">{{ vm.hypothesis.name }}</span>
+                        </p>
+                        <p>
+                            <label><b>Creation Date</b></label>
+                            <br />
+                            <span ng-if="!vm.hypothesis">--</span>
+                            <span ng-if="vm.hypothesis">{{ vm.hypothesis.parsedInsertDate | date : 'dd/MM/y' }}</span>
+                        </p>
+                        <p ng-if="vm.hypothesis && vm.hypothesis.parentHypothesis">
+                            <label><b>Parent Hypothesis</b></label>
+                            <br />
+                            <span>{{ vm.hypothesis.parentHypothesis.name }}</span>
+                        </p>
+                        <p>
+                            <label><b>State</b></label>
+                            <br />
+                            <span ng-if="!vm.hypothesis">--</span>
+                            <span ng-if="vm.hypothesis">
+                                <span ng-if="vm.hypothesis.state === 'FORMULATED'">Formulated</span>
+                                <span ng-if="vm.hypothesis.state === 'VALIDATED'">Validated</span>
+                                <span ng-if="vm.hypothesis.state === 'CONFIRMED'">Confirmed</span>
+                                <span ng-if="vm.hypothesis.state === 'IMPROVED'">Improved</span>
+                                <span ng-if="vm.hypothesis.state === 'REFUTED'">Refuted</span>
+                            </span>
+                        </p>
+                        <p>
+                            <label><b>Description</b></label>
+                            <br />
+                            <span ng-if="!vm.hypothesis">--</span>
+                            <span ng-if="vm.hypothesis">{{ vm.hypothesis.description }}</span>
+                        </p> 
+                    </div>
+                </div>
+                <loading ng-if="vm.loadingHypothesis"></loading>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-include src="'/scripts/hypothesis/view/templates/save-hypothesis-modal.html'"></ng-include>
+<ng-include src="'/scripts/hypothesis/view/templates/save-child-hypothesis-modal.html'"></ng-include>
+<ng-include src="'/scripts/experiment/view/templates/save-experiment-modal.html'"></ng-include>
+<ng-include src="'/scripts/permission/view/templates/save-permission-modal.html'"></ng-include>
+<ng-include src="'/scripts/experiment/view/templates/delete-experiment-modal.html'"></ng-include>
+<ng-include src="'/scripts/permission/view/templates/delete-permission-modal.html'"></ng-include>

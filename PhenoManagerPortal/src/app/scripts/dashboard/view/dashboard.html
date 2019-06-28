@@ -1,0 +1,261 @@
+
+<div id="breadcrumb-filter-content">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="javascript:;">Home</a></li>
+        <li class="breadcrumb-item active text-blue-logo">Dashboard</li>
+    </ol>
+</div>
+
+<div class="container-dashboard">
+    <div class="row">
+        <div class="col-lg-9 col-xlg-9">
+            <div class="row">
+                <div class="col-sm-4 m-b-10">
+                    <div class="card card-default bg-primary-light total-deals">
+                        <div class="card-header">
+                            <div class="card-title text-white">Total Running models</div>
+                        </div>
+                        <div class="card-block">
+                            <h1 class="text-white text-left pull-left inline-block no-m">
+                                <i class="fa fa-refresh fa-spin semi-bold text-white"></i>
+                            </h1>
+                            <h1 class="text-white text-right pull-right inline-block">
+                                <p class="counter bold text-white number-value"
+                                   from="0"
+                                   value="vm.totalRunningCounter"
+                                   to="vm.totalRunning"
+                                   duration="250"
+                                   effect="linear">{{ vm.totalRunningCounter | number:0 }}</p>
+                            </h1>
+                        </div>
+                        <loading ng-if="vm.loadingTotalRunning"></loading>
+                    </div>
+                </div>
+                <div class="col-sm-4 m-b-10">
+                    <div ng-class="{ 'bg-danger': vm.totalError > 0, 'bg-master' : vm.totalError === 0 }" class="card card-default total-deals">
+                        <div class="card-header">
+                            <div class="card-title text-white">Total models with Error</div>
+                        </div>
+                        <div class="card-block">
+                            <h1 class="text-white text-left pull-left inline-block no-m">
+                                <i ng-if="vm.totalError > 0" class="fa fa-warning semi-bold text-white"></i>
+                                <i ng-if="vm.totalError === 0" class="fa fa-check semi-bold text-white"></i>
+                            </h1>
+                            <h1 class="text-white text-right pull-right inline-block">
+                                <p class="counter bold text-white number-value"
+                                   from="0"
+                                   value="vm.totalErrorCounter"
+                                   to="vm.totalError"
+                                   duration="250"
+                                   effect="linear">{{ vm.totalErrorCounter | number:0 }}</p>
+                            </h1>
+                        </div>
+                        <loading ng-if="vm.loadingTotalError"></loading>
+                    </div>
+                </div>
+                <div class="col-sm-4 m-b-10">
+                    <div class="card card-default bg-complete bg-green-logo total-deals">
+                        <div class="card-header">
+                            <div class="card-title text-white">Experiment validations</div>
+                        </div>
+                        <div class="card-block">
+                            <h1 class="text-white text-left pull-left inline-block no-m">
+                                <i class="fa fa-check-square semi-bold text-white"></i>
+                            </h1>
+                            <h1 class="text-white text-right pull-right inline-block">
+                                <p class="bold text-white number-value">
+                                    <span class="counter" 
+                                          from="0"
+                                          value="vm.successValidationCounter"
+                                          to="vm.successValidation"
+                                          duration="250"
+                                          effect="linear">{{ vm.successValidationCounter | number:0 }}</span> / 
+                                    <span class="counter" 
+                                          from="0"
+                                          value="vm.totalValidationCounter"
+                                          to="vm.totalValidation"
+                                          duration="250"
+                                          effect="linear">{{ vm.totalValidationCounter | number:0 }}</span>
+                                </p>
+                            </h1>
+                        </div>
+                        <loading ng-if="vm.loadingValidation"></loading>
+                    </div>
+                </div>
+
+                <div class="col-lg-12">
+                    
+                    <div class="card card-default">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <h4 class="no-caps hint-text"><i class="fa fa-cube"></i> Computational Models</h4>
+                            </div>
+                        </div>
+                        <div class="card-block">
+                            <div class="table-responsive">
+                                    
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Version</th>
+                                            <th>Type</th>
+                                            <th class="h-align-right"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="computationalModel in vm.computationalModels">
+                                            <td class="v-align-middle ">
+                                                <p>{{ computationalModel.name }}</p>
+                                            </td>
+                                            <td class="v-align-middle ">
+                                                <p>{{ computationalModel.currentVersion }}</p>
+                                            </td>
+                                            <td class="v-align-middle ">
+                                                <p ng-if="computationalModel.type === 'WORKFLOW'">
+                                                    <span><b>Workflow</b></span>
+                                                </p>
+                                                <p ng-if="computationalModel.type === 'EXECUTABLE'">
+                                                    <span><b>Executable</b></span>
+                                                </p>
+                                                <p ng-if="computationalModel.type === 'COMMAND'">
+                                                    <span><b>Command</b></span>
+                                                </p>
+                                                <p ng-if="computationalModel.type === 'HTTP'">
+                                                    <span><b>Http</b></span>
+                                                </p>
+                                            </td>
+                                            <td class="text-right">
+                                                <a uib-tooltip="Details" ui-sref="computational-model-details({slug: computationalModel.slug})" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                    <i class="fa fa-folder-open"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <div ng-if="!vm.loadingComputationalModels && vm.computationalModels !== undefined && vm.computationalModels.length === 0" class="col-lg-12 text-center m-t-15">
+                                    <span class="hint-text">No data found</span>
+                                </div>
+
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingComputationalModels"></loading>
+                    </div>
+                </div>
+
+                <div class="col-lg-12">
+                
+                    <div class="card card-default">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <h4 class="no-caps hint-text"><i class="fa fa-lightbulb-o"></i> Hypotheses</h4>
+                            </div>
+                        </div>
+                        <div class="card-block">
+                            <div class="table-responsive">
+                                
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Parent Hypothesis</th>
+                                            <th>Phenomenon</th>
+                                            <th>State</th>
+                                            <th class="h-align-right"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="hypothesis in vm.hypotheses">
+                                            <td class="v-align-middle ">
+                                                <p>{{ hypothesis.name }}</p>
+                                            </td>
+                                            <td class="v-align-middle ">
+                                                <p ng-if="!hypothesis.parentHypothesis">--</p>
+                                                <p ng-if="hypothesis.parentHypothesis">{{ hypothesis.parentHypothesis.name }}</p>
+                                            </td>
+                                            <td class="v-align-middle ">
+                                                <p>{{ hypothesis.phenomenon.name }}</p>
+                                            </td>
+                                            <td class="v-align-middle ">
+                                                <p ng-if="hypothesis.state === 'FORMULATED'">
+                                                    <span><b>Formulated</b></span>
+                                                </p>
+                                                <p ng-if="hypothesis.state === 'VALIDATED'">
+                                                    <span><b>Validated</b></span>
+                                                </p>
+                                                <p ng-if="hypothesis.state === 'CONFIRMED'">
+                                                    <span><b>Confirmed</b></span>
+                                                </p>
+                                                <p ng-if="hypothesis.state === 'IMPROVED'">
+                                                    <span><b>Improved</b></span>
+                                                </p>
+                                                <p ng-if="hypothesis.state === 'REFUTED'">
+                                                    <span><b>Refuted</b></span>
+                                                </p>
+                                            </td>
+                                            <td class="text-right">
+                                                <a uib-tooltip="Details" ui-sref="hypothesis-details({slug: hypothesis.slug})" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                    <i class="fa fa-folder-open"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <div ng-if="!vm.loadingHypotheses && vm.hypotheses !== undefined && vm.hypotheses.length === 0" class="col-lg-12 text-center m-t-15">
+                                    <span class="hint-text">No data found</span>
+                                </div>
+
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingHypotheses"></loading>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card card-default average-ticket-card p-b-25 widget-loader-bar">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa fa-cubes"></i> Projects</div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="widget-11-table auto-overflow">
+                    <div class="table-responsive">
+                            
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th class="h-align-right"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="project in vm.projects">
+                                    <td class="v-align-middle ">
+                                        <p>{{ project.name }}</p>
+                                    </td>
+                                    <td class="text-right">
+                                        <a ui-sref="project-details({slug: project.slug})" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                            <i class="fa fa-folder-open"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div ng-if="!vm.loadingProjects && vm.projects !== undefined && vm.projects.length === 0" class="col-lg-12 text-center m-t-15">
+                            <span class="hint-text">No data found</span>
+                        </div>
+
+                    </div>
+                </div>
+                <loading ng-if="vm.loadingProjects"></loading>
+            </div>
+        </div>
+    </div>
+
+</div>

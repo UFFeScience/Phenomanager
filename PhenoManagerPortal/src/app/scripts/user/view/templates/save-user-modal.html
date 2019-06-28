@@ -1,0 +1,59 @@
+<div class="modal stick-up fade" tabindex="-1" id="save-user" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">{{ vm.userSaveTitle }}</h4>
+            </div>
+            <form name="userForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Name</label>
+                            <input autocomplete="off" type="text" name="name" class="form-control" ng-model="vm.user.name" required>
+                        </div>
+                        <p ng-show="userForm.name.$invalid && !userForm.name.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Email</label>
+                            <input autocomplete="off" type="email" name="email" class="form-control" ng-model="vm.user.email" required>
+                        </div>
+                        <p ng-show="userForm.email.$invalid && !userForm.email.$pristine" class="error help-block">Invalid email</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default">
+                            <label>Instituition</label>
+                            <input autocomplete="off" type="text" name="institutionName" class="form-control" ng-model="vm.user.institutionName" required>
+                        </div>
+                    </div>
+
+                    <div ng-if="!vm.updateUser" class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Password</label>
+                            <input autocomplete="new-password" type="password" name="password" class="form-control" ng-model="vm.user.password" required>
+                        </div>
+                        <p ng-show="userForm.password.$invalid && !userForm.password.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Role</label>
+                            <select class="form-control" ng-model="vm.user.role" required ng-options="role.value as role.name for role in vm.roles">
+                                <option disabled selected value="">Select role</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doSave()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="userForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

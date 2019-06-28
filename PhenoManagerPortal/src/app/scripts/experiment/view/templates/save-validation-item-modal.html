@@ -1,0 +1,26 @@
+<div class="modal stick-up fade" tabindex="-1" id="save-validation-item" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">{{ vm.validationItemSaveTitle }}</h4>
+            </div>
+            <form name="validationItemForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Expected value description</label>
+                            <textarea autocomplete="off" name="expectedValueDescription" class="form-control default-textarea" ng-model="vm.validationItem.expectedValueDescription" required></textarea>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doSaveValidationItem()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="validationItemForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

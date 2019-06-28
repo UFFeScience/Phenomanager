@@ -1,0 +1,42 @@
+<div class="modal stick-up fade" tabindex="-1" id="update-logger-user" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">Update profile info</h4>
+            </div>
+            <form name="loggedUserForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Name</label>
+                            <input autocomplete="off" type="text" name="name" class="form-control" ng-model="loggedUser.name" required>
+                        </div>
+                        <p ng-show="loggedUserForm.name.$invalid && !loggedUserForm.name.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Email</label>
+                            <input autocomplete="off" type="email" name="email" class="form-control" ng-model="loggedUser.email" required>
+                        </div>
+                        <p ng-show="loggedUserForm.email.$invalid && !loggedUserForm.email.$pristine" class="error help-block">Invalid email</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default">
+                            <label>Instituition</label>
+                            <input autocomplete="off" type="text" name="institutionName" class="form-control" ng-model="loggedUser.institutionName" required>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="doUpdateProfile()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="loggedUserForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

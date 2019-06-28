@@ -1,0 +1,19 @@
+<div class="modal stick-up fade" tabindex="-1" id="delete-project" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">Remove project</h4>
+            </div>
+            <div class="modal-body">
+                <div class="col-lg-12 row form-group">
+                    <p>If you confirm, all the data related to this project will be erased.</p>
+                    <p>Do you wish to remove project?</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="submit" ng-click="vm.doDelete(vm.projectSlug)" data-dismiss="modal" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>

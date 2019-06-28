@@ -1,0 +1,985 @@
+<div id="breadcrumb-filter-content">
+    <ol ng-if="!vm.computationalModel || !vm.computationalModel.experiment || !vm.computationalModel.experiment.hypothesis || !vm.computationalModel.experiment.hypothesis.phenomenon || !vm.computationalModel.experiment.hypothesis.phenomenon.project" class="breadcrumb">
+        <li ui-sref="list-projects" class="breadcrumb-item"><a href="javascript:;">Projects</a></li>
+    </ol>
+    <ol ng-if="vm.computationalModel && vm.computationalModel.experiment && vm.computationalModel.experiment.hypothesis && vm.computationalModel.experiment.hypothesis.phenomenon && vm.computationalModel.experiment.hypothesis.phenomenon.project" class="breadcrumb">
+        <li ui-sref="list-projects" class="breadcrumb-item"><a href="javascript:;">Projects</a></li>
+        
+        <li class="breadcrumb-item text-primary-dark"><a ui-sref="project-details({slug: vm.computationalModel.experiment.hypothesis.phenomenon.project.slug})" href="javascript:;">{{ vm.computationalModel.experiment.hypothesis.phenomenon.project.name }}</a></li>
+        
+        <li class="breadcrumb-item text-primary-dark"><a ui-sref="phenomenon-details({slug: vm.computationalModel.experiment.hypothesis.phenomenon.slug})" href="javascript:;">{{ vm.computationalModel.experiment.hypothesis.phenomenon.name }}</a></li>
+        
+        <li class="breadcrumb-item text-primary-dark"><a ui-sref="hypothesis-details({slug: vm.computationalModel.experiment.hypothesis.slug})" href="javascript:;">{{ vm.computationalModel.experiment.hypothesis.name }}</a></li>
+
+        <li class="breadcrumb-item text-primary-dark"><a ui-sref="experiment-details({slug: vm.computationalModel.experiment.slug})" href="javascript:;">{{ vm.computationalModel.experiment.name }}</a></li>
+        
+        <li class="breadcrumb-item active text-primary-dark">{{ vm.computationalModel.name }}</li>
+    </ol>
+</div>
+
+<div class="container-dashboard">
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="col-lg-6 no-p-l pull-left">
+                <div class="card card-default">
+                    <div class="card-header">
+                        <div class="card-title pull-left"><i class="fa fa-file-code-o"></i> Active Executor</div>
+
+                        <div ng-if="vm.hasWriteAuthorization && vm.activeModelExecutor &&  vm.activeModelExecutor.executionStatus !== 'RUNNING'" class="card-title pull-right">
+                             <a data-target="#run-model-executor" data-toggle="modal" ng-click="vm.editModelExecutor(vm.activeModelExecutor.slug)" uib-tooltip="Run executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
+                                <i  class="fa fa-play text-success pointer"></i>
+                            </a>
+
+                            <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && vm.activeModelExecutor.executionStatus !== 'RUNNING'" data-toggle="modal" ng-click="vm.editModelExecutor(vm.activeModelExecutor.slug)" data-target="#save-model-executor" class="btn btn-default btn-cons btn-actions" href="javascript:;">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                        </div>
+
+                        <div ng-if="vm.hasWriteAuthorization && vm.activeModelExecutor && vm.activeModelExecutor.executionStatus === 'RUNNING'" class="card-title pull-right">
+                             <a data-target="#abort-model-executor" data-toggle="modal" ng-click="editModelExecutor(vm.activeModelExecutor.slug)" uib-tooltip="Stop executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
+                                <i  class="fa fa-stop text-danger pointer"></i>
+                            </a>
+
+                            <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && vm.activeModelExecutor.executionStatus !== 'RUNNING'" data-toggle="modal" ng-click="vm.editModelExecutor(vm.activeModelExecutor.slug)" data-target="#save-model-executor" class="btn btn-default btn-cons btn-actions" href="javascript:;">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-block">
+                        <div ng-if="vm.activeModelExecutor">
+                            <p>
+                                <span class="pull-left"><b>Tag:</b> {{ vm.activeModelExecutor.tag }}</span>
+                                <span class="pull-right"><b>Last execution Status:</b>
+                                    <span ng-if="vm.activeModelExecutor.executionStatus === 'SCHEDULED'">
+                                        <span class="text-primary">
+                                            <b>Scheduled <i class="fa fa-clock-o"></i></b>
+                                        </span>
+                                    </span>
+                                    <span ng-if="vm.activeModelExecutor.executionStatus === 'RUNNING'">
+                                        <span class="text-complete">
+                                            <b>Running <i class="fa fa-refresh fa-spin"></i></b>
+                                        </span>
+                                    </span>
+                                    <span ng-if="vm.activeModelExecutor.executionStatus === 'FINISHED'">
+                                        <span class="text-success">
+                                            <b>Finished <i class="fa fa-check-circle-o"></i></b>
+                                        </span>
+                                    </span>
+                                    <span ng-if="vm.activeModelExecutor.executionStatus === 'FAILURE'">
+                                        <span class="text-danger">
+                                            <b>Failure <i class="fa fa-warning"></i></b>
+                                        </span>
+                                    </span>
+                                    <span ng-if="vm.activeModelExecutor.executionStatus === 'ABORTED'">
+                                        <span class="text-warning">
+                                            <b>Aborted <i class="fa fa-check-circle-o"></i></b>
+                                        </span>
+                                    </span>
+                                    <span ng-if="vm.activeModelExecutor.executionStatus === 'IDLE'">
+                                        <span class="hint-text">
+                                            <b>idle</b>
+                                        </span>
+                                    </span>
+                                </span>
+                            </p>
+                        </div>
+                        <div ng-if="!vm.activeModelExecutor">
+                            <span class="hint-text">No active executor</span>
+                        </div>
+                    </div>
+                    <loading ng-if="vm.loadingActiveExecutor"></loading>
+                </div>
+            </div>
+
+            <div class="col-lg-6 no-p-r pull-right">
+                <div class="card card-default">
+                    <div class="card-header">
+                        <div class="card-title pull-left"><i class="fa fa-hdd-o"></i> Active Environment</div>
+                        <div ng-if="vm.hasWriteAuthorization && vm.activeExecutionEnvironment && vm.activeModelExecutor.executionStatus !== 'RUNNING'" class="card-title pull-right">
+                            <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && vm.activeModelExecutor.executionStatus !== 'RUNNING'" data-toggle="modal" ng-click="vm.editExecutionEnvironment(vm.activeExecutionEnvironment.slug)" data-target="#save-execution-environment" class="btn btn-default btn-cons btn-actions" href="javascript:;">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-block">
+                        <div ng-if="vm.activeExecutionEnvironment">
+                            <p>
+                                <span class="pull-left"><b>Tag:</b> {{ vm.activeExecutionEnvironment.tag }}</span>
+                                <span class="pull-right"><b>Type:</b>
+                                    <span ng-if="vm.activeExecutionEnvironment.type === 'CLOUD'">
+                                        <b>Cloud</b>
+                                    </span>
+                                    <span ng-if="vm.activeExecutionEnvironment.type === 'CLUSTER'">
+                                        <b>Cluster</b>
+                                    </span>
+                                    <span ng-if="vm.activeExecutionEnvironment.type === 'SSH'">
+                                        <b>ssh</b>
+                                    </span>
+                                </span>
+                            </p>
+                        </div>
+                        <div ng-if="!vm.activeExecutionEnvironment">
+                            <span class="hint-text">No active environment</span>
+                        </div>
+                    </div>
+                    <loading ng-if="vm.loadingActiveExecutionEnvironment"></loading>
+                </div>
+            </div>
+
+            <div class="card card-borderless">
+                <ul tabs class="nav nav-tabs nav-tabs-simple hidden-sm-down" role="tablist" data-init-reponsive-tabs="dropdownfx">
+                    <li class="nav-item">
+                        <a ng-click="vm.changeModelResultMetadataPage()" class="active nav-tabs-primary" data-toggle="tab" role="tab" data-target="#model-result-metadatas" href="#"><i class="fa fa-history"></i> Executions Results</a>
+                    </li>
+                    <li class="nav-item">
+                        <a ng-click="vm.changeModelExecutorPage()" class="nav-tabs-primary" href="#" data-toggle="tab" role="tab" data-target="#model-executors"><i class="fa fa-file-code-o"></i> Executor</a>
+                    </li>
+                    <li ng-if="vm.computationalModel && vm.computationalModel.type !== 'HTTP'" class="nav-item">
+                        <a ng-click="vm.changeModelMetadataExtractorPage()" class="nav-tabs-primary" href="#" data-toggle="tab" role="tab" data-target="#model-metadata-extractors"><i class="fa fa-file-archive-o"></i> Metadata Extractors</a>
+                    </li>
+                    <li class="nav-item">
+                        <a ng-click="vm.changeInstanceParamPage()" class="nav-tabs-primary" href="#" data-toggle="tab" role="tab" data-target="#instance-params"><i class="fa fa-sliders"></i> Instance Params</a>
+                    </li>
+                    <li class="nav-item">
+                        <a ng-click="vm.changeExecutionEnvironmentPage()" class="nav-tabs-primary" href="#" data-toggle="tab" role="tab" data-target="#execution-environments"><i class="fa fa-hdd-o"></i> Environment</a>
+                    </li>
+                    <li class="nav-item">
+                        <a ng-click="vm.changePermissionPage()" class="nav-tabs-primary" href="#" data-toggle="tab" role="tab" data-target="#permissions"><i class="fa fa-lock"></i> Permissions</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="model-result-metadatas">
+                        <div class="row">
+                            <div class="col-lg-12">
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th style="min-width: 115px;">Status</th>
+                                                <th>Start Date</th>
+                                                <th>Finish Date</th>
+                                                <th>User Agent</th>
+                                                <th>Executor</th>
+                                                <th>Extractors</th>
+                                                <th>Environment</th>
+                                                <th class="h-align-right" style="min-width: 155px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="modelResultMetadata in vm.modelResultMetadatas">
+                                                <td class="v-align-middle " style="min-width: 89px;">
+                                                    <p ng-if="modelResultMetadata.executionStatus === 'SCHEDULED'">
+                                                        <span class="text-primary">
+                                                            <b>Scheduled <i class="fa fa-clock-o"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelResultMetadata.executionStatus === 'RUNNING'">
+                                                        <span class="text-complete">
+                                                            <b>Running <i class="fa fa-refresh fa-spin"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelResultMetadata.executionStatus === 'FINISHED'">
+                                                        <span class="text-success">
+                                                            <b>Finished <i class="fa fa-check-circle-o"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelResultMetadata.executionStatus === 'FAILURE'">
+                                                        <span class="text-danger">
+                                                            <b>Failure <i class="fa fa-warning"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelResultMetadata.executionStatus === 'ABORTED'">
+                                                        <span class="text-warning">
+                                                            <b>Aborted <i class="fa fa-check-circle-o"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelResultMetadata.executionStatus === 'IDLE'">
+                                                        <span class="hint-text">
+                                                            <b>idle</b>
+                                                        </span>
+                                                    </p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p ng-if="modelResultMetadata.executionStartDate">{{ modelResultMetadata.parsedExecutionStartDate | date : 'dd/MM/y - HH:mm:ss' }}</p>
+
+                                                    <p ng-if="!modelResultMetadata.executionStartDate">--</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p ng-if="modelResultMetadata.executionFinishDate">{{ modelResultMetadata.parsedExecutionFinishDate | date : 'dd/MM/y - HH:mm:ss' }}</p>
+
+                                                    <p ng-if="!modelResultMetadata.executionFinishDate">--</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p>{{ modelResultMetadata.userAgent.name }}</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <div ng-if="modelResultMetadata.modelExecutor">
+                                                        <p>{{ modelResultMetadata.modelExecutor.tag }}</p>
+                                                        
+                                                        <p ng-if="modelResultMetadata.executionFinishDate !== 'FINISHED' && modelResultMetadata.modelExecutor.executionStatus === 'SCHEDULED'">
+                                                            <span class="text-primary">Scheduled <i class="fa fa-clock-o"></i></span>
+                                                        </p>
+                                                        <p ng-if="modelResultMetadata.executionFinishDate !== 'FINISHED' && modelResultMetadata.modelExecutor.executionStatus === 'RUNNING'">
+                                                            <span class="text-complete">Running <i class="fa fa-refresh fa-spin"></i></span>
+
+                                                            <a data-target="#abort-model-executor" data-toggle="modal" ng-click="vm.editModelExecutor(vm.modelExecutor.slug)" uib-tooltip="Stop executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
+                                                                <i  class="fa fa-stop text-danger pointer"></i>
+                                                            </a>
+                                                        </p>
+                                                        <p ng-if="modelResultMetadata.executionFinishDate === 'FINISHED'">
+                                                            <span>Finished <i class="fa fa-check-circle-o"></i></span>
+                                                        </p>
+
+                                                        <p>
+                                                            <a uib-tooltip="Download executor" ng-if="modelResultMetadata.modelExecutor.executorFileId" ng-click="vm.downloadModelExecutorExecuctor(modelResultMetadata.modelExecutor.slug)" class="btn btn-complete btn-cons btn-actions" href="javascript:;">
+                                                                <i class="fa fa-file-code-o"></i>
+                                                            </a>
+
+                                                            <a uib-tooltip="Download output" ng-if="modelResultMetadata.executionMetadataFileId" ng-click="vm.downloadExecutorOutput(modelResultMetadata.slug)" class="btn btn-complete btn-cons btn-actions" href="javascript:;">
+                                                                <i class="fa fa-terminal"></i>
+                                                            </a>
+
+                                                            <a ng-if="modelResultMetadata.executionStatus === 'ABORTED' && modelResultMetadata.abortMetadataFileId" uib-tooltip="Download abort output" ng-click="vm.downloadAbortOutput(modelResultMetadata.slug)" class="btn btn-warning btn-cons btn-actions" href="javascript:;">
+                                                                <i class="fa fa-terminal"></i>
+                                                            </a>
+
+                                                            <span ng-if="!modelResultMetadata.modelExecutor.executorFileId && !modelResultMetadata.executionMetadataFileId && !modelResultMetadata.abortMetadataFileId">--</span>
+                                                        </p>
+                                                    </div>
+
+                                                    <div ng-if="!modelResultMetadata.modelExecutor">
+                                                        --
+                                                    </div>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <div ng-if="modelResultMetadata.extractorMetadatas && modelResultMetadata.extractorMetadatas.length > 0">
+                                                        <div ng-repeat="extractorMetadata in modelResultMetadata.extractorMetadatas">
+                                                            <p>{{ extractorMetadata.modelMetadataExtractor.tag }}</p>
+                                                            
+                                                            <p ng-if="modelResultMetadata.executionFinishDate !== 'FINISHED' && extractorMetadata.modelMetadataExtractor.executionStatus === 'RUNNING'">
+                                                                <span class="text-complete">Running <i class="fa fa-refresh fa-spin"></i></span>
+                                                            </p>
+                                                            <p ng-if="modelResultMetadata.executionFinishDate === 'FINISHED'">
+                                                                <span>Finished <i class="fa fa-check-circle-o"></i></span>
+                                                            </p>
+
+                                                            <p>
+                                                                <a uib-tooltip="Download extractor" ng-if="extractorMetadata.modelMetadataExtractor.extractorFileId" ng-click="vm.downloadModelMetadataExtractorExtractor(extractorMetadata.modelMetadataExtractor.slug)" class="btn btn-complete btn-cons btn-actions" href="javascript:;">
+                                                                    <i class="fa fa-file-archive-o"></i>
+                                                                </a>
+
+                                                                <a uib-tooltip="Download extracted metadata" ng-if="extractorMetadata.executionMetadataFileId" ng-click="vm.downloadExtractorOutput(extractorMetadata.slug)" class="btn btn-complete btn-cons btn-actions" href="javascript:;">
+                                                                    <i class="fa fa-database"></i>
+                                                                </a>
+
+                                                                <span ng-if="!extractorMetadata.modelMetadataExtractor.extractorFileId && !extractorMetadata.executionMetadataFileId">--</span>
+                                                            </p>
+
+                                                            <div ng-if="modelResultMetadata.extractorMetadatas.length > 1 && $index > 0" class="b-b b-dashed b-grey">
+                                                                <br />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div ng-if="!modelResultMetadata.extractorMetadatas || modelResultMetadata.extractorMetadatas.length === 0">
+                                                        --
+                                                    </div>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p ng-if="modelResultMetadata.executionEnvironment">
+                                                        <span>{{ modelResultMetadata.executionEnvironment.tag }}</span>
+                                                        <br />
+                                                        <span ng-if="modelResultMetadata.executionEnvironment.type === 'CLOUD'">
+                                                            <span><b>Cloud</b></span>
+                                                        </span>
+                                                        <span ng-if="modelResultMetadata.executionEnvironment.type === 'CLUSTER'">
+                                                            <span><b>Cluster</b></span>
+                                                        </span>
+                                                        <span ng-if="modelResultMetadata.executionEnvironment.type === 'SSH'">
+                                                            <span><b>Ssh</b></span>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="!modelResultMetadata.executionEnvironment">--</p>
+                                                </td>
+                                                <td class="text-right v-align-middle">
+                                                    <a uib-tooltip="View execution output" ng-click="vm.openModelResultMetadataOutput(modelResultMetadata.slug)" data-toggle="modal" data-target="#output-detail-model-result-metadata" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-desktop"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Export Research Object for this result" ng-click="vm.generateResearchObject(modelResultMetadata.slug)" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-share-square-o"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                
+                                    <div ng-if="!vm.loadingModelResultMetadata && vm.modelResultMetadatas !== undefined && vm.modelResultMetadatas.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalModelResultMetadataCount" 
+                                        ng-model="vm.modelResultMetadataCurrentPage" 
+                                        ng-change="vm.changeModelResultMetadataPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingModelResultMetadata"></loading>
+                    </div>
+                    <div class="tab-pane" id="model-executors">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-left">
+                                    <input autocomplete="off" type="text" name="filter" placeholder="Search tag" class="form-control filter-form" ng-model="vm.filterModelExecutors" ng-change="vm.changeModelExecutorPage()" 
+                                    ng-model-options="{ debounce: 1800 }">
+                                </div>
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertModelExecutor()" data-target="#save-model-executor" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Tag</th>
+                                                <th ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'">Protocol Type</th>
+                                                <th ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'">URL Base</th>
+                                                <th ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'">Verb</th>
+                                                <th ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'">SOAP Action</th>
+                                                <th ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'">Headers</th>
+                                                <th ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'">Body</th>
+                                                <th ng-if="vm.computationalModel && vm.computationalModel.type !== 'HTTP'">Execution Command</th>
+                                                <th ng-if="vm.computationalModel && vm.computationalModel.type !== 'HTTP'">Abort Command</th>
+                                                <th ng-if="vm.computationalModel && vm.computationalModel.type !== 'HTTP'">Job Name</th>
+                                                <th ng-if="vm.computationalModel && vm.computationalModel.type !== 'HTTP' && vm.computationalModel.type !== 'COMMAND'">Executor</th>
+                                                <th>Last execution status</th>
+                                                <th>Creation Date</th>
+                                                <th>Active</th>
+                                                <th class="h-align-right" style="min-width: 155px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="modelExecutor in vm.modelExecutors">
+                                                <td class="v-align-middle ">
+                                                    <p>{{ modelExecutor.tag }}</p>
+                                                </td>
+                                                <td ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'" class="v-align-middle ">
+                                                    <p>{{ modelExecutor.httpProtocolType }}</p>
+                                                </td>
+                                                <td ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'" class="v-align-middle ">
+                                                    <p>{{ modelExecutor.executionCommand }}</p>
+                                                </td>
+                                                <td ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'" class="v-align-middle ">
+                                                    <p>{{ modelExecutor.httpVerb }}</p>
+                                                </td>
+                                                <td ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'" class="v-align-middle ">
+                                                    <p>{{ modelExecutor.executionUrl }}</p>
+                                                </td>
+                                                <td ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'" class="v-align-middle ">
+                                                    <p>{{ modelExecutor.httpHeaders }}</p>
+                                                </td>
+                                                <td ng-if="vm.computationalModel && vm.computationalModel.type === 'HTTP'" class="v-align-middle ">
+                                                    <p>{{ modelExecutor.httpBody }}</p>
+                                                </td>
+                                                <td ng-if="vm.computationalModel && vm.computationalModel.type !== 'HTTP'" class="v-align-middle ">
+                                                    <p>{{ modelExecutor.executionCommand }}</p>
+                                                </td>
+                                                <td ng-if="vm.computationalModel && vm.computationalModel.type !== 'HTTP'" class="v-align-middle ">
+                                                    <p>{{ modelExecutor.abortCommand }}</p>
+                                                </td>
+                                                <td ng-if="vm.computationalModel && vm.computationalModel.type !== 'HTTP'" class="v-align-middle ">
+                                                    <p>{{ modelExecutor.jobName }}</p>
+                                                </td>
+                                                <td ng-if="vm.computationalModel && vm.computationalModel.type !== 'HTTP' && vm.computationalModel.type !== 'COMMAND'" class="v-align-middle ">
+                                                    <p>
+                                                        <a uib-tooltip="Download executor" ng-if="modelExecutor.executorFileId" ng-click="vm.downloadModelExecutorExecuctor(modelExecutor.slug)" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                            <i class="fa fa-download"></i>
+                                                        </a>
+
+                                                        <span ng-if="!modelExecutor.executorFileId">--</span>
+                                                    </p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p ng-if="modelExecutor.executionStatus === 'SCHEDULED'">
+                                                        <span class="text-primary">
+                                                            <b>Scheduled <i class="fa fa-clock-o"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelExecutor.executionStatus === 'RUNNING'">
+                                                        <span class="text-complete">
+                                                            <b>Running <i class="fa fa-refresh fa-spin"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelExecutor.executionStatus === 'FINISHED'">
+                                                        <span class="text-success">
+                                                            <b>Finished <i class="fa fa-check-circle-o"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelExecutor.executionStatus === 'FAILURE'">
+                                                        <span class="text-danger">
+                                                            <b>Failure <i class="fa fa-warning"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelExecutor.executionStatus === 'ABORTED'">
+                                                        <span class="text-warning">
+                                                            <b>Aborted <i class="fa fa-check-circle-o"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelExecutor.executionStatus === 'IDLE'">
+                                                        <span class="hint-text">
+                                                            <b>idle</b>
+                                                        </span>
+                                                    </p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p>{{ modelExecutor.parsedInsertDate | date : 'dd/MM/y' }}</p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p ng-if="modelExecutor.active == true">Yes</p>
+                                                    <p class="hint-text" ng-if="modelExecutor.active == false">No</p>
+                                                </td>
+                                                <td class="text-right v-align-middle">
+
+                                                    <a data-target="#abort-model-executor" data-toggle="modal" ng-if="modelExecutor.active === true && modelExecutor.executionStatus === 'RUNNING'" ng-click="vm.editModelExecutor(modelExecutor.slug)" uib-tooltip="Abort executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
+                                                        <i  class="fa fa-stop text-danger pointer"></i>
+                                                    </a>
+
+                                                    <a ng-if="modelExecutor.active === true && modelExecutor.executionStatus !== 'RUNNING' && modelExecutor.executionStatus !== 'SCHEDULED'" data-target="#run-model-executor" data-toggle="modal" ng-click="vm.editModelExecutor(modelExecutor.slug)" uib-tooltip="Run executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
+                                                        <i  class="fa fa-play text-success pointer"></i>
+                                                    </a>
+
+                                                    <a data-target="#activate-model-executor" data-toggle="modal" ng-if="modelExecutor.active === false && vm.activeModelExecutor.executionStatus !== 'RUNNING' && vm.activeModelExecutor.executionStatus !== 'SCHEDULED'" ng-click="vm.editModelExecutor(modelExecutor.slug)" uib-tooltip="Activate" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i  class="fa fa-circle-o-notch"></i>
+                                                    </a>
+
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && (modelExecutor.active == false || (modelExecutor.active == true && modelExecutor.executionStatus !== 'RUNNING'))" data-toggle="modal" ng-click="vm.editModelExecutor(modelExecutor.slug)" data-target="#save-model-executor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization && (modelExecutor.active == false || (modelExecutor.active == true && modelExecutor.executionStatus !== 'RUNNING'))" ng-click="vm.deleteModelExecutor(modelExecutor.slug)" data-toggle="modal" data-target="#delete-model-executor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                
+                                    <div ng-if="!vm.loadingModelExecutor && vm.modelExecutors !== undefined && vm.modelExecutors.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalModelExecutorCount" 
+                                        ng-model="vm.modelExecutorCurrentPage" 
+                                        ng-change="vm.changeModelExecutorPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingModelExecutor"></loading>
+                    </div>
+                    <div ng-if="vm.computationalModel && vm.computationalModel.type !== 'HTTP'" class="tab-pane" id="model-metadata-extractors">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-left">
+                                    <input autocomplete="off" type="text" name="filter" placeholder="Search tag" class="form-control filter-form" ng-model="vm.filterModelMetadataExtractors" ng-change="vm.changeModelMetadataExtractorPage()" 
+                                    ng-model-options="{ debounce: 1800 }">
+                                </div>
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertModelMetadataExtractor()" data-target="#save-model-metadata-extractor" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Tag</th>
+                                                <th>Execution Command</th>
+                                                <th>Extractor</th>
+                                                <th>Last execution status</th>
+                                                <th>Creation Date</th>
+                                                <th>Active</th>
+                                                <th class="h-align-right" style="min-width: 155px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="modelMetadataExtractor in vm.modelMetadataExtractors">
+                                                <td class="v-align-middle ">
+                                                    <p>{{ modelMetadataExtractor.tag }}</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p>{{ modelMetadataExtractor.executionCommand }}</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p>
+                                                        <a uib-tooltip="Download extractor" ng-if="modelMetadataExtractor.extractorFileId" ng-click="vm.downloadModelMetadataExtractorExtractor(modelMetadataExtractor.slug)" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                            <i class="fa fa-download"></i>
+                                                        </a>
+
+                                                        <span ng-if="!modelMetadataExtractor.extractorFileId">--</span>
+                                                    </p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'SCHEDULED'">
+                                                        <span class="text-primary">
+                                                            <b>Scheduled <i class="fa fa-clock-o"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'RUNNING'">
+                                                        <span class="text-complete">
+                                                            <b>Running <i class="fa fa-refresh fa-spin"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'FINISHED'">
+                                                        <span class="text-success">
+                                                            <b>Finished <i class="fa fa-check-circle-o"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'FAILURE'">
+                                                        <span class="text-danger">
+                                                            <b>Failure <i class="fa fa-warning"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'ABORTED'">
+                                                        <span class="text-warning">
+                                                            <b>Aborted <i class="fa fa-check-circle-o"></i></b>
+                                                        </span>
+                                                    </p>
+                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'IDLE'">
+                                                        <span class="hint-text">
+                                                            <b>idle</b>
+                                                        </span>
+                                                    </p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p>{{ modelMetadataExtractor.parsedInsertDate | date : 'dd/MM/y' }}</p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p ng-if="modelMetadataExtractor.active == true">Yes</p>
+                                                    <p class="hint-text" ng-if="modelMetadataExtractor.active == false">No</p>
+                                                </td>
+                                                <td class="text-right v-align-middle">
+                                                    <a data-target="#run-model-metadata-extractor" data-toggle="modal" ng-if="modelMetadataExtractor.active === true && vm.activeModelExecutor.executionStatus !== 'RUNNING' && modelMetadataExtractor.executionStatus !== 'RUNNING' && modelExecutor.executionStatus !== 'SCHEDULED'" ng-click="vm.editModelMetadataExtractor(modelExecutor.slug)" uib-tooltip="Run executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
+                                                        <i  class="fa fa-play text-success pointer"></i>
+                                                    </a>
+
+                                                    <a data-target="#activate-model-metadata-extractor" data-toggle="modal" ng-if="modelMetadataExtractor.active === false && vm.activeModelExecutor.executionStatus !== 'RUNNING' && vm.activeModelExecutor.executionStatus !== 'SCHEDULED'" ng-click="vm.editModelMetadataExtractor(modelMetadataExtractor.slug)" uib-tooltip="Activate" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i  class="fa fa-circle-o-notch"></i>
+                                                    </a>
+
+                                                    <a data-target="#deactivate-model-metadata-extractor" data-toggle="modal" ng-if="modelMetadataExtractor.active === true && vm.activeModelExecutor.executionStatus !== 'RUNNING' && vm.activeModelExecutor.executionStatus !== 'SCHEDULED'" ng-click="vm.editModelMetadataExtractor(modelMetadataExtractor.slug)" uib-tooltip="Deactivate" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i  class="fa fa-ban text-danger pointer"></i>
+                                                    </a>
+
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && (modelMetadataExtractor.active == false || activeModelExecutor.executionStatus !== 'RUNNING')" data-toggle="modal" ng-click="vm.editModelMetadataExtractor(modelMetadataExtractor.slug)" data-target="#save-model-metadata-extractor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization && (modelMetadataExtractor.active == false || activeModelExecutor.executionStatus !== 'RUNNING')" ng-click="vm.deleteModelmetadataExtractor(modelMetadataExtractor.slug)" data-toggle="modal" data-target="#delete-model-metadata-extractor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                
+                                    <div ng-if="!vm.loadingModelMetadataExtractor && vm.modelMetadataExtractor !== undefined && vm.modelMetadataExtractor.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalModelMetadataExtractorCount" 
+                                        ng-model="vm.modelMetadataExtractorCurrentPage" 
+                                        ng-change="vm.changeModelMetadataExtractorPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingModelMetadataExtractor"></loading>
+                    </div>
+                    <div class="tab-pane" id="instance-params">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-left">
+                                    <input autocomplete="off" type="text" name="filter" placeholder="Search params" class="form-control filter-form" ng-model="vm.filterInstanceParams" ng-change="vm.changeInstanceParamPage()" 
+                                    ng-model-options="{ debounce: 1800 }">
+                                </div>
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertInstanceParam()" data-target="#save-instance-param" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Key</th>
+                                                <th>Value</th>
+                                                <th>Description</th>
+                                                <th>Creation Date</th>
+                                                <th class="h-align-right" style="min-width: 155px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="instanceParam in vm.instanceParams">
+                                                <td class="v-align-middle ">
+                                                    <p>{{ instanceParam.key }}</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p ng-if="!instanceParam.valueFileId">{{ instanceParam.value }}</p>
+                                                    
+                                                    <p ng-if="instanceParam.valueFileId">
+                                                        <a uib-tooltip="Download evidence" ng-click="vm.downloadInstanceParamValueFile(instanceParam.slug)" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                            <i class="fa fa-download"></i>
+                                                        </a>
+                                                    </p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p>{{ instanceParam.description }}</p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p>{{ instanceParam.parsedInsertDate | date : 'dd/MM/y' }}</p>
+                                                </td>
+                                                <td class="text-right">
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization" data-toggle="modal" ng-click="vm.editInstanceParam(instanceParam.slug)" data-target="#save-instance-param" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization" ng-click="vm.deleteInstanceParam(instanceParam.slug)" data-toggle="modal" data-target="#delete-instance-param" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                
+                                    <div ng-if="!vm.loadingInstanceParam && vm.instanceParams !== undefined && vm.instanceParams.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalInstanceParamCount" 
+                                        ng-model="vm.instanceParamCurrentPage" 
+                                        ng-change="vm.changeInstanceParamPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingInstanceParam"></loading>
+                    </div>
+                    <div class="tab-pane" id="execution-environments">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-left">
+                                    <input autocomplete="off" type="text" name="filter" placeholder="Search tag" class="form-control filter-form" ng-model="vm.filterExecutionEnvironment" ng-change="vm.changeExecutionEnvironmentPage()" 
+                                    ng-model-options="{ debounce: 1800 }">
+                                </div>
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertExecutionEnvironment()" data-target="#save-execution-environment" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Tag</th>
+                                                <th>Type</th>
+                                                <th>Vpn Type</th>
+                                                <th>Creation Date</th>
+                                                <th>Active</th>
+                                                <th class="h-align-right" style="min-width: 155px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="executionEnvironment in vm.executionEnvironments">
+                                                <td class="v-align-middle ">
+                                                    <p>{{ executionEnvironment.tag }}</p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p ng-if="executionEnvironment.type === 'CLOUD'">
+                                                        <span><b>Cloud</b></span>
+                                                    </p>
+                                                    <p ng-if="executionEnvironment.type === 'CLUSTER'">
+                                                        <span><b>Cluster</b></span>
+                                                    </p>
+                                                    <p ng-if="executionEnvironment.type === 'SSH'">
+                                                        <span><b>Ssh</b></span>
+                                                    </p>
+                                                </td>
+                                                <td class="v-align-middle ">
+                                                    <p ng-if="executionEnvironment.vpnType === 'VPN'">
+                                                        <span><b>VPN</b></span>
+                                                    </p>
+                                                    <p ng-if="executionEnvironment.vpnType === 'VPNC'">
+                                                        <span><b>Cisco VPN</b></span>
+                                                    </p>
+                                                    <p ng-if="executionEnvironment.vpnType !== 'VPNC' && executionEnvironment.vpnType !== 'VPN'">
+                                                        <span><b>None</b></span>
+                                                    </p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p>{{ executionEnvironment.parsedInsertDate | date : 'dd/MM/y' }}</p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p ng-if="executionEnvironment.active == true">Yes</p>
+                                                    <p class="hint-text" ng-if="executionEnvironment.active == false">No</p>
+                                                </td>
+                                                <td class="text-right">
+
+                                                    <a data-target="#activate-execution-environment" data-toggle="modal" ng-if="executionEnvironment.active === false && vm.activeModelExecutor.executionStatus !== 'RUNNING' && vm.activeModelExecutor.executionStatus !== 'SCHEDULED'" ng-click="vm.editExecutionEnvironment(executionEnvironment.slug)" uib-tooltip="Activate" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i  class="fa fa-circle-o-notch"></i>
+                                                    </a>
+
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && (executionEnvironment.active == false || activeModelExecutor.executionStatus !== 'RUNNING')" data-toggle="modal" ng-click="vm.editExecutionEnvironment(executionEnvironment.slug)" data-target="#save-execution-environment" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization && (executionEnvironment.active == false || activeModelExecutor.executionStatus !== 'RUNNING')" ng-click="vm.deleteExecutionEnvironment(executionEnvironment.slug)" data-toggle="modal" data-target="#delete-execution-environment" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                
+                                    <div ng-if="!vm.loadingExecutionEnvironment && vm.executionEnvironments !== undefined && vm.executionEnvironments.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+                                
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalExecutionEnvironmentCount" 
+                                        ng-model="vm.executionEnvironmentCurrentPage" 
+                                        ng-change="vm.changeExecutionEnvironmentPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingExecutionEnvironment"></loading>
+                    </div>
+                    <div class="tab-pane " id="permissions">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="pull-right" ng-if="vm.hasWriteAuthorization">
+                                    <button data-toggle="modal" ng-click="vm.insertPermission()" data-target="#save-permission" class="btn btn-primary-dark btn-cons">
+                                        <i class="fa fa-plus"></i> New
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="basicTable">
+                                        <thead>
+                                            <tr>
+                                                <th>User/Team</th>
+                                                <th>Permission</th>
+                                                <th style="min-width: 155px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="permission in vm.permissions">
+                                                <td class="v-align-middle">
+                                                    <p ng-if="permission.team">{{ permission.team.name }}</p>
+
+                                                    <div uib-tooltip="{{ permission.user.name }}" ng-if="!permission.team && permission.user" class="thumbnail-wrapper d32 circular">
+                                                        <img ng-if="permission.user.profileImageFileId" width="40" height="40" ng-src="https://drive.google.com/uc?export=view&id={{ permission.user.profileImageFileId }}" alt="">
+
+                                                        <img ng-if="!permission.user.profileImageFileId" width="40" height="40" src="/images/default-user.png" data-src="/images/default-user.png" data-src-retina="/images/default-user.png" alt="">
+                                                    </div>
+
+                                                    <p ng-if="!permission.team && !permission.user">--</p>
+                                                </td>
+                                                <td class="v-align-middle">
+                                                    <p ng-if="permission.role === 'READ'">
+                                                        <span><b>Read</b></span>
+                                                    </p>
+                                                    <p ng-if="permission.role === 'WRITE'">
+                                                        <span><b>Write</b></span>
+                                                    </p>
+                                                    <p ng-if="permission.role === 'ADMIN'">
+                                                        <span><b>Admin</b></span>
+                                                    </p>
+                                                </td>
+                                                <td class="text-right">
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && !vm.permissionAffectsLoggedUser(permission)" data-toggle="modal" ng-click="vm.editPermission(permission.slug)" data-target="#save-permission" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization && !vm.permissionAffectsLoggedUser(permission)" ng-click="vm.deletePermission(permission.slug)" data-toggle="modal" data-target="#delete-permission" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                        <i class="fa fa-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <div ng-if="!vm.loadingPermissions && vm.permissions !== undefined && vm.permissions.length === 0" class="col-lg-12 text-center m-t-15">
+                                        <span class="hint-text">No data found</span>
+                                    </div>
+
+                                </div>
+                                <div class="pull-right">
+                                    <ul uib-pagination 
+                                        max-size="5" 
+                                        rotate="true" 
+                                        class="pagination-sm" 
+                                        boundary-links="true" 
+                                        force-ellipses="true" 
+                                        previous-text="&lsaquo;" 
+                                        next-text="&rsaquo;" 
+                                        first-text="&laquo;" 
+                                        last-text="&raquo;"
+                                        items-per-page="vm.limit"
+                                        total-items="vm.totalPermissionCount" 
+                                        ng-model="vm.permissionCurrentPage" 
+                                        ng-change="vm.changePermissionPage()"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <loading ng-if="vm.loadingPermissions"></loading>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card card-default average-ticket-card p-b-25 widget-loader-bar">
+                <div class="card-header">
+                    <div class="card-title full-width">
+                        <i class="fa fa-cube"></i> Details
+
+                        <a data-toggle="modal" ng-if="vm.hasWriteAuthorization" uib-tooltip="Edit" data-target="#save-computational-model" class="btn btn-primary-dark btn-cons btn-actions pull-right" href="javascript:;">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="widget-11-table auto-overflow">
+                    <div class="col-lg-12 m-t-15">
+                        <p>
+                            <label><b>Name</b></label>
+                            <br />
+                            <span ng-if="!vm.computationalModel">--</span>
+                            <span ng-if="vm.computationalModel">{{ vm.computationalModel.name }}</span>
+                        </p>
+                        <p>
+                            <label><b>Creation Date</b></label>
+                            <br />
+                            <span ng-if="!vm.computationalModel">--</span>
+                            <span ng-if="vm.computationalModel">{{ vm.computationalModel.parsedInsertDate | date : 'dd/MM/y' }}</span>
+                        </p>
+                        <p ng-if="vm.hypothesis && vm.hypothesis.parentHypothesis">
+                            <label><b>Current Version</b></label>
+                            <br />
+                            <span>{{ vm.computationalModel.currentVersion }}</span>
+                        </p>
+                        <p>
+                            <label><b>Type</b></label>
+                            <br />
+                            <span ng-if="!vm.computationalModel">--</span>
+                            <span ng-if="vm.computationalModel">
+                                <span ng-if="vm.computationalModel.type === 'WORKFLOW'">Workflow</span>
+                                <span ng-if="vm.computationalModel.type === 'EXECUTABLE'">Executable</span>
+                                <span ng-if="vm.computationalModel.type === 'COMMAND'">Command</span>
+                                <span ng-if="vm.computationalModel.type === 'HTTP'">Http</span>
+                            </span>
+                        </p>
+                        <p>
+                            <label><b>Is public</b></label>
+                            <br />
+                            <span ng-if="!vm.computationalModel">--</span>
+                            <span ng-if="vm.computationalModel.isPublicData">Yes</span>
+                            <span ng-if="!vm.computationalModel.isPublicData">No</span>
+                        </p>
+                        <p>
+                            <label><b>Description</b></label>
+                            <br />
+                            <span ng-if="!vm.computationalModel">--</span>
+                            <span ng-if="vm.computationalModel">{{ vm.computationalModel.description }}</span>
+                        </p> 
+                    </div>
+                </div>
+                <loading ng-if="vm.loadingComputationalModel"></loading>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-include src="'/scripts/computationalModel/view/templates/save-computational-model-modal.html'"></ng-include>
+<ng-include src="'/scripts/permission/view/templates/save-permission-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/save-instance-param-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/save-model-executor-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/save-model-metadata-extractor-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/save-execution-environment-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/run-model-executor-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/abort-model-executor-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/run-model-metadata-extractor-modal.html'"></ng-include>
+<ng-include src="'/scripts/permission/view/templates/delete-permission-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/delete-instance-param-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/delete-model-executor-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/delete-model-metadata-extractor-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/delete-execution-environment-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/activate-execution-environment-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/activate-model-executor-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/activate-model-metadata-extractor-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/deactivate-model-metadata-extractor-modal.html'"></ng-include>
+<ng-include src="'/scripts/computationalModel/view/templates/output-detail-model-result-metadata-modal.html'"></ng-include>
