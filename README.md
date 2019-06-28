@@ -29,7 +29,7 @@ The platform allows the user to setup execution environments for the following t
 
 - SSH
 
-There is also a possibility to setup VPN conection for these environemnts:
+There is also a possibility to setup VPN conection for these environments:
 
 - VPN
 
