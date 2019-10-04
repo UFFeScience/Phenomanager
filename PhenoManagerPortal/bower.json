@@ -32,7 +32,7 @@
     "angular-translate-loader-static-files": "^2.12.1",
     "angular-animate": "~1.6.9",
     "jquery": "^3.3.1",
-    "angular-sanitize": "^1.6.1",
+    "angular-sanitize": "~1.6.9",
     "c3-angular": "^1.4.0",
     "angular-toastr": "^2.1.1",
     "angular-bootstrap": "^2.5.0",
