@@ -19,7 +19,7 @@ The platform allows the user to setup executors for the following types of compu
 
 - COMMAND
 
-- HTTP
+- WEB SERVICE
 
 The platform allows the user to setup execution environments for the following types:
 
