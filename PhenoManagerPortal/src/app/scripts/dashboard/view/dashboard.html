@@ -17,7 +17,8 @@
                         </div>
                         <div class="card-block">
                             <h1 class="text-white text-left pull-left inline-block no-m">
-                                <i class="fa fa-refresh fa-spin semi-bold text-white"></i>
+                                <i ng-if="vm.totalRunning > 0" class="fa fa-refresh fa-spin semi-bold text-white"></i>
+                                <i ng-if="vm.totalRunning === 0" class="fa fa-refresh semi-bold text-white"></i>
                             </h1>
                             <h1 class="text-white text-right pull-right inline-block">
                                 <p class="counter bold text-white number-value"
@@ -121,8 +122,8 @@
                                                 <p ng-if="computationalModel.type === 'COMMAND'">
                                                     <span><b>Command</b></span>
                                                 </p>
-                                                <p ng-if="computationalModel.type === 'HTTP'">
-                                                    <span><b>Http</b></span>
+                                                <p ng-if="computationalModel.type === 'WEB_SERVICE'">
+                                                    <span><b>Web Service</b></span>
                                                 </p>
                                             </td>
                                             <td class="text-right">

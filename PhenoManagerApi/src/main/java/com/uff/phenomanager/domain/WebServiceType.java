@@ -1,6 +1,6 @@
 package com.uff.phenomanager.domain;
 
-public enum HttpProtocolType {
+public enum WebServiceType {
 	
 	REST, 
 	SOAP

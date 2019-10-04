@@ -82,7 +82,7 @@ public class PhaseController {
     @PreAuthorize("@phaseService.allowPermissionWriteAccess(#authorization, #slug)")
     public ResponseEntity<Object> delete(@RequestHeader(JWT_AUTH.AUTHORIZATION) String authorization,
     		@PathVariable(CONTROLLER.SLUG) String slug,
-    		@PathVariable(CONTROLLER.PHASE.EXPERIMENT_SLUG) String experimentSlug) throws NotFoundApiException {
+    		@PathVariable(CONTROLLER.PHASE.EXPERIMENT_SLUG) String experimentSlug) throws ApiException {
     	
     	log.info("Processing delete of entity of slug: [{}] and experimentSlug: [{}]", slug, experimentSlug);
     	phaseService.delete(slug);

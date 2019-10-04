@@ -98,7 +98,7 @@ public class PhenomenonService extends ApiPermissionRestService<Phenomenon, Phen
 	}
 	
 	@Override
-	public Integer delete(String slug) throws NotFoundApiException {
+	public Integer delete(String slug) throws ApiException {
 		Phenomenon phenomenon = findBySlug(slug);
 		
 		List<Hypothesis> hypotheses = hypothesisService.findAllByPhenomenon(phenomenon);

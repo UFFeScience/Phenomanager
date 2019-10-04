@@ -82,7 +82,7 @@ public class ExecutionEnvironmentController {
     @PreAuthorize("@executionEnvironmentService.allowPermissionWriteAccess(#authorization, #slug)")
     public ResponseEntity<Object> delete(@RequestHeader(JWT_AUTH.AUTHORIZATION) String authorization,
     		@PathVariable(CONTROLLER.SLUG) String slug,
-    		@PathVariable(CONTROLLER.EXECUTION_ENVIRONMENT.COMPUTATIONAL_MODEL_SLUG) String computationalModelSlug) throws NotFoundApiException {
+    		@PathVariable(CONTROLLER.EXECUTION_ENVIRONMENT.COMPUTATIONAL_MODEL_SLUG) String computationalModelSlug) throws ApiException {
     	
     	log.info("Processing delete of entity of slug: [{}] and computationalModelSlug: [{}]", slug, computationalModelSlug);
     	executionEnvironmentService.delete(slug);

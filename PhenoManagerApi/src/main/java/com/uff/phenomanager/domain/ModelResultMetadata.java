@@ -66,6 +66,13 @@ public class ModelResultMetadata extends BaseApiEntity {
 	@Column(name = "execution_output", columnDefinition = "text")
 	private String executionOutput;
 	
+	@Column(name = "executor_execution_status")
+	@Enumerated(EnumType.STRING)
+	private ExecutionStatus executorExecutionStatus;
+	
+	@Column(name = "upload_metadata", nullable = false)
+	private Boolean uploadMetadata;
+	
 	public ModelResultMetadata() {}
 
 	public ModelResultMetadata(ModelResultMetadataBuilder builder) {
@@ -80,6 +87,8 @@ public class ModelResultMetadata extends BaseApiEntity {
 		this.executionStartDate = builder.executionStartDate;
 		this.executionFinishDate = builder.executionFinishDate;
 		this.executionEnvironment = builder.executionEnvironment;
+		this.executorExecutionStatus = builder.executorExecutionStatus;
+		this.uploadMetadata = builder.uploadMetadata;
 		this.setId(builder.getId());
 		this.setSlug(builder.getSlug());
 		this.setActive(builder.getActive());
@@ -156,6 +165,22 @@ public class ModelResultMetadata extends BaseApiEntity {
 		this.computationalModel = computationalModel;
 	}
 	
+	public ExecutionStatus getExecutorExecutionStatus() {
+		return executorExecutionStatus;
+	}
+
+	public void setExecutorExecutionStatus(ExecutionStatus executorExecutionStatus) {
+		this.executorExecutionStatus = executorExecutionStatus;
+	}
+
+	public Boolean getUploadMetadata() {
+		return uploadMetadata;
+	}
+
+	public void setUploadMetadata(Boolean uploadMetadata) {
+		this.uploadMetadata = uploadMetadata;
+	}
+
 	public ExecutionStatus getExecutionStatus() {
 		return executionStatus;
 	}
@@ -197,9 +222,21 @@ public class ModelResultMetadata extends BaseApiEntity {
 		private ExecutionEnvironment executionEnvironment;
 		private ExecutionStatus executionStatus = ExecutionStatus.RUNNING;
 		private String executionOutput;
+		private ExecutionStatus executorExecutionStatus;
+		private Boolean uploadMetadata;
 		
 		public ModelResultMetadataBuilder executionOutput(String executionOutput) {
 			this.executionOutput = executionOutput;
+			return this;
+		}
+		
+		public ModelResultMetadataBuilder executorExecutionStatus(ExecutionStatus executorExecutionStatus) {
+			this.executorExecutionStatus = executorExecutionStatus;
+			return this;
+		}
+		
+		public ModelResultMetadataBuilder uploadMetadata(Boolean uploadMetadata) {
+			this.uploadMetadata = uploadMetadata;
 			return this;
 		}
 		

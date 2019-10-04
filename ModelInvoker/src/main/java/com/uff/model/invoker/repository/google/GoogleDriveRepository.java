@@ -88,17 +88,23 @@ public class GoogleDriveRepository extends GoogleRepository {
 				.build();
 	}
 	
-	public byte[] downloadFile(String fileId) throws NotFoundApiException {
+	public DriveFile downloadFile(String fileId) throws NotFoundApiException {
 		handleRefreshToken();
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		
 		try {
 			outputStream = new ByteArrayOutputStream();
 			
+			File file = driveService.files().get(fileId).execute();
+			
 			driveService.files().get(fileId)
 			.executeMediaAndDownloadTo(outputStream);
 			
-			return outputStream.toByteArray();
+			return DriveFile.builder()
+					.fileId(file.getId())
+					.fileName(file.getName())
+					.fileContent(outputStream.toByteArray())
+					.build();
 
 		} catch (IOException e) {
 			log.error(MSG_ERROR.GET_DRIVE_DOWNLOAD_FILE_NOT_FOUND, e);

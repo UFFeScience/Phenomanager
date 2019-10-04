@@ -36,7 +36,6 @@ import com.uff.phenomanager.domain.core.ApiResponse;
 import com.uff.phenomanager.domain.core.filter.FilterOperator;
 import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.ApiException;
-import com.uff.phenomanager.exception.NotFoundApiException;
 import com.uff.phenomanager.service.ModelExecutorService;
 import com.uff.phenomanager.util.FileUtils;
 
@@ -58,7 +57,7 @@ public class ModelExecutorController {
 		
 		log.info("Downloading executor file of modelExecutor of slug [{}]; and computationalModelSlug: [{}]", slug, computationalModelSlug);
 
-		ModelExecutor modelExecutor = modelExecutorService.findBySlug(slug, authorization);
+		ModelExecutor modelExecutor = modelExecutorService.findBySlug(slug, authorization, computationalModelSlug);
 		byte[] fileContent = modelExecutorService.getExecutor(modelExecutor.getExecutorFileId());
     	
 		String tmpFilePath = FileUtils.buildTmpPath(modelExecutor.getExecutorFileName());
@@ -93,7 +92,8 @@ public class ModelExecutorController {
     		@PathVariable(CONTROLLER.SLUG) String slug) throws ApiException {
 		
 		log.info("Processing finOne by slug: [{}]; and computationalModelSlug: [{}]", slug, computationalModelSlug);
-		return (ResponseEntity<ModelExecutor>) new ResponseEntity<>(modelExecutorService.findBySlug(slug, authorization), HttpStatus.OK);
+		return (ResponseEntity<ModelExecutor>) new ResponseEntity<>(modelExecutorService.findBySlug(
+				slug, authorization, computationalModelSlug), HttpStatus.OK);
 	}
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -131,7 +131,7 @@ public class ModelExecutorController {
     @PreAuthorize("@modelExecutorService.allowPermissionWriteAccess(#authorization, #slug)")
     public ResponseEntity<Object> delete(@RequestHeader(JWT_AUTH.AUTHORIZATION) String authorization,
     		@PathVariable(CONTROLLER.SLUG) String slug,
-    		@PathVariable(CONTROLLER.MODEL_EXECUTOR.COMPUTATIONAL_MODEL_SLUG) String computationalModelSlug) throws NotFoundApiException {
+    		@PathVariable(CONTROLLER.MODEL_EXECUTOR.COMPUTATIONAL_MODEL_SLUG) String computationalModelSlug) throws ApiException {
     	
     	log.info("Processing delete of entity of slug: [{}] and computationalModelSlug: [{}]", slug, computationalModelSlug);
     	modelExecutorService.delete(slug);

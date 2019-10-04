@@ -112,7 +112,7 @@ public class ExperimentService extends ApiPermissionRestService<Experiment, Expe
 	}
 	
 	@Override
-	public Integer delete(String slug) throws NotFoundApiException {
+	public Integer delete(String slug) throws ApiException {
 		Experiment experiment = findBySlug(slug);
 		
 		List<ComputationalModel> computationalModels = computationalModelService.findAllByExperiment(experiment);

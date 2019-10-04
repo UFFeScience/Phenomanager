@@ -36,7 +36,6 @@ import com.uff.phenomanager.domain.core.ApiResponse;
 import com.uff.phenomanager.domain.core.filter.FilterOperator;
 import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.ApiException;
-import com.uff.phenomanager.exception.NotFoundApiException;
 import com.uff.phenomanager.service.ModelMetadataExtractorService;
 import com.uff.phenomanager.util.FileUtils;
 
@@ -58,7 +57,7 @@ public class ModelMetadataExtractorController {
 		
 		log.info("Downloading extractor file of modelMetadataExtractor of slug [{}]; and computationalModelSlug: [{}]", slug, computationalModelSlug);
 
-		ModelMetadataExtractor modelMetadataExtractor = modelMetadataExtractorService.findBySlug(slug, authorization);
+		ModelMetadataExtractor modelMetadataExtractor = modelMetadataExtractorService.findBySlug(slug, authorization, computationalModelSlug);
 		byte[] fileContent = modelMetadataExtractorService.getExtractor(modelMetadataExtractor.getExtractorFileId());
     	
 		String tmpFilePath = FileUtils.buildTmpPath(modelMetadataExtractor.getExtractorFileName());
@@ -94,7 +93,7 @@ public class ModelMetadataExtractorController {
 		
 		log.info("Processing finOne by slug: [{}]; and computationalModelSlug: [{}]", slug, computationalModelSlug);
 		return (ResponseEntity<ModelMetadataExtractor>) new ResponseEntity<>(
-				modelMetadataExtractorService.findBySlug(slug, authorization), HttpStatus.OK);
+				modelMetadataExtractorService.findBySlug(slug, authorization, computationalModelSlug), HttpStatus.OK);
 	}
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -132,7 +131,7 @@ public class ModelMetadataExtractorController {
     @PreAuthorize("@modelMetadataExtractorService.allowPermissionWriteAccess(#authorization, #slug)")
     public ResponseEntity<Object> delete(@RequestHeader(JWT_AUTH.AUTHORIZATION) String authorization,
     		@PathVariable(CONTROLLER.SLUG) String slug,
-    		@PathVariable(CONTROLLER.MODEL_METADATA_EXTRACTOR.COMPUTATIONAL_MODEL_SLUG) String computationalModelSlug) throws NotFoundApiException {
+    		@PathVariable(CONTROLLER.MODEL_METADATA_EXTRACTOR.COMPUTATIONAL_MODEL_SLUG) String computationalModelSlug) throws ApiException {
     	
     	log.info("Processing delete of entity of slug: [{}] and computationalModelSlug: [{}]", slug, computationalModelSlug);
     	modelMetadataExtractorService.delete(slug);

@@ -1,4 +1,4 @@
-package com.uff.model.invoker.provider;
+package com.uff.model.invoker.service.provider;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,16 +9,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.uff.model.invoker.wrapper.LogSaverWrapper;
+import com.uff.model.invoker.util.wrapper.LogSaverWrapper;
 
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.SCPClient;
 import ch.ethz.ssh2.Session;
 
 @Component
-public class SshProvider {
+public class SshProviderService {
 	
-	private static final Logger log = LoggerFactory.getLogger(SshProvider.class);
+	private static final Logger log = LoggerFactory.getLogger(SshProviderService.class);
 
 	private static final Long ONE_SECOND_IN_MILLISECONDS = 1000l;
 	private static final Integer SSH_DEFAULT_PORT = 22;
@@ -28,7 +28,6 @@ public class SshProvider {
 		connection.connect();
 
 		Boolean isAuthenticated = connection.authenticateWithPassword(username, password);
-
 		if (isAuthenticated == false) {
 			throw new IOException("Authentication failed");
 		}
@@ -39,6 +38,7 @@ public class SshProvider {
 	public byte[] executeCommand(Connection connection, String executionCommand) throws IOException, InterruptedException {
 		InputStream inputStream = null;
 		Session session = null;
+		byte[] commandOutput = null;
 		
         try {
     		session = connection.openSession();
@@ -47,23 +47,24 @@ public class SshProvider {
 			waitCommandCompletion(session, null);
 			
 			inputStream = session.getStdout();
-
+			commandOutput = readCommandOutput(inputStream);
+			
         } catch (IOException e) {
 			log.error("Error while executing comand [{}]", executionCommand, e);
 		
         } finally {
-        	
         	if (session != null) {
         		session.close();
         	}
         }
         
-        return readCommandOutput(inputStream);
+        return commandOutput;
 	}
 	
 	public byte[] executeCommand(Connection connection, String executionCommand, LogSaverWrapper logSaverWrapper) throws IOException, InterruptedException {
 		InputStream inputStream = null;
 		Session session = null;
+		byte[] commandOutput = null;
 		
         try {
     		session = connection.openSession();
@@ -72,18 +73,18 @@ public class SshProvider {
 			waitCommandCompletion(session, logSaverWrapper);
 			
 			inputStream = session.getStdout();
-
+			commandOutput = readCommandOutput(inputStream);
+			
         } catch (IOException e) {
 			log.error("Error while executing comand [{}]", executionCommand, e);
 		
         } finally {
-        	
         	if (session != null) {
         		session.close();
         	}
         }
         
-        return readCommandOutput(inputStream);
+        return commandOutput;
 	}
 
 	private byte[] readCommandOutput(InputStream inputStream) throws IOException {

@@ -184,7 +184,7 @@
                 permissionService
                     .insert(vm.permission)
                     .then(function(resp) {
-                        vm.changePage();
+                        vm.changePermissionPage();
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
@@ -194,7 +194,7 @@
                 permissionService
                     .update(vm.permission)
                     .then(function(resp) {
-                        vm.changePage();
+                        vm.changePermissionPage();
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
@@ -332,7 +332,9 @@
 
                         hypothesisService
                             .update(vm.parentHypothesis)
-                            .then(function(resp) {})
+                            .then(function(resp) {
+                                vm.hypothesis = resp.data;
+                            })
                             .catch(function(resp) {
                                 toastr.error('Error while updating parent hypothesis state.', 'Unexpected error!');
                             });
@@ -347,14 +349,6 @@
                     .then(function(resp) {
                         vm.changeHypothesisChildrenPage();
                         toastr.success('Action performed with success.', 'Success!');
-
-                        hypothesisService
-                            .update(vm.parentHypothesis)
-                            .then(function(resp) {})
-                            .catch(function(resp) {
-                                toastr.error('Error while updating parent hypothesis state.', 'Unexpected error!');
-                            });
-
                     })
                     .catch(function(resp) {
                         toastr.error('Error while performing action.', 'Unexpected error!');

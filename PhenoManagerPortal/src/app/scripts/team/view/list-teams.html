@@ -37,7 +37,7 @@
                                 <p>{{ team.name }}</p>
                             </td>
                             <td class="v-align-middle ">
-                                <div ng-repeat="user in team.teamUsers" uib-tooltip="{{user.name}}" class="thumbnail-wrapper d32 circular">
+                                <div ng-repeat="user in team.teamUsers" uib-tooltip="{{user.name}}" class="thumbnail-wrapper m-r-5 m-b-5 d32 circular">
                                     <img ng-if="user.profileImageFileId" width="40" height="40" ng-src="https://drive.google.com/uc?export=view&id={{ user.profileImageFileId }}" alt="">
 
                                     <img ng-if="!user.profileImageFileId" width="40" height="40" src="/images/default-user.png" data-src="/images/default-user.png" data-src-retina="/images/default-user.png" alt="">

@@ -16,8 +16,6 @@ public interface ModelMetadataExtractorRepository extends BaseRepository<ModelMe
 	@Transactional
 	Integer deleteByComputationalModel(ComputationalModel computationalModel);
 
-	ModelMetadataExtractor findByComputationalModelAndActive(ComputationalModel computationalModel, Boolean active);
-
 	List<ModelMetadataExtractor> findAllByComputationalModel(ComputationalModel computationalModel);
 	
 }

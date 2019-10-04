@@ -2,6 +2,7 @@ package com.uff.model.invoker.domain.dto.amqp;
 
 import java.io.Serializable;
 import java.util.Calendar;
+import java.util.List;
 
 import com.uff.model.invoker.domain.ExecutionCommand;
 
@@ -9,32 +10,28 @@ public class ModelExecutionMessageDto implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private String computationalModelSlug;
 	private String modelExecutorSlug;
 	private String modelMetadataExtractorSlug;
+	private List<String> executionExtractors;
+	private String executionEnvironmentSlug;
 	private String userSlug;
 	private Calendar executionDate;
 	private String computationalModelVersion;
 	private ExecutionCommand executionCommand;
+	private Boolean uploadMetadata = Boolean.FALSE;
 	
 	public ModelExecutionMessageDto() {}
 	
 	public ModelExecutionMessageDto(ModelExecutionMessageDtoBuilder builder) {
-		this.computationalModelSlug = builder.computationalModelSlug;
 		this.modelExecutorSlug = builder.modelExecutorSlug;
+		this.executionExtractors = builder.executionExtractors;
 		this.modelMetadataExtractorSlug = builder.modelMetadataExtractorSlug;
+		this.executionEnvironmentSlug = builder.executionEnvironmentSlug;
 		this.userSlug = builder.userSlug;
 		this.executionDate = builder.executionDate;
 		this.computationalModelVersion = builder.computationalModelVersion;
 		this.executionCommand = builder.executionCommand;
-	}
-	
-	public String getComputationalModelSlug() {
-		return computationalModelSlug;
-	}
-
-	public void setComputationalModelSlug(String computationalModelSlug) {
-		this.computationalModelSlug = computationalModelSlug;
+		this.uploadMetadata = builder.uploadMetadata;
 	}
 
 	public String getUserSlug() {
@@ -43,6 +40,14 @@ public class ModelExecutionMessageDto implements Serializable {
 
 	public void setUserSlug(String userSlug) {
 		this.userSlug = userSlug;
+	}
+	
+	public List<String> getExecutionExtractors() {
+		return executionExtractors;
+	}
+
+	public void setExecutionExtractors(List<String> executionExtractors) {
+		this.executionExtractors = executionExtractors;
 	}
 
 	public Calendar getExecutionDate() {
@@ -84,6 +89,22 @@ public class ModelExecutionMessageDto implements Serializable {
 	public void setModelMetadataExtractorSlug(String modelExtractorSlug) {
 		this.modelMetadataExtractorSlug = modelExtractorSlug;
 	}
+	
+	public String getExecutionEnvironmentSlug() {
+		return executionEnvironmentSlug;
+	}
+
+	public void setExecutionEnvironmentSlug(String executionEnvironmentSlug) {
+		this.executionEnvironmentSlug = executionEnvironmentSlug;
+	}
+	
+	public Boolean getUploadMetadata() {
+		return uploadMetadata;
+	}
+
+	public void setUploadMetadata(Boolean uploadMetadata) {
+		this.uploadMetadata = uploadMetadata;
+	}
 
 	public static ModelExecutionMessageDtoBuilder builder() {
 		return new ModelExecutionMessageDtoBuilder();
@@ -91,21 +112,23 @@ public class ModelExecutionMessageDto implements Serializable {
 
 	public static class ModelExecutionMessageDtoBuilder {
 		
-		private String computationalModelSlug;
 		private String modelExecutorSlug;
 		private String modelMetadataExtractorSlug;
+		private List<String> executionExtractors;
+		private String executionEnvironmentSlug;
 		private String userSlug;
 		private Calendar executionDate;
 		private String computationalModelVersion;
 		private ExecutionCommand executionCommand;
-		
-		public ModelExecutionMessageDtoBuilder computationalModelSlug(String computationalModelSlug) {
-            this.computationalModelSlug = computationalModelSlug;
-            return this;
-        }
+		private Boolean uploadMetadata = Boolean.FALSE;
 		
 		public ModelExecutionMessageDtoBuilder modelExecutorSlug(String modelExecutorSlug) {
             this.modelExecutorSlug = modelExecutorSlug;
+            return this;
+        }
+		
+		public ModelExecutionMessageDtoBuilder executionExtractors(List<String> executionExtractors) {
+            this.executionExtractors = executionExtractors;
             return this;
         }
 		
@@ -113,6 +136,11 @@ public class ModelExecutionMessageDto implements Serializable {
             this.modelMetadataExtractorSlug = modelMetadataExtractorSlug;
             return this;
         }
+		
+		public ModelExecutionMessageDtoBuilder executionEnvironmentSlug(String executionEnvironmentSlug) {
+            this.executionEnvironmentSlug = executionEnvironmentSlug;
+            return this;
+		}
 
         public ModelExecutionMessageDtoBuilder userSlug(String userSlug) {
             this.userSlug = userSlug;
@@ -134,9 +162,23 @@ public class ModelExecutionMessageDto implements Serializable {
             return this;
         }
         
+        public ModelExecutionMessageDtoBuilder uploadMetadata(Boolean uploadMetadata) {
+            this.uploadMetadata = uploadMetadata;
+            return this;
+        }
+        
         public ModelExecutionMessageDto build() {
             return new ModelExecutionMessageDto(this);
         }
     }
+
+	@Override
+	public String toString() {
+		return "ModelExecutionMessageDto [modelExecutorSlug=" + modelExecutorSlug + ", modelMetadataExtractorSlug="
+				+ modelMetadataExtractorSlug + ", executionExtractors=" + executionExtractors
+				+ ", executionEnvironmentSlug=" + executionEnvironmentSlug + ", userSlug=" + userSlug
+				+ ", executionDate=" + executionDate + ", computationalModelVersion=" + computationalModelVersion
+				+ ", executionCommand=" + executionCommand + ", uploadMetadata=" + uploadMetadata + "]";
+	}
 	
 }

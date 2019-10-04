@@ -95,50 +95,50 @@ public abstract class ApiRestService<ENTITY extends BaseApiEntity, REPOSITORY ex
 		}
       
 		return getRepository().saveAndFlush(entity);
-   }
+	}
 
-   public Integer delete(String slug) throws NotFoundApiException {
-	   Integer deletedCount = getRepository().deleteBySlug(slug);
+	public Integer delete(String slug) throws ApiException {
+	   	Integer deletedCount = getRepository().deleteBySlug(slug);
 	   
-	   if (deletedCount == 0) {
-		   throw new NotFoundApiException(String.format(MSG_ERROR.ENTITY_NOT_FOUND_ERROR, slug));
-	   }
+	   	if (deletedCount == 0) {
+		   	throw new NotFoundApiException(String.format(MSG_ERROR.ENTITY_NOT_FOUND_ERROR, slug));
+	   	}
 	   
-	   return deletedCount;
-   }
+	   	return deletedCount;
+   	}
    
-   public void deleteInBatch(List<ENTITY> entities) {
-	   getRepository().deleteInBatch(entities);
-   }
+   	public void deleteInBatch(List<ENTITY> entities) {
+	   	getRepository().deleteInBatch(entities);
+   	}
 
-   public ENTITY save(ENTITY entity) throws ApiException {
-	   if (entity.getSlug() == null || "".equals(entity.getSlug())) {
-		   entity.setSlug(KeyUtils.generate());
-	   }
-	   entity.setInsertDate(Calendar.getInstance());
-	   entity.setUpdateDate(entity.getInsertDate());
+   	public ENTITY save(ENTITY entity) throws ApiException {
+   		if (entity.getSlug() == null || "".equals(entity.getSlug())) {
+   			entity.setSlug(KeyUtils.generate());
+   		}
+   		entity.setInsertDate(Calendar.getInstance());
+   		entity.setUpdateDate(entity.getInsertDate());
 	   
-	   if (entity.getActive() == null) {
-		   entity.setActive(Boolean.TRUE);
-	   }
+   		if (entity.getActive() == null) {
+   			entity.setActive(Boolean.TRUE);
+   		}
 	   
-	   entity.setDeleteDate(null);
+   		entity.setDeleteDate(null);
 
-	   return (ENTITY) getRepository().saveAndFlush(entity);
-   }
+	   	return (ENTITY) getRepository().saveAndFlush(entity);
+   	}
 	
-   public Boolean allowUserAccess(String authorization, String userAccountSlug) {
-	   String token = TokenUtils.getTokenFromAuthorizationHeader(authorization);
-	   String userAccountSlugClaim = tokenAuthenticationService.getTokenClaim(token, Constants.JWT_AUTH.CLAIM_USER_SLUG);
+   	public Boolean allowUserAccess(String authorization, String userAccountSlug) {
+   		String token = TokenUtils.getTokenFromAuthorizationHeader(authorization);
+   		String userAccountSlugClaim = tokenAuthenticationService.getTokenClaim(token, Constants.JWT_AUTH.CLAIM_USER_SLUG);
 		
-	   return userAccountSlug.equals(userAccountSlugClaim) || allowAdminAccess(authorization);
-   }
+   		return userAccountSlug.equals(userAccountSlugClaim) || allowAdminAccess(authorization);
+   	}
 	
-   public Boolean allowAdminAccess(String authorization) {
-	   String token = TokenUtils.getTokenFromAuthorizationHeader(authorization);
-	   String roleClaim = tokenAuthenticationService.getTokenClaim(token, Constants.JWT_AUTH.CLAIM_ROLE);
+   	public Boolean allowAdminAccess(String authorization) {
+   		String token = TokenUtils.getTokenFromAuthorizationHeader(authorization);
+   		String roleClaim = tokenAuthenticationService.getTokenClaim(token, Constants.JWT_AUTH.CLAIM_ROLE);
 		
-	   return Role.ADMIN.name().equals(roleClaim);
-   }
+   		return Role.ADMIN.name().equals(roleClaim);
+   	}
 	
 }

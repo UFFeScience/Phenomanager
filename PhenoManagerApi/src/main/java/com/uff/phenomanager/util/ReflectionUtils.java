@@ -86,7 +86,12 @@ public class ReflectionUtils {
 				return value.toString();
 			
 			} else if (clazz.isEnum()) {
-				return Enum.valueOf((Class<? extends Enum>) clazz, value);
+				try {
+					return Enum.valueOf((Class<? extends Enum>) clazz, value);
+				} catch (IllegalArgumentException | NullPointerException e) {
+					return value != null ? value.toUpperCase() : value;
+				}
+				
 			} else {
 				return mapper.readValue(value, clazz);
 			}

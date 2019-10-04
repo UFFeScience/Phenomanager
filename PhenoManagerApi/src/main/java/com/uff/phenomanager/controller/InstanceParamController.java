@@ -36,7 +36,6 @@ import com.uff.phenomanager.domain.core.ApiResponse;
 import com.uff.phenomanager.domain.core.filter.FilterOperator;
 import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.ApiException;
-import com.uff.phenomanager.exception.NotFoundApiException;
 import com.uff.phenomanager.service.InstanceParamService;
 import com.uff.phenomanager.util.FileUtils;
 
@@ -58,7 +57,7 @@ public class InstanceParamController {
 		
 		log.info("Downloading value file of instanceParam of slug [{}]; and computationalModelSlug: [{}]", slug, computationalModelSlug);
 
-		InstanceParam instanceParam = instanceParamService.findBySlug(slug, authorization);
+		InstanceParam instanceParam = instanceParamService.findBySlug(slug, authorization, computationalModelSlug);
 		byte[] fileContent = instanceParamService.getValueFile(instanceParam.getValueFileId());
 		
 		String tmpFilePath = FileUtils.buildTmpPath(instanceParam.getValueFileName());
@@ -93,7 +92,8 @@ public class InstanceParamController {
     		@PathVariable(CONTROLLER.SLUG) String slug) throws ApiException {
 		
 		log.info("Processing finOne by slug: [{}]; and computationalModelSlug: [{}]", slug, computationalModelSlug);
-		return (ResponseEntity<InstanceParam>) new ResponseEntity<>(instanceParamService.findBySlug(slug, authorization), HttpStatus.OK);
+		return (ResponseEntity<InstanceParam>) new ResponseEntity<>(instanceParamService.findBySlug(
+				slug, authorization, computationalModelSlug), HttpStatus.OK);
 	}
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -131,7 +131,7 @@ public class InstanceParamController {
     @PreAuthorize("@instanceParamService.allowPermissionWriteAccess(#authorization, #slug)")
     public ResponseEntity<Object> delete(@RequestHeader(JWT_AUTH.AUTHORIZATION) String authorization,
     		@PathVariable(CONTROLLER.SLUG) String slug,
-    		@PathVariable(CONTROLLER.INSTANCE_PARAM.COMPUTATIONAL_MODEL_SLUG) String computationalModelSlug) throws NotFoundApiException {
+    		@PathVariable(CONTROLLER.INSTANCE_PARAM.COMPUTATIONAL_MODEL_SLUG) String computationalModelSlug) throws ApiException {
     	
     	log.info("Processing delete of entity of slug: [{}] and computationalModelSlug: [{}]", slug, computationalModelSlug);
     	instanceParamService.delete(slug);

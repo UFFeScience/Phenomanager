@@ -131,7 +131,6 @@ public class ApiFilterParser<ENTITY> {
 				List<Predicate> conjunctionRestrictions = new ArrayList<>();
 				
 				if (currentExpression.getFilterField() != null) {
-					
 					if (LogicOperator.OR.equals(currentExpression.getLogicOperator())) {
 						
 						do {
@@ -203,8 +202,7 @@ public class ApiFilterParser<ENTITY> {
 				return criteriaBuilder.notEqual(buildFieldExpression(
 						fields, root), (Comparable) getTipifiedValue(entityClass, filterField, root, fields));
 			case LK:
-				return criteriaBuilder.like(criteriaBuilder.upper(buildFieldExpression(
-						fields, root)), 
+				return criteriaBuilder.like(criteriaBuilder.upper(buildFieldExpression(fields, root)), 
 						"%" + ((String) getTipifiedValue(entityClass, filterField, root, fields)).toUpperCase() + "%");
 			case EQ:
 			default:

@@ -80,8 +80,8 @@
                                                     <p ng-if="computationalModel.type === 'COMMAND'">
                                                         <span><b>Command</b></span>
                                                     </p>
-                                                    <p ng-if="computationalModel.type === 'HTTP'">
-                                                        <span><b>Http</b></span>
+                                                    <p ng-if="computationalModel.type === 'WEB_SERVICE'">
+                                                        <span><b>Web Service</b></span>
                                                     </p>
                                                 </td>
                                                 <td class="v-align-middle">
@@ -213,7 +213,7 @@
                                             <tr>
                                                 <th>Validated</th>
                                                 <th>Expected value description</th>
-                                                <th>Evidence</th>
+                                                <th class="h-align-center">Evidence</th>
                                                 <th class="h-align-right"></th>
                                             </tr>
                                         </thead>
@@ -230,7 +230,7 @@
                                                 <td class="v-align-middle " ng-class="{'text-risked' : validationItem.validated }">
                                                     <p>{{ validationItem.expectedValueDescription }}</p>
                                                 </td>
-                                                <td class="v-align-middle ">
+                                                <td class="v-align-middle h-align-center">
                                                     <p ng-if="validationItem.validated && !validationItem.validationEvidenceFileId">
                                                         <a uib-tooltip="Upload evidence" ng-if="vm.hasWriteAuthorization" data-toggle="modal" ng-click="vm.editValidationItem(validationItem.slug)" data-target="#validate-item" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
                                                             <i class="fa fa-upload"></i>

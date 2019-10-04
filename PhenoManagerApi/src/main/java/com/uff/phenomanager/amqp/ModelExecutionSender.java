@@ -32,7 +32,7 @@ public class ModelExecutionSender {
 
 	@Async
 	public void sendMessage(ModelExecutionMessageDto modelExecutionMessageDTO) {
-		log.info("Sending message for execution of ComputationalModel of slug [{}]", modelExecutionMessageDTO.getComputationalModelSlug());
+		log.info("Sending message [{}] for execution", modelExecutionMessageDTO);
 		this.rabbitTemplate.convertAndSend(Constants.RABBIT_MQ.MODEL_EXECUTION_QUEUE, modelExecutionMessageDTO);
 	}
 	

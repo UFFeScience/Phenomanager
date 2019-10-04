@@ -82,7 +82,7 @@ public class ProjectController {
     @DeleteMapping(value = CONTROLLER.SLUG_PATH, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @PreAuthorize("@projectService.allowPermissionWriteAccess(#authorization, #slug)")
     public ResponseEntity<Object> delete(@RequestHeader(JWT_AUTH.AUTHORIZATION) String authorization,
-    		@PathVariable(CONTROLLER.SLUG) String slug) throws NotFoundApiException {
+    		@PathVariable(CONTROLLER.SLUG) String slug) throws ApiException {
     	
     	log.info("Processing delete of entity of slug: [{}]", slug);
     	projectService.delete(slug);

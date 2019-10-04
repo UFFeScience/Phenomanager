@@ -308,9 +308,14 @@
 
                 runModel: function(requestBody) {
                     return $http.post(
-                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/run',
+                        baseUrl + '/v1/computational_models/' + requestBody.computationalModelSlug + '/run',
                         JSON.stringify(requestBody)
                     );
+                },
+
+                getExtractorOutput: function(slug, computationalModelSlug) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractor_metadatas/' + slug + '/execution_metadata';
+                    return $http.get(url, { responseType: 'blob' });
                 },
 
                 getExecutionOutput: function(slug, computationalModelSlug) {

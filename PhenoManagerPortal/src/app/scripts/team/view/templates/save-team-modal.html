@@ -32,7 +32,7 @@
                 <div class="modal-footer">
                     <button class="btn btn-default" data-dismiss="modal">Cancel</button>
                     <button type="submit" ng-click="vm.doSave()" data-dismiss="modal" class="btn btn-primary-dark" 
-                        ng-disabled="teamForm.$invalid">Save</button>
+                        ng-disabled="teamForm.$invalid || !vm.team.teamUsers || vm.team.teamUsers.length === 0">Save</button>
                 </div>
             </form>
         </div>

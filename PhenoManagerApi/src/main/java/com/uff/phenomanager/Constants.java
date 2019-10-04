@@ -52,8 +52,6 @@ public interface Constants {
 		final String VALIDATION_ITEM_FOLDER = "validation_item";
 		final String METADATA_FOLDER = "metadata";
 		final String PROFILE_IMAGES_FOLDER = "profile_image";
-		final String FOLDER_SEPARATOR = " > ";
-		final String WORD_SEPARATOR = "_";
 	}
 
 	public interface CONTROLLER {
@@ -257,6 +255,7 @@ public interface Constants {
 	
 	public interface RABBIT_MQ {
 		final String MODEL_EXECUTION_QUEUE = "modelExecution";
+		final String MODEL_KILLER_QUEUE = "modelKiller";
 		final String NOTIFICATION_QUEUE = "notification";
 	}
 	
@@ -291,11 +290,18 @@ public interface Constants {
 		final String KEY = "message";
 		final String ERROR_PROCESSING_DATA = "Error while processing data";
 		final String INTERNAL_ERROR = "Unexpected error";
-		final String COMPUTATIONAL_MODEL_NOT_RUNNING_ERROR = "Computational Model can't be stopped because it's not currently running";
-		final String COMPUTATIONAL_MODEL_ALREADY_RUNNING_ERROR = "Computational Model can't start process because it's already running a process for this module";
-		final String ANY_COMPUTATIONAL_MODEL_ALREADY_RUNNING_ERROR = "Computational Model can't start process because there is already a running process";
+		final String EXECUTOR_ALREADY_RUNNING_ERROR = "Executor can't start process because it's already running a process for this module";
+		final String EXTRACTOR_ALREADY_RUNNING_ERROR = "Extractor can't start process because it's already running a process for this module";
+		final String COMPUTATIONAL_MODEL_INVALID_TARGET_ERROR = "Computational Model can't start process, invalid request target";
+		final String COMPUTATIONAL_MODEL_INVALID_COMMAND_ERROR = "Computational Model can't start process, invalid command";
 		final String EXECUTOR_NOT_FOUND_ERROR = "Executor not found";
+		final String EXECUTOR_NOT_RUNNING_ERROR = "Can't stop Executor because it isn't running";
+		final String EXTRACTOR_NOT_RUNNING_ERROR = "Can't stop Extractor because it isn't running";
+		final String ENVIRONMENT_NOT_FOUND_ERROR = "Environment not found";
+		final String EXECUTOR_CAN_NOT_BE_DELETED_ERROR = "Executor can't be deleted because it's currently running an execution";
 		final String EXTRACTOR_NOT_FOUND_ERROR = "Extractor not found";
+		final String EXTRACTOR_CAN_NOT_BE_DELETED_ERROR = "Extractor can't be deleted because it's currently running an execution";
+		final String ENVIRONMENT_CAN_NOT_BE_DELETED_ERROR = "Environment can't be deleted because thnere are one or more running executions related to it";
 		final String GET_DRIVE_UPLOAD_FILE_ERROR = "Error while uploading file for drive folder";
 		final String GET_DRIVE_DOWNLOAD_FILE_ERROR = "Error while downloading file from google drive";
 		final String GET_DRIVE_DOWNLOAD_FILE_NOT_FOUND = "Error while downloading file from google drive, file not found";

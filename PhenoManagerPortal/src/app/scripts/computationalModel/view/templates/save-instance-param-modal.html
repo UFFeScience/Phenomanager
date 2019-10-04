@@ -24,7 +24,7 @@
 
                     <div class="row form-group">
                         <label class="required">Conceptual Param</label>
-                        <select autocomplete-select class="full-width" 
+                        <select autocomplete-select required class="full-width" 
                                 data="vm.instanceParam.conceptualParam" 
                                 api-endpoint="/v1/experiments/{{ vm.computationalModel.experiment.slug }}/conceptual_params"
                                 dropdown-parent="#save-instance-param"
@@ -70,7 +70,7 @@
                 <div class="modal-footer">
                     <button class="btn btn-default" data-dismiss="modal">Cancel</button>
                     <button type="submit" ng-click="vm.doSaveInstanceParam()" data-dismiss="modal" class="btn btn-primary-dark" 
-                        ng-disabled="instanceParamForm.$invalid">Save</button>
+                        ng-disabled="instanceParamForm.$invalid || !vm.instanceParam.conceptualParam">Save</button>
                 </div>
             </form>
         </div>

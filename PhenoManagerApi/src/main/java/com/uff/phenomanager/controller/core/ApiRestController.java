@@ -56,7 +56,7 @@ public abstract class ApiRestController<ENTITY extends BaseApiEntity, SERVICE ex
     }
     
     @DeleteMapping(value = CONTROLLER.SLUG_PATH, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Object> delete(@PathVariable(CONTROLLER.SLUG) String slug) throws NotFoundApiException {
+    public ResponseEntity<Object> delete(@PathVariable(CONTROLLER.SLUG) String slug) throws ApiException {
     	log.info("Processing delete of entity of slug: [{}]", slug);
     	getService().delete(slug);
 		return new ResponseEntity<>(HttpStatus.OK);

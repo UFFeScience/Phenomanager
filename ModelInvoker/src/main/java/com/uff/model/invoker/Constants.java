@@ -5,7 +5,11 @@ public interface Constants {
 	final Integer DEFAULT_LIMIT = 20;
 	final String TMP_DIR = "java.io.tmpdir";
 	final String PATH_SEPARATOR = "/";
-	final Integer MAX_LOG_LINES = 10;
+	final Integer MAX_LOG_LINES = 10000;
+	
+	public interface BASH {
+		final String DETECT_OS_BASH = "echo \"$OSTYPE\"";
+	}
 	
 	public interface MULTITHREAD {
 		final String CORE_POOL_SIZE = "${multithread.core-pool-size}";

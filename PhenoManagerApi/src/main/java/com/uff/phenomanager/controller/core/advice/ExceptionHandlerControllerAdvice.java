@@ -44,7 +44,7 @@ public class ExceptionHandlerControllerAdvice {
     	DataIntegrityViolationException.class, HttpRequestMethodNotSupportedException.class, 
     	InvalidDataAccessApiUsageException.class, NumberFormatException.class,
     	MissingServletRequestParameterException.class, MissingPathVariableException.class,
-    	HttpMessageNotReadableException.class })
+    	HttpMessageNotReadableException.class, IllegalArgumentException.class })
     public ResponseEntity<Map<String, String>> badRequest(HttpServletRequest req, Exception exception) {
         log.error(exception.getMessage(), exception);
         return new ResponseEntity<>(Collections.singletonMap(MSG_ERROR.KEY, exception.getMessage()), HttpStatus.BAD_REQUEST);

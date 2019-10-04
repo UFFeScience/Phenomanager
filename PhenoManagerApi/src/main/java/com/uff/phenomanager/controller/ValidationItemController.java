@@ -75,7 +75,7 @@ public class ValidationItemController {
 	}
     
     @PostMapping(value = CONTROLLER.VALIDATION_ITEM.VALIDATION_EVIDENCE_PATH, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @PreAuthorize("@validationItemService.allowPermissionWriteAccess(#authorization, #experimentSlug)")
+    @PreAuthorize("@validationItemService.allowPermissionReadAccess(#authorization, #experimentSlug)")
     public ResponseEntity<ValidationItem> uploadValidationEvidence(@RequestHeader(JWT_AUTH.AUTHORIZATION) String authorization, 
     		@PathVariable(CONTROLLER.VALIDATION_ITEM.EXPERIMENT_SLUG) String experimentSlug,
     		@PathVariable(CONTROLLER.SLUG) String slug,
@@ -130,7 +130,7 @@ public class ValidationItemController {
     @PreAuthorize("@validationItemService.allowPermissionWriteAccess(#authorization, #slug)")
     public ResponseEntity<Object> delete(@RequestHeader(JWT_AUTH.AUTHORIZATION) String authorization,
     		@PathVariable(CONTROLLER.SLUG) String slug,
-    		@PathVariable(CONTROLLER.VALIDATION_ITEM.EXPERIMENT_SLUG) String experimentSlug) throws NotFoundApiException {
+    		@PathVariable(CONTROLLER.VALIDATION_ITEM.EXPERIMENT_SLUG) String experimentSlug) throws ApiException {
     	
     	log.info("Processing delete of entity of slug: [{}] and experimentSlug: [{}]", slug, experimentSlug);
     	validationItemService.delete(slug);

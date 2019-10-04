@@ -91,7 +91,7 @@ public class ConceptualParamService extends ApiPermissionRestService<ConceptualP
 	}
 	
 	@Override
-	public Integer delete(String slug) throws NotFoundApiException {
+	public Integer delete(String slug) throws ApiException {
 		ConceptualParam conceptualParam = findBySlug(slug);
 		
 		instanceParamService.deleteByConceptualParam(conceptualParam);

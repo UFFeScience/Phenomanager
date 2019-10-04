@@ -33,9 +33,9 @@ public class ModelExecutor extends BaseApiEntity {
 	@Column(name = "executor_file_content_type")
 	private String executorFileContentType;
 	
-	@Column(name = "http_protocol_type")
+	@Column(name = "web_service_type")
 	@Enumerated(EnumType.STRING)
-	private HttpProtocolType httpProtocolType;
+	private WebServiceType webServiceType;
 	
 	@Column(name = "execution_url", columnDefinition = "text")
 	private String executionUrl;
@@ -81,7 +81,7 @@ public class ModelExecutor extends BaseApiEntity {
 		this.computationalModel = builder.computationalModel;
 		this.executionCommand = builder.executionCommand;
 		this.abortCommand = builder.abortCommand;
-		this.httpProtocolType = builder.httpProtocolType;
+		this.webServiceType = builder.webServiceType;
 		this.httpVerb = builder.httpVerb;
 		this.httpHeaders = builder.httpHeaders;
 		this.httpBody = builder.httpBody;
@@ -135,12 +135,12 @@ public class ModelExecutor extends BaseApiEntity {
 		this.executionCommand = executionCommand;
 	}
 
-	public HttpProtocolType getHttpProtocolType() {
-		return httpProtocolType;
+	public WebServiceType getWebServiceType() {
+		return webServiceType;
 	}
 
-	public void setHttpProtocolType(HttpProtocolType httpProtocolType) {
-		this.httpProtocolType = httpProtocolType;
+	public void setWebServiceType(WebServiceType webServiceType) {
+		this.webServiceType = webServiceType;
 	}
 
 	public String getExecutionUrl() {
@@ -242,7 +242,7 @@ public class ModelExecutor extends BaseApiEntity {
 		private ComputationalModel computationalModel;
 		private String executionCommand;
 		private String abortCommand;
-		private HttpProtocolType httpProtocolType;
+		private WebServiceType webServiceType;
 		private HttpVerb httpVerb;
 		private String httpHeaders;
 		private String httpBody;
@@ -297,8 +297,8 @@ public class ModelExecutor extends BaseApiEntity {
 			return this;
 		}
 		
-		public ModelExecutorBuilder httpProtocolType(HttpProtocolType httpProtocolType) {
-			this.httpProtocolType = httpProtocolType;
+		public ModelExecutorBuilder webServiceType(WebServiceType webServiceType) {
+			this.webServiceType = webServiceType;
 			return this;
 		}
 		

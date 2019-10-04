@@ -27,7 +27,7 @@ public class ModelExecutionListener {
     public void processMessage(ModelExecutionMessageDto modelExecutionMessageDto,
     		Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) Long tag) throws IOException {
 		
-		log.info("Received message of ComputationalModel of slug [{}]", modelExecutionMessageDto.getComputationalModelSlug());
+		log.info("Received message [{}]", modelExecutionMessageDto);
 		
 		if (modelExecutionMessageDto.getModelMetadataExtractorSlug() != null && 
 				!"".equals(modelExecutionMessageDto.getModelMetadataExtractorSlug())) {

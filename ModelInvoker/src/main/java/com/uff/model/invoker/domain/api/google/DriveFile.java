@@ -6,14 +6,18 @@ public class DriveFile {
 	
 	private String fileId;
 	private String fileName;
+	private String fullPath;
+	private byte[] fileContent;
 	private Calendar uploadDate;
 	
 	public DriveFile() {}
 	
-	public DriveFile(DriveFileBuilder driveFileBuilder) {
-		this.fileId = driveFileBuilder.fileId;
-		this.fileName = driveFileBuilder.fileName;
-		this.uploadDate = driveFileBuilder.uploadDate;
+	public DriveFile(DriveFileBuilder builder) {
+		this.fileId = builder.fileId;
+		this.fileName = builder.fileName;
+		this.fullPath = builder.fullPath;
+		this.fileContent = builder.fileContent;
+		this.uploadDate = builder.uploadDate;
 	}
 	
 	public String getFileId() {
@@ -32,6 +36,22 @@ public class DriveFile {
 		this.fileName = fileName;
 	}
 	
+	public byte[] getFileContent() {
+		return fileContent;
+	}
+
+	public void setFileContent(byte[] fileContent) {
+		this.fileContent = fileContent;
+	}
+	
+	public String getFullPath() {
+		return fullPath;
+	}
+
+	public void setFullPath(String fullPath) {
+		this.fullPath = fullPath;
+	}
+
 	public Calendar getUploadDate() {
 		return uploadDate;
 	}
@@ -48,10 +68,17 @@ public class DriveFile {
 		
 		private String fileId;
 		private String fileName;
+		private String fullPath;
+		private byte[] fileContent;
 		private Calendar uploadDate;
 		
 		public DriveFileBuilder fileId(String fileId) {
 			this.fileId = fileId;
+			return this;
+		}
+		
+		public DriveFileBuilder fileContent(byte[] fileContent) {
+			this.fileContent = fileContent;
 			return this;
 		}
 		

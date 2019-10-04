@@ -33,7 +33,7 @@ public class ExtractorMetadata extends BaseApiEntity {
 	
 	@Column(name = "execution_status")
 	@Enumerated(EnumType.STRING)
-	private ExecutionStatus executionStatus = ExecutionStatus.RUNNING;
+	private ExecutionStatus executionStatus = ExecutionStatus.SCHEDULED;
 	
 	public ExtractorMetadata() {}
 
@@ -91,7 +91,7 @@ public class ExtractorMetadata extends BaseApiEntity {
 		private ModelResultMetadata modelResultMetadata;
 		private String executionMetadataFileId;
 		private ModelMetadataExtractor modelMetadataExtractor;
-		private ExecutionStatus executionStatus = ExecutionStatus.RUNNING;
+		private ExecutionStatus executionStatus = ExecutionStatus.SCHEDULED;
 		
 		public ExtractorMetadataBuilder executionStatus(ExecutionStatus executionStatus) {
 			this.executionStatus = executionStatus;

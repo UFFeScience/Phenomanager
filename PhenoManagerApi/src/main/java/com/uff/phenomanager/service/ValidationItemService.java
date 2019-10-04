@@ -145,7 +145,7 @@ public class ValidationItemService extends ApiPermissionRestService<ValidationIt
 	}
 	
 	@Override
-	public Integer delete(String slug) throws NotFoundApiException {
+	public Integer delete(String slug) throws ApiException {
 		ValidationItem validationItem = findBySlug(slug);
 		
 		if (validationItem.getValidationEvidenceFileId() != null && !"".equals(validationItem.getValidationEvidenceFileId())) {

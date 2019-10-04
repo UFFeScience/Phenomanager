@@ -17,6 +17,7 @@ import com.uff.phenomanager.Constants;
 import com.uff.phenomanager.Constants.MSG_ERROR;
 import com.uff.phenomanager.Constants.UPLOAD;
 import com.uff.phenomanager.domain.ComputationalModel;
+import com.uff.phenomanager.domain.ExecutionStatus;
 import com.uff.phenomanager.domain.Experiment;
 import com.uff.phenomanager.domain.ModelMetadataExtractor;
 import com.uff.phenomanager.domain.api.google.DriveFile;
@@ -75,6 +76,7 @@ public class ModelMetadataExtractorService extends ApiPermissionRestService<Mode
 		
 		try {
 			parentComputationalModel = computationalModelService.findBySlug(computationalModelSlug);
+		
 		} catch (NotFoundApiException e) {
 			throw new BadRequestApiException(
 					String.format(Constants.MSG_ERROR.PARENT_ENTITY_NOT_FOUND_ERROR, ComputationalModel.class.getName(), 
@@ -99,6 +101,7 @@ public class ModelMetadataExtractorService extends ApiPermissionRestService<Mode
 		
 		try {
 			parentComputationalModel = computationalModelService.findBySlug(computationalModelSlug);
+		
 		} catch (NotFoundApiException e) {
 			throw new BadRequestApiException(
 					String.format(Constants.MSG_ERROR.PARENT_ENTITY_NOT_FOUND_ERROR, Experiment.class.getName(), 
@@ -110,7 +113,7 @@ public class ModelMetadataExtractorService extends ApiPermissionRestService<Mode
 		return super.update(modelMetadataExtractor);
 	}
 	
-	public ModelMetadataExtractor findBySlug(String slug, String authorization) throws ApiException {
+	public ModelMetadataExtractor findBySlug(String slug, String authorization, String computationalModelSlug) throws ApiException {
 		ModelMetadataExtractor entity = findBySlug(slug);
 		
 		if (entity.getComputationalModel().getIsPublicData()) {
@@ -126,7 +129,7 @@ public class ModelMetadataExtractorService extends ApiPermissionRestService<Mode
         } else if (!tokenAuthenticationService.validateToken(token)) {
 			hasAuthorization = Boolean.FALSE;
 		
-        } else if (!allowPermissionReadAccess(authorization, slug)) {
+        } else if (!allowPermissionReadAccess(authorization, computationalModelSlug)) {
         	hasAuthorization = Boolean.FALSE;
         }
         
@@ -138,8 +141,12 @@ public class ModelMetadataExtractorService extends ApiPermissionRestService<Mode
 	}
 	
 	@Override
-	public Integer delete(String slug) throws NotFoundApiException {
+	public Integer delete(String slug) throws ApiException {
 		ModelMetadataExtractor modelMetadataExtractor = findBySlug(slug);
+		
+		if (ExecutionStatus.RUNNING.equals(modelMetadataExtractor.getExecutionStatus())) {
+			throw new BadRequestApiException(Constants.MSG_ERROR.EXTRACTOR_CAN_NOT_BE_DELETED_ERROR);
+		}
 		
 		if (modelMetadataExtractor.getExtractorFileId() != null && !"".equals(modelMetadataExtractor.getExtractorFileId())) {
 			try {
@@ -175,11 +182,6 @@ public class ModelMetadataExtractorService extends ApiPermissionRestService<Mode
 		}
 		
 		return deletedResult;
-	}
-
-	@Transactional
-	public ModelMetadataExtractor findByComputationalModelAndActive(ComputationalModel computationalModel, Boolean active) {
-		return modelMetadataExtractorRepository.findByComputationalModelAndActive(computationalModel, active);
 	}
 
 	public ModelMetadataExtractor uploadExtractor(String slug, MultipartFile extractor) throws ApiException, IOException {

@@ -9,13 +9,16 @@ import org.springframework.util.StringUtils;
 
 import com.uff.phenomanager.Constants;
 import com.uff.phenomanager.amqp.ModelExecutionSender;
+import com.uff.phenomanager.amqp.ModelKillerSender;
 import com.uff.phenomanager.config.security.TokenAuthenticationService;
 import com.uff.phenomanager.domain.ComputationalModel;
 import com.uff.phenomanager.domain.ExecutionCommand;
 import com.uff.phenomanager.domain.ExecutionStatus;
 import com.uff.phenomanager.domain.Experiment;
+import com.uff.phenomanager.domain.ExtractorMetadata;
 import com.uff.phenomanager.domain.ModelExecutor;
 import com.uff.phenomanager.domain.ModelMetadataExtractor;
+import com.uff.phenomanager.domain.ModelResultMetadata;
 import com.uff.phenomanager.domain.dto.amqp.ModelExecutionMessageDto;
 import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.BadRequestApiException;
@@ -35,6 +38,9 @@ public class ComputationalModelService extends ApiPermissionRestService<Computat
 	private ExperimentService experimentService;
 	
 	@Autowired
+	private ExecutionEnvironmentService executionEnvironmentService;
+	
+	@Autowired
 	private ModelExecutorService modelExecutorService;
 	
 	@Autowired
@@ -44,10 +50,16 @@ public class ComputationalModelService extends ApiPermissionRestService<Computat
 	private ModelResultMetadataService modelResultMetadataService;
 	
 	@Autowired
+	private ExtractorMetadataService extractorMetadataService;
+	
+	@Autowired
 	private InstanceParamService instanceParamService;
 	
 	@Autowired
 	private ModelExecutionSender modelExecutionSender;
+	
+	@Autowired
+	private ModelKillerSender modelKillerSender;
 	
 	@Autowired
 	private TokenAuthenticationService tokenAuthenticationService;
@@ -130,68 +142,177 @@ public class ComputationalModelService extends ApiPermissionRestService<Computat
 		modelExecutionMessageDto.setExecutionDate(Calendar.getInstance());
 		modelExecutionMessageDto.setComputationalModelVersion(computationalModel.getCurrentVersion());
 		
-		if (modelExecutionMessageDto.getModelMetadataExtractorSlug() != null && 
+		if (modelExecutionMessageDto.getModelExecutorSlug() != null && 
+				!"".equals(modelExecutionMessageDto.getModelExecutorSlug())) {
+			handleRunExecutor(modelExecutionMessageDto);
+			
+		} else if (modelExecutionMessageDto.getModelMetadataExtractorSlug() != null && 
 				!"".equals(modelExecutionMessageDto.getModelMetadataExtractorSlug())) {
-			
-			ModelMetadataExtractor modelMetadataExtractor = modelMetadataExtractorService
-					.findByComputationalModelAndActive(computationalModel, Boolean.TRUE);
-			
-			if (modelMetadataExtractor == null) {
-				throw new BadRequestApiException(Constants.MSG_ERROR.EXTRACTOR_NOT_FOUND_ERROR);
-			}
-			
-			if (ExecutionStatus.RUNNING.equals(modelMetadataExtractor.getExecutionStatus()) || 
-					ExecutionStatus.SCHEDULED.equals(modelMetadataExtractor.getExecutionStatus())) {
-				throw new BadRequestApiException(Constants.MSG_ERROR.COMPUTATIONAL_MODEL_ALREADY_RUNNING_ERROR);
-			}
-			
-			modelExecutionSender.sendMessage(modelExecutionMessageDto);
-			return;
-		}
-		
-		ModelExecutor modelExecutor = null;
-		
-		if (modelExecutionMessageDto.getComputationalModelSlug() != null && 
-				!"".equals(modelExecutionMessageDto.getComputationalModelSlug())) {
-			
-			modelExecutor = modelExecutorService.findByComputationalModelAndActive(computationalModel, Boolean.TRUE);
+			handleRunExtractor(modelExecutionMessageDto);
 		
 		} else {
-			modelExecutor = modelExecutorService.findBySlug(modelExecutionMessageDto.getComputationalModelSlug());
+			throw new BadRequestApiException(Constants.MSG_ERROR.COMPUTATIONAL_MODEL_INVALID_TARGET_ERROR);
 		}
+	}
+	
+	private void handleRunExecutor(ModelExecutionMessageDto modelExecutionMessageDto)
+			throws BadRequestApiException, ApiException {
 		
-		if (modelExecutor == null) {
+		ModelExecutor modelExecutor = getExecutor(modelExecutionMessageDto);
+		
+		handleExecutorEnvironment(modelExecutionMessageDto, modelExecutor);
+		validateExecutorStatus(modelExecutionMessageDto, modelExecutor);
+		
+		if (ExecutionCommand.START.equals(modelExecutionMessageDto.getExecutionCommand())) {
+			modelExecutor.setExecutionStatus(ExecutionStatus.SCHEDULED);
+			modelExecutorService.update(modelExecutor);
+			modelExecutionSender.sendMessage(modelExecutionMessageDto);
+		} else {
+			modelKillerSender.sendMessage(modelExecutionMessageDto);
+		}
+	}
+
+	private ModelExecutor getExecutor(ModelExecutionMessageDto modelExecutionMessageDto) throws BadRequestApiException {
+		ModelExecutor modelExecutor = null;
+		
+		try {
+			modelExecutor = modelExecutorService.findBySlug(modelExecutionMessageDto.getModelExecutorSlug());
+		} catch (NotFoundApiException e) {
 			throw new BadRequestApiException(Constants.MSG_ERROR.EXECUTOR_NOT_FOUND_ERROR);
 		}
 		
+		return modelExecutor;
+	}
+
+	private void validateExecutorStatus(ModelExecutionMessageDto modelExecutionMessageDto, ModelExecutor modelExecutor)
+			throws BadRequestApiException {
 		if (ExecutionCommand.START.equals(modelExecutionMessageDto.getExecutionCommand())) {
 			if (ExecutionStatus.RUNNING.equals(modelExecutor.getExecutionStatus()) || 
 					ExecutionStatus.SCHEDULED.equals(modelExecutor.getExecutionStatus())) {
-				throw new BadRequestApiException(Constants.MSG_ERROR.COMPUTATIONAL_MODEL_ALREADY_RUNNING_ERROR);
-			}
-			
-			List<ModelExecutor> allRunningExecutors = modelExecutorService.findAllByComputationalModelAndExecutionStatus(
-					computationalModel, ExecutionStatus.RUNNING);
-			
-			if (allRunningExecutors != null && !allRunningExecutors.isEmpty()) {
-				throw new BadRequestApiException(Constants.MSG_ERROR.ANY_COMPUTATIONAL_MODEL_ALREADY_RUNNING_ERROR);
+				throw new BadRequestApiException(Constants.MSG_ERROR.EXECUTOR_ALREADY_RUNNING_ERROR);
 			}
 		}
 		
 		if (ExecutionCommand.STOP.equals(modelExecutionMessageDto.getExecutionCommand())) {
 			if (!ExecutionStatus.RUNNING.equals(modelExecutor.getExecutionStatus())) {
-				throw new BadRequestApiException(Constants.MSG_ERROR.COMPUTATIONAL_MODEL_NOT_RUNNING_ERROR);
+				throw new BadRequestApiException(Constants.MSG_ERROR.EXECUTOR_NOT_RUNNING_ERROR);
 			}
 		}
+	}
+
+	private void handleExecutorEnvironment(ModelExecutionMessageDto modelExecutionMessageDto,
+			ModelExecutor modelExecutor) throws BadRequestApiException {
 		
-		modelExecutor.setExecutionStatus(ExecutionStatus.SCHEDULED);
-		modelExecutorService.update(modelExecutor);
+		if (modelExecutionMessageDto.getExecutionEnvironmentSlug() != null && 
+				!"".equals(modelExecutionMessageDto.getExecutionEnvironmentSlug())) {
+			try {
+				executionEnvironmentService.findBySlug(modelExecutionMessageDto.getExecutionEnvironmentSlug());
+			} catch (NotFoundApiException e) {
+				throw new BadRequestApiException(Constants.MSG_ERROR.ENVIRONMENT_NOT_FOUND_ERROR);
+			}
+			
+		} else {
+			if (ExecutionCommand.START.equals(modelExecutionMessageDto.getExecutionCommand())) {
+				throw new BadRequestApiException(Constants.MSG_ERROR.ENVIRONMENT_NOT_FOUND_ERROR);
+			
+			} else if (ExecutionCommand.STOP.equals(modelExecutionMessageDto.getExecutionCommand())) {
+				ModelResultMetadata modelResultMetadata = modelResultMetadataService
+						.findByModelExecutorAndExecutionStatus(modelExecutor, ExecutionStatus.RUNNING);
+				
+				if (modelResultMetadata == null) {
+					throw new BadRequestApiException(Constants.MSG_ERROR.EXECUTOR_NOT_RUNNING_ERROR);
+				} else {
+					modelExecutionMessageDto.setExecutionEnvironmentSlug(modelResultMetadata.getExecutionEnvironment().getSlug());
+				}
+				
+			} else {
+				throw new BadRequestApiException(Constants.MSG_ERROR.COMPUTATIONAL_MODEL_INVALID_TARGET_ERROR);
+			}
+		}
+	}
+	
+	private void handleRunExtractor(ModelExecutionMessageDto modelExecutionMessageDto) throws ApiException {
+		if (modelExecutionMessageDto.getExecutionEnvironmentSlug() == null || 
+				"".equals(modelExecutionMessageDto.getExecutionEnvironmentSlug())) {
+			throw new BadRequestApiException(Constants.MSG_ERROR.ENVIRONMENT_NOT_FOUND_ERROR);
+		}
+		
+		try {
+			executionEnvironmentService.findBySlug(modelExecutionMessageDto.getExecutionEnvironmentSlug());
+		} catch (NotFoundApiException e) {
+			throw new BadRequestApiException(Constants.MSG_ERROR.ENVIRONMENT_NOT_FOUND_ERROR);
+		}
+		
+		ModelMetadataExtractor modelMetadataExtractor = getExtractor(modelExecutionMessageDto);
+		handleExtractorEnvironment(modelExecutionMessageDto, modelMetadataExtractor);
+		validateExtractorStatus(modelExecutionMessageDto, modelMetadataExtractor);
+		
+		modelMetadataExtractorService.update(modelMetadataExtractor);
 		
 		modelExecutionSender.sendMessage(modelExecutionMessageDto);
 	}
 	
+	private ModelMetadataExtractor getExtractor(ModelExecutionMessageDto modelExecutionMessageDto) throws BadRequestApiException {
+		ModelMetadataExtractor modelMetadataExtractor = null;
+		
+		try {
+			modelMetadataExtractor = modelMetadataExtractorService.findBySlug(modelExecutionMessageDto.getModelMetadataExtractorSlug());
+		} catch (NotFoundApiException e) {
+			throw new BadRequestApiException(Constants.MSG_ERROR.EXTRACTOR_NOT_FOUND_ERROR);
+		}
+		
+		return modelMetadataExtractor;
+	}
+	
+	private void validateExtractorStatus(ModelExecutionMessageDto modelExecutionMessageDto, ModelMetadataExtractor modelMetadataExtractor)
+			throws BadRequestApiException {
+		if (ExecutionCommand.START.equals(modelExecutionMessageDto.getExecutionCommand())) {
+			if (ExecutionStatus.RUNNING.equals(modelMetadataExtractor.getExecutionStatus()) || 
+					ExecutionStatus.SCHEDULED.equals(modelMetadataExtractor.getExecutionStatus())) {
+				throw new BadRequestApiException(Constants.MSG_ERROR.EXTRACTOR_ALREADY_RUNNING_ERROR);
+			}
+		}
+		
+		if (ExecutionCommand.STOP.equals(modelExecutionMessageDto.getExecutionCommand())) {
+			if (!ExecutionStatus.RUNNING.equals(modelMetadataExtractor.getExecutionStatus())) {
+				throw new BadRequestApiException(Constants.MSG_ERROR.EXTRACTOR_NOT_RUNNING_ERROR);
+			}
+		}
+	}
+	
+	private void handleExtractorEnvironment(ModelExecutionMessageDto modelExecutionMessageDto,
+			ModelMetadataExtractor modelMetadataExtractor) throws BadRequestApiException {
+		if (modelExecutionMessageDto.getExecutionEnvironmentSlug() != null && 
+				!"".equals(modelExecutionMessageDto.getExecutionEnvironmentSlug())) {
+			try {
+				executionEnvironmentService.findBySlug(modelExecutionMessageDto.getExecutionEnvironmentSlug());
+			} catch (NotFoundApiException e) {
+				throw new BadRequestApiException(Constants.MSG_ERROR.ENVIRONMENT_NOT_FOUND_ERROR);
+			}
+			
+		} else {
+			if (ExecutionCommand.START.equals(modelExecutionMessageDto.getExecutionCommand())) {
+				throw new BadRequestApiException(Constants.MSG_ERROR.ENVIRONMENT_NOT_FOUND_ERROR);
+			
+			} else if (ExecutionCommand.STOP.equals(modelExecutionMessageDto.getExecutionCommand())) {
+				ExtractorMetadata extractorMetadata = extractorMetadataService
+						.findByModelMetadataExtractorAndExecutionStatus(modelMetadataExtractor, ExecutionStatus.RUNNING);
+				
+				if (extractorMetadata == null) {
+					throw new BadRequestApiException(Constants.MSG_ERROR.EXTRACTOR_NOT_RUNNING_ERROR);
+				} else {
+					modelExecutionMessageDto.setExecutionEnvironmentSlug(
+							extractorMetadata.getModelResultMetadata().getExecutionEnvironment().getSlug());
+				}
+				
+			} else {
+				throw new BadRequestApiException(Constants.MSG_ERROR.COMPUTATIONAL_MODEL_INVALID_TARGET_ERROR);
+			}
+		}
+	}
+	
 	@Override
-	public Integer delete(String slug) throws NotFoundApiException {
+	public Integer delete(String slug) throws ApiException {
 		ComputationalModel computationalModel = findBySlug(slug);
 		
 		instanceParamService.deleteByComputationalModel(computationalModel);

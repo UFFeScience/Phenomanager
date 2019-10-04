@@ -26,8 +26,11 @@ import com.uff.phenomanager.Constants.CONTROLLER.MODEL_RESULT_METADATA;
 import com.uff.phenomanager.Constants.MSG_ERROR;
 import com.uff.phenomanager.config.security.TokenAuthenticationService;
 import com.uff.phenomanager.domain.ComputationalModel;
+import com.uff.phenomanager.domain.ExecutionEnvironment;
+import com.uff.phenomanager.domain.ExecutionStatus;
 import com.uff.phenomanager.domain.ExtractorMetadata;
 import com.uff.phenomanager.domain.InstanceParam;
+import com.uff.phenomanager.domain.ModelExecutor;
 import com.uff.phenomanager.domain.ModelResultMetadata;
 import com.uff.phenomanager.domain.Permission;
 import com.uff.phenomanager.domain.User;
@@ -96,7 +99,7 @@ public class ModelResultMetadataService extends ApiPermissionRestService<ModelRe
         } else if (!tokenAuthenticationService.validateToken(authorization)) {
 			hasAuthorization = Boolean.FALSE;
 		
-        } else if (!allowPermissionReadAccess(authorization, slug)) {
+        } else if (!allowPermissionReadAccess(authorization, computationalModelSlug)) {
         	hasAuthorization = Boolean.FALSE;
         }
         
@@ -191,7 +194,7 @@ public class ModelResultMetadataService extends ApiPermissionRestService<ModelRe
 		graphElements.add(graphElement);
 		
 		graphElement = new HashMap<>();
-		graphElement.put("dc:abstract", computationalModel.getDescription());
+		graphElement.put("dc:abstract", computationalModel.getDescription() != null ? computationalModel.getDescription() : "");
 		graphElements.add(graphElement);
 		
 		graphElement = new HashMap<>();
@@ -396,6 +399,14 @@ public class ModelResultMetadataService extends ApiPermissionRestService<ModelRe
 	
 	public byte[] getAbortMetadata(String fileId) throws NotFoundApiException {
 		return googleDriveService.getFileBytesContent(fileId);
+	}
+	
+	public Long countByExecutionEnvironmentAndExecutionStatus(ExecutionEnvironment executionEnvironment, ExecutionStatus executionStatus) {
+		return modelResultMetadataRepository.countByExecutionEnvironmentAndExecutionStatus(executionEnvironment, executionStatus);
+	}
+	
+	public ModelResultMetadata findByModelExecutorAndExecutionStatus(ModelExecutor modelExecutor, ExecutionStatus executionStatus) {
+		return modelResultMetadataRepository.findByModelExecutorAndExecutionStatus(modelExecutor, executionStatus);
 	}
 	
 }

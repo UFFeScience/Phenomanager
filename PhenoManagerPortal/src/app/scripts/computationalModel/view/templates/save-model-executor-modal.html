@@ -18,11 +18,11 @@
                     <div class="row form-group" ng-if="vm.computationalModel.type === 'HTTP'">
                         <div class="form-group form-group-default required">
                             <label>HTTP Protocol type</label>
-                            <select class="form-control" ng-model="vm.modelExecutor.httpProtocolType" ng-options="httpProtocolType.value as httpProtocolType.name for httpProtocolType in vm.httpProtocolTypes">
+                            <select class="form-control" ng-model="vm.modelExecutor.httpProtocolType" ng-options="httpProtocolType.value as httpProtocolType.name for httpProtocolType in vm.webServiceTypes">
                                 <option disabled selected value="">Select protocol type</option>
                             </select>
                         </div>
-                        <p ng-show="modelExecutorForm.httpProtocolTypes.$invalid && !modelExecutorForm.httpProtocolTypes.$pristine" class="error help-block">Required field</p>
+                        <p ng-show="modelExecutorForm.webServiceTypes.$invalid && !modelExecutorForm.webServiceTypes.$pristine" class="error help-block">Required field</p>
                     </div>
 
                     <div class="row form-group" ng-if="vm.computationalModel.type === 'EXECUTABLE'">

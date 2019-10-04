@@ -86,20 +86,6 @@ public class ModelExecutorService extends ApiPermissionRestService<ModelExecutor
 		
 		modelExecutor.setComputationalModel(parentComputationalModel);
 		
-		ModelExecutor currentModelExecutorActive = findByComputationalModelAndActive(parentComputationalModel, Boolean.TRUE);
-		
-		if (currentModelExecutorActive != null && 
-				!currentModelExecutorActive.getExecutionStatus().equals(ExecutionStatus.RUNNING)) {
-			
-			currentModelExecutorActive.setActive(Boolean.FALSE);
-			super.update(currentModelExecutorActive);
-		
-		} else if (currentModelExecutorActive != null && 
-				!currentModelExecutorActive.getExecutionStatus().equals(ExecutionStatus.RUNNING)) {
-			
-			modelExecutor.setActive(Boolean.FALSE);
-		}
-		
 		return super.save(modelExecutor);
    }
 	
@@ -123,25 +109,10 @@ public class ModelExecutorService extends ApiPermissionRestService<ModelExecutor
 		
 		modelExecutor.setComputationalModel(parentComputationalModel);
 		
-		if (modelExecutor.getActive()) {
-			ModelExecutor currentModelExecutorActive = findByComputationalModelAndActive(parentComputationalModel, Boolean.TRUE);
-			
-			if (currentModelExecutorActive != null && 
-					!currentModelExecutorActive.getSlug().equals(modelExecutor.getSlug()) &&
-					!currentModelExecutorActive.getExecutionStatus().equals(ExecutionStatus.RUNNING)) {
-				
-				currentModelExecutorActive.setActive(Boolean.FALSE);
-				super.update(currentModelExecutorActive);
-			
-			} else {
-				modelExecutor.setActive(Boolean.FALSE);
-			}
-		}
-		
 		return super.update(modelExecutor);
 	}
 	
-	public ModelExecutor findBySlug(String slug, String authorization) throws ApiException {
+	public ModelExecutor findBySlug(String slug, String authorization, String computationalModelSlug) throws ApiException {
 		ModelExecutor entity = findBySlug(slug);
 		
 		if (entity.getComputationalModel().getIsPublicData()) {
@@ -157,7 +128,7 @@ public class ModelExecutorService extends ApiPermissionRestService<ModelExecutor
         } else if (!tokenAuthenticationService.validateToken(token)) {
 			hasAuthorization = Boolean.FALSE;
 		
-        } else if (!allowPermissionReadAccess(authorization, slug)) {
+        } else if (!allowPermissionReadAccess(authorization, computationalModelSlug)) {
         	hasAuthorization = Boolean.FALSE;
         }
         
@@ -168,19 +139,13 @@ public class ModelExecutorService extends ApiPermissionRestService<ModelExecutor
 		return entity;
 	}
 	
-	public ModelExecutor findByComputationalModelAndActive(ComputationalModel computationalModel, Boolean active) {
-		return modelExecutorRepository.findByComputationalModelAndActive(computationalModel, active);
-	}
-	
-	public List<ModelExecutor> findAllByComputationalModelAndExecutionStatus(ComputationalModel computationalModel, 
-			ExecutionStatus executionStatus) {
-		
-		return modelExecutorRepository.findAllByComputationalModelAndExecutionStatus(computationalModel, executionStatus);
-	}
-	
 	@Override
-	public Integer delete(String slug) throws NotFoundApiException {
+	public Integer delete(String slug) throws ApiException {
 		ModelExecutor modelExecutor = findBySlug(slug);
+		
+		if (ExecutionStatus.RUNNING.equals(modelExecutor.getExecutionStatus())) {
+			throw new BadRequestApiException(Constants.MSG_ERROR.EXECUTOR_CAN_NOT_BE_DELETED_ERROR);
+		}
 		
 		if (modelExecutor.getExecutorFileId() != null && !"".equals(modelExecutor.getExecutorFileId())) {
 			try {

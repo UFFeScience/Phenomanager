@@ -9,8 +9,6 @@ import com.uff.model.invoker.domain.ModelExecutor;
 @Repository
 public interface ModelExecutorRepository extends BaseRepository<ModelExecutor> {
 	
-	ModelExecutor findByComputationalModelAndActive(ComputationalModel computationalModel, Boolean active);
-	
 	ModelExecutor findByComputationalModelAndExecutionStatus(ComputationalModel computationalModel, 
 			ExecutionStatus executionStatus);
 

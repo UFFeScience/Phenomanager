@@ -9,7 +9,6 @@ import com.uff.phenomanager.domain.ComputationalModel;
 import com.uff.phenomanager.domain.ExecutionEnvironment;
 import com.uff.phenomanager.domain.ExecutionStatus;
 import com.uff.phenomanager.domain.Experiment;
-import com.uff.phenomanager.domain.ModelExecutor;
 import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.BadRequestApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;
@@ -30,7 +29,7 @@ public class ExecutionEnvironmentService extends ApiPermissionRestService<Execut
 	private ComputationalModelService computationalModelService;
 	
 	@Autowired
-	private ModelExecutorService modelExecutorService;
+	private ModelResultMetadataService modelResultMetadataService;
 	
 	@Override
 	protected ExecutionEnvironmentRepository getRepository() {
@@ -66,23 +65,6 @@ public class ExecutionEnvironmentService extends ApiPermissionRestService<Execut
 							computationalModelSlug), e);
 		}
 		
-		ExecutionEnvironment currentExecutionEnvironment = findByComputationalModelAndActive(parentComputationalModel, Boolean.TRUE);
-		ModelExecutor currentModelExecutorActive = modelExecutorService
-				.findByComputationalModelAndActive(parentComputationalModel, Boolean.TRUE);
-		
-		if (currentModelExecutorActive != null &&
-				!currentModelExecutorActive.getExecutionStatus().equals(ExecutionStatus.RUNNING)) {
-			
-			if (currentExecutionEnvironment != null) {
-				currentExecutionEnvironment.setActive(Boolean.FALSE);
-				super.update(currentExecutionEnvironment);
-			} 
-			
-		} else if (currentModelExecutorActive != null &&
-				currentModelExecutorActive.getExecutionStatus().equals(ExecutionStatus.RUNNING)) {
-			executionEnvironment.setActive(Boolean.FALSE);
-		}
-		
 		executionEnvironment.setComputationalModel(parentComputationalModel);
 		ExecutionEnvironment executionEnvironmentSaved = super.save(executionEnvironment);
 		
@@ -116,32 +98,21 @@ public class ExecutionEnvironmentService extends ApiPermissionRestService<Execut
 		executionEnvironmentUpdated.setVirtualMachines(virtualMachineConfigService.save(
 				executionEnvironment.getVirtualMachines(), executionEnvironmentUpdated));
 		
-		if (executionEnvironmentUpdated.getActive()) {
-			ExecutionEnvironment currentExecutionEnvironment = findByComputationalModelAndActive(parentComputationalModel, Boolean.TRUE);
-			
-			if (!currentExecutionEnvironment.getSlug().equals(executionEnvironmentUpdated.getSlug())) {
-		
-				ModelExecutor currentModelExecutorActive = modelExecutorService
-						.findByComputationalModelAndActive(parentComputationalModel, Boolean.TRUE);
-				
-				if (currentModelExecutorActive != null &&
-						!currentModelExecutorActive.getExecutionStatus().equals(ExecutionStatus.RUNNING)) {
-				
-					currentExecutionEnvironment.setActive(Boolean.FALSE);
-					super.update(currentExecutionEnvironment);
-			
-				} else if (currentModelExecutorActive != null &&
-						currentModelExecutorActive.getExecutionStatus().equals(ExecutionStatus.RUNNING)) {
-					executionEnvironment.setActive(Boolean.FALSE);
-				}
-			}
-		}
-		
 		return executionEnvironmentUpdated;
 	}
 	
-	public ExecutionEnvironment findByComputationalModelAndActive(ComputationalModel computationalModel, Boolean active) {
-		return executionEnvironmentRepository.findByComputationalModelAndActive(computationalModel, active);
+	@Override
+	public Integer delete(String slug) throws ApiException {
+		ExecutionEnvironment executionEnvironment = findBySlug(slug);
+
+		Long relatedExecutionCount = modelResultMetadataService.countByExecutionEnvironmentAndExecutionStatus(
+				executionEnvironment, ExecutionStatus.RUNNING);
+		
+		if (relatedExecutionCount > 0) {
+			throw new BadRequestApiException(Constants.MSG_ERROR.ENVIRONMENT_CAN_NOT_BE_DELETED_ERROR);
+		}
+		
+		return super.delete(slug);
 	}
 	
 }

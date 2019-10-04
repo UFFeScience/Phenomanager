@@ -141,7 +141,7 @@ public class InstanceParamService extends ApiPermissionRestService<InstanceParam
 		return super.update(instanceParam);
 	}
 	
-	public InstanceParam findBySlug(String slug, String authorization) throws ApiException {
+	public InstanceParam findBySlug(String slug, String authorization, String computationalModelSlug) throws ApiException {
 		InstanceParam entity = findBySlug(slug);
 		
 		if (entity.getComputationalModel().getIsPublicData()) {
@@ -157,7 +157,7 @@ public class InstanceParamService extends ApiPermissionRestService<InstanceParam
         } else if (!tokenAuthenticationService.validateToken(token)) {
 			hasAuthorization = Boolean.FALSE;
 		
-        } else if (!allowPermissionReadAccess(authorization, slug)) {
+        } else if (!allowPermissionReadAccess(authorization, computationalModelSlug)) {
         	hasAuthorization = Boolean.FALSE;
         }
         
@@ -173,7 +173,7 @@ public class InstanceParamService extends ApiPermissionRestService<InstanceParam
 	}
 	
 	@Override
-	public Integer delete(String slug) throws NotFoundApiException {
+	public Integer delete(String slug) throws ApiException {
 		InstanceParam instanceParam = findBySlug(slug);
 		
 		if (instanceParam.getValueFileId() != null && !"".equals(instanceParam.getValueFileId())) {

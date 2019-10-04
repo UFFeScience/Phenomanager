@@ -24,6 +24,16 @@
                         <p ng-show="hypothesisChildForm.name.$invalid && !hypothesisChildForm.name.$pristine" class="error help-block">Required field</p>
                     </div>
 
+                    <div ng-if="vm.updateChildHypothesis" class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>State</label>
+                            <select class="form-control" ng-model="vm.childHypothesis.state" ng-options="state.value as state.name for state in vm.states">
+                                <option disabled selected value="">Select state</option>
+                            </select>
+                        </div>
+                        <p ng-show="hypothesisChildForm.state.$invalid && !hypothesisChildForm.state.$pristine" class="error help-block">Required field</p>
+                    </div>
+
                     <div class="row form-group">
                         <div class="form-group form-group-default">
                             <label>Description</label>

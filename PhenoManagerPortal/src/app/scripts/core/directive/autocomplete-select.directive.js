@@ -97,15 +97,16 @@
                             if ($scope.arrayValue) {
                                 var selectLabel = $scope.labelSelectText || 'text'; 
                                 var values = [];
+                                var textNames = $($element)[0].innerText.split('\n');
 
                                 for (var i = 0; i < $($element).val().length; i++) {
                                     var valueData = {
                                         slug: $($element).val()[i]
                                     };
-                                    valueData[selectLabel] = $($element)[i].innerText;
+                                    valueData[selectLabel] = textNames[i].trim();
                                     values.push(valueData);
                                 }
-
+                                
                                 $scope.data = values;
 
                                 var selectLabel = $scope.labelSelectText || 'text';                                        
@@ -133,7 +134,9 @@
                                 var selectLabel = $scope.labelSelectText || 'text'; 
 
                                 $scope.data.slug = $($element).val();
-                                $scope.data[selectLabel] = $($element)[0].innerText;
+
+                                var textNames = $($element)[0].innerText.split('\n');
+                                $scope.data[selectLabel] = textNames[textNames.length - 1].trim();
                                 var modelData = $scope.data;
 
                                 var selectLabel = $scope.labelSelectText || 'text';

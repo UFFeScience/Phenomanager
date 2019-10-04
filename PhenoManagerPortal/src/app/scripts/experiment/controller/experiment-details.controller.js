@@ -285,7 +285,7 @@
                 permissionService
                     .insert(vm.permission)
                     .then(function(resp) {
-                        vm.changePage();
+                        vm.changePermissionPage();
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
@@ -295,7 +295,7 @@
                 permissionService
                     .update(vm.permission)
                     .then(function(resp) {
-                        vm.changePage();
+                        vm.changePermissionPage();
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {

@@ -11,11 +11,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
@@ -31,7 +31,7 @@ public class ModelResultMetadata extends BaseApiEntity {
 	@JoinColumn(name = "id_model_executor")
 	private ModelExecutor modelExecutor;
 	
-	@OneToMany(mappedBy = "modelResultMetadata")
+	@OneToMany(mappedBy = "modelResultMetadata", fetch = FetchType.EAGER )
 	@Cascade(CascadeType.DELETE)
 	private Set<ExtractorMetadata> extractorMetadatas;
 	
@@ -66,16 +66,21 @@ public class ModelResultMetadata extends BaseApiEntity {
 	@Enumerated(EnumType.STRING)
 	private ExecutionStatus executionStatus = ExecutionStatus.RUNNING;
 	
+	@Column(name = "executor_execution_status")
+	@Enumerated(EnumType.STRING)
+	private ExecutionStatus executorExecutionStatus;
+	
+	@Column(name = "upload_metadata", nullable = false)
+	private Boolean uploadMetadata;
+	
 	@Column(name = "execution_output", columnDefinition = "text")
 	private String executionOutput;
-	
-	@Transient
-	private String systemLog;
 	
 	public ModelResultMetadata() {}
 
 	public ModelResultMetadata(ModelResultMetadataBuilder builder) {
 		this.executionEnvironment = builder.executionEnvironment;
+		this.uploadMetadata = builder.uploadMetadata;
 		this.executionStatus = builder.executionStatus;
 		this.computationalModel = builder.computationalModel;
 		this.modelExecutor = builder.modelExecutor;
@@ -86,6 +91,7 @@ public class ModelResultMetadata extends BaseApiEntity {
 		this.executionFinishDate = builder.executionFinishDate;
 		this.userAgent = builder.userAgent;
 		this.executionOutput = builder.executionOutput;
+		this.executorExecutionStatus = builder.executorExecutionStatus;
 		this.setId(builder.getId());
 		this.setSlug(builder.getSlug());
 		this.setActive(builder.getActive());
@@ -116,6 +122,14 @@ public class ModelResultMetadata extends BaseApiEntity {
 
 	public void setAbortMetadataFileId(String abortMetadataFileId) {
 		this.abortMetadataFileId = abortMetadataFileId;
+	}
+	
+	public Boolean getUploadMetadata() {
+		return uploadMetadata;
+	}
+
+	public void setUploadMetadata(Boolean uploadMetadata) {
+		this.uploadMetadata = uploadMetadata;
 	}
 
 	public Set<ExtractorMetadata> getExtractorMetadatas() {
@@ -186,26 +200,22 @@ public class ModelResultMetadata extends BaseApiEntity {
 		this.executionOutput = executionOutput;
 	}
 
-	public String getSystemLog() {
-		return systemLog;
+	public ExecutionStatus getExecutorExecutionStatus() {
+		return executorExecutionStatus;
 	}
 
-	public void setSystemLog(String systemLog) {
-		this.systemLog = systemLog;
+	public void setExecutorExecutionStatus(ExecutionStatus executorExecutionStatus) {
+		this.executorExecutionStatus = executorExecutionStatus;
 	}
-	
+
 	public void appendExecutionLog(String executionLog) {
-		StringBuilder log;
+		StringBuilder log = new StringBuilder();
 		
-		if (systemLog != null) {
-			log = new StringBuilder(systemLog);
+		if (executionOutput != null) {
+			log.append(executionOutput);
 			log.append("\n");
-		} else {
-			log = new StringBuilder();
 		}
-		
-		log.append(executionOutput);
-		log.append("\n");
+
 		log.append(executionLog);
 		
 		String appendedOutput = log.toString();
@@ -231,27 +241,40 @@ public class ModelResultMetadata extends BaseApiEntity {
 	}
 	
 	public void appendSystemLog(String executionLog) {
+		StringBuilder log = new StringBuilder();
+		
+		if (executionOutput != null) {
+			log.append(executionOutput);
+			log.append("\n");
+		}
+		
 		Date date = Calendar.getInstance().getTime();  
         DateFormat dateFormat = new SimpleDateFormat("dd/mm/yyyy - hh:mm:ss");  
-        String logDate = dateFormat.format(date);  
+        String logDate = dateFormat.format(date); 
         
-		if (systemLog == null) {
-			StringBuilder log = new StringBuilder(logDate);
-			log.append(" - ");
-			log.append(executionLog);
+        log.append(logDate);
+		log.append(" - ");
+		log.append(executionLog);
+		
+		String appendedOutput = log.toString();
+		String[] splittedOutput = appendedOutput.split("\n");
+				
+		if (splittedOutput.length > Constants.MAX_LOG_LINES) {
+			StringBuilder finalOutput = new StringBuilder();
+			Integer initialIndex = splittedOutput.length - Constants.MAX_LOG_LINES;
 			
-			systemLog = log.toString();
-			executionOutput = systemLog;
+			for (; initialIndex < splittedOutput.length; initialIndex++) {
+				finalOutput.append(splittedOutput[initialIndex]);
+				
+				if (initialIndex < (splittedOutput.length - 1)) {
+					finalOutput.append("\n");
+				}
+			}
+			
+			executionOutput = finalOutput.toString();
 			
 		} else {
-			StringBuilder log = new StringBuilder(systemLog);
-			log.append("\n");
-			log.append(logDate);
-			log.append(" - ");
-			log.append(executionLog);
-
-			systemLog = log.toString();
-			executionOutput = systemLog;
+			executionOutput = appendedOutput;
 		}
 	}
 	
@@ -265,6 +288,7 @@ public class ModelResultMetadata extends BaseApiEntity {
 		private Set<ExtractorMetadata> extractorMetadatas;
 		private String abortMetadataFileId;
 		private String executionMetadataFileId;
+		private Boolean uploadMetadata;
 		private User userAgent;
 		private Calendar executionStartDate;
 		private Calendar executionFinishDate;
@@ -272,9 +296,20 @@ public class ModelResultMetadata extends BaseApiEntity {
 		private ExecutionEnvironment executionEnvironment;
 		private ExecutionStatus executionStatus = ExecutionStatus.RUNNING;
 		private String executionOutput;
+		private ExecutionStatus executorExecutionStatus;
 		
 		public ModelResultMetadataBuilder executionOutput(String executionOutput) {
 			this.executionOutput = executionOutput;
+			return this;
+		}
+		
+		public ModelResultMetadataBuilder uploadMetadata(Boolean uploadMetadata) {
+			this.uploadMetadata = uploadMetadata;
+			return this;
+		}
+		
+		public ModelResultMetadataBuilder executorExecutionStatus(ExecutionStatus executorExecutionStatus) {
+			this.executorExecutionStatus = executorExecutionStatus;
 			return this;
 		}
 		

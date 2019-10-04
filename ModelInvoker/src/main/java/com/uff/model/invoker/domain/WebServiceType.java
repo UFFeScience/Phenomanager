@@ -1,6 +1,6 @@
 package com.uff.model.invoker.domain;
 
-public enum HttpProtocolType {
+public enum WebServiceType {
 	
 	REST, 
 	SOAP

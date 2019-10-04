@@ -1,4 +1,4 @@
-package com.uff.model.invoker.provider;
+package com.uff.model.invoker.service.provider;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -9,12 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.uff.model.invoker.domain.JobStatus;
-import com.uff.model.invoker.wrapper.LogSaverWrapper;
+import com.uff.model.invoker.util.wrapper.LogSaverWrapper;
 
 import ch.ethz.ssh2.Connection;
 
 @Component
-public class ClusterProvider {
+public class ClusterProviderService {
 	
 	private static final String STATUS_REASON_COLUMN = "ST";
 	private static final String SCRATCH_DIRECTORY = "/scratch";
@@ -24,7 +24,7 @@ public class ClusterProvider {
 	public static final String SCRATCH_SCRIPT_SUFIX = ".srm";
 
 	@Autowired
-	private SshProvider sshProvider;
+	private SshProviderService sshProvider;
 	
 	public Connection openEnvironmentConnection(String hostAddress, String username, String password) throws Exception {
 		return sshProvider.openEnvironmentConnection(hostAddress, username, password);

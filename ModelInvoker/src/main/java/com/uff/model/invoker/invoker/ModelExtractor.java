@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,6 @@ import com.uff.model.invoker.domain.ModelResultMetadata;
 import com.uff.model.invoker.domain.api.google.DriveFile;
 import com.uff.model.invoker.exception.GoogleErrorApiException;
 import com.uff.model.invoker.exception.ModelExecutionException;
-import com.uff.model.invoker.exception.NotFoundApiException;
 
 import ch.ethz.ssh2.Connection;
 
@@ -33,83 +33,65 @@ public abstract class ModelExtractor extends BaseInvoker {
 
 	protected static final String REMOTE_MOUNT_POINT = ".";
 	
-	public void startModelExtractor(ModelMetadataExtractor modelMetadataExtractor)
-			throws RuntimeException, Exception {
+	public void startModelExtractor(ModelMetadataExtractor modelMetadataExtractor, ExecutionEnvironment executionEnvironment, 
+			Boolean uploadMetadataToDrive) throws RuntimeException, Exception {
 		
 		if (modelMetadataExtractor == null) {
 			throw new ModelExecutionException("ModelMetadataExtractor not found");
 		}
 		
-		ExecutionEnvironment executionEnvironment = executionEnvironmentService
-				.findByComputationalModelAndActive(modelMetadataExtractor.getComputationalModel(), Boolean.TRUE);
-	
 		if (executionEnvironment == null) {
-			throw new ModelExecutionException(String.format("ExecutionEnvironment of ComputationalModel of slug [%s], not found", 
-					modelMetadataExtractor.getComputationalModel().getSlug()));
+			throw new ModelExecutionException("ExecutionEnvironment of not found");
 		}
 		
-		Process vpnProcess = vpnProvider.setupVpnConfigConection(executionEnvironment.getVpnType(), 
+		Process vpnProcess = vpnProviderService.setupVpnConfigConection(executionEnvironment.getVpnType(), 
 				modelMetadataExtractor.getComputationalModel().getId(), executionEnvironment.getVpnConfiguration());
 		
 		if (EnvironmentType.SSH.equals(executionEnvironment.getype())) {
-			handleSshEnvironmentStartExtraction(executionEnvironment, modelMetadataExtractor);
-			modelMetadataExtractor.setExecutionStatus(ExecutionStatus.FINISHED);
+			handleSshEnvironmentStartExtraction(executionEnvironment, modelMetadataExtractor, uploadMetadataToDrive);
 			
 		} else if (EnvironmentType.CLOUD.equals(executionEnvironment.getype())) {
-			handleCloudEnvironmentStartExtraction(executionEnvironment, modelMetadataExtractor);
-			modelMetadataExtractor.setExecutionStatus(ExecutionStatus.FINISHED);
+			handleCloudEnvironmentStartExtraction(executionEnvironment, modelMetadataExtractor, uploadMetadataToDrive);
 			
 		} else if (EnvironmentType.CLUSTER.equals(executionEnvironment.getype())) {
-			handleClusterEnvironmentStartExtraction(executionEnvironment, modelMetadataExtractor);
+			handleClusterEnvironmentStartExtraction(executionEnvironment, modelMetadataExtractor, uploadMetadataToDrive);
 		} 
 		
-		vpnProvider.closeVpnConnection(vpnProcess);
+		vpnProviderService.closeVpnConnection(vpnProcess);
 	}
 	
 	private void handleSshEnvironmentStartExtraction(ExecutionEnvironment executionEnvironment,
-			ModelMetadataExtractor modelMetadataExtractor) throws Exception {
+			ModelMetadataExtractor modelMetadataExtractor, Boolean uploadMetadata) throws Exception {
 		
 		Connection connection = null;
-		ModelResultMetadata modelResultMetadata = modelResultMetadataService.save(ModelResultMetadata.builder()
-				.computationalModel(executionEnvironment.getComputationalModel())
-				.userAgent(modelMetadataExtractor.getUserAgent())
-				.executionEnvironment(executionEnvironment)
-				.executionStartDate(Calendar.getInstance())
-				.build());
+		modelMetadataExtractor.setExecutionStatus(ExecutionStatus.RUNNING);
+		modelMetadataExtractor = modelMetadataExtractorService.update(modelMetadataExtractor);
+		ModelResultMetadata modelResultMetadata = setupModelResultMetadata(executionEnvironment, modelMetadataExtractor, uploadMetadata);
 		
 		try {
-			modelResultMetadata.appendExecutionLog(String.format("Starting extraction of modelMetadataExtractor [%s]...", 
+			modelResultMetadata.appendSystemLog(String.format("Starting extraction of modelMetadataExtractor [%s]...", 
 					modelMetadataExtractor.getTag()));
-			modelResultMetadata.appendExecutionLog(String.format("Starting ssh connection with environment [%s] for extraction...", 
+			modelResultMetadata.appendSystemLog(String.format("Starting ssh connection with environment [%s] for extraction...", 
 					executionEnvironment.getTag()));
+			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
 			
-			modelResultMetadata = modelResultMetadataService.save(modelResultMetadata);
-			
-			connection = sshProvider.openEnvironmentConnection(executionEnvironment.getHostAddress(),
+			connection = sshProviderService.openEnvironmentConnection(executionEnvironment.getHostAddress(),
 					executionEnvironment.getUsername(), executionEnvironment.getPassword());
 			
-			modelResultMetadata = updateExecutionOutput(modelResultMetadata, String.format("Finished setting up ssh connection with environment [%s]", 
+			modelResultMetadata = modelResultMetadataService
+					.updateExecutionOutput(modelResultMetadata, String.format("Finished setting up ssh connection with environment [%s]", 
 					executionEnvironment.getTag()));
 			
-			modelResultMetadata = handleExtractorExecution(connection, modelMetadataExtractor, modelResultMetadata);
+			modelResultMetadata = handleExtractorExecution(connection, executionEnvironment.getComputationalModel(), modelResultMetadata);
+			checkExecutionExtractionStatus(modelResultMetadata);
 			
 		} catch (Exception e) {
 			log.error("Error while invoking extractor", e);
 			modelResultMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
 			
-			modelResultMetadata = updateExecutionOutput(modelResultMetadata, String.format("Error while starting modelMetadataExtractor [%s]", 
+			modelResultMetadata = modelResultMetadataService
+					.updateExecutionOutput(modelResultMetadata, String.format("Error while starting modelMetadataExtractor [%s]", 
 					modelMetadataExtractor.getTag()));
-			
-			modelMetadataExtractor.setExecutionStatus(ExecutionStatus.FAILURE);
-			modelMetadataExtractor.setUserAgent(modelResultMetadata.getModelExecutor().getUserAgent());
-			modelMetadataExtractor = modelMetadataExtractorService.update(modelMetadataExtractor);
-			
-			List<ExtractorMetadata> extractorMetadatas = new ArrayList<>();
-			extractorMetadatas.add(extractorMetadataService.save(ExtractorMetadata.builder()
-					.modelResultMetadata(modelResultMetadata)
-					.modelMetadataExtractor(modelMetadataExtractor)
-					.build()));
-			modelResultMetadata.setExtractorMetadatas(new HashSet<>(extractorMetadatas));
 			
 			throw new ModelExecutionException("Error while invoking Extractor command in ssh environment");
 			
@@ -117,83 +99,85 @@ public abstract class ModelExtractor extends BaseInvoker {
 			if (connection != null) {
 				connection.close();
 			}
-			
-			modelResultMetadata.setExecutionStatus(ExecutionStatus.FINISHED);
 			modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
 			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
 		}
 	}
+
+	private void checkExecutionExtractionStatus(ModelResultMetadata modelResultMetadata) {
+		if (modelResultMetadata.getExtractorMetadatas() != null && !modelResultMetadata.getExtractorMetadatas().isEmpty()) {
+			Boolean hasFailedExtraction = Boolean.FALSE;
+			
+			for (ExtractorMetadata extractorMetadata : modelResultMetadata.getExtractorMetadatas()) {
+				if (ExecutionStatus.FAILURE.equals(extractorMetadata.getExecutionStatus())) {
+					hasFailedExtraction = Boolean.TRUE;
+					break;
+				}
+			}
+			
+			if (hasFailedExtraction) {
+				modelResultMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
+			} else {
+				modelResultMetadata.setExecutionStatus(ExecutionStatus.FINISHED);
+			}
+		}
+	}
 	
 	private void handleCloudEnvironmentStartExtraction(ExecutionEnvironment executionEnvironment,
-			ModelMetadataExtractor modelMetadataExtractor) throws ModelExecutionException {
+			ModelMetadataExtractor modelMetadataExtractor, Boolean uploadMetadata) throws ModelExecutionException {
 		
 		Connection connection = null;
-		ModelResultMetadata modelResultMetadata = modelResultMetadataService.save(ModelResultMetadata.builder()
-				.computationalModel(executionEnvironment.getComputationalModel())
-				.executionEnvironment(executionEnvironment)
-				.userAgent(modelMetadataExtractor.getUserAgent())
-				.executionStartDate(Calendar.getInstance())
-				.build());
+		modelMetadataExtractor.setExecutionStatus(ExecutionStatus.RUNNING);
+		modelMetadataExtractor = modelMetadataExtractorService.update(modelMetadataExtractor);
+		ModelResultMetadata modelResultMetadata = setupModelResultMetadata(executionEnvironment, modelMetadataExtractor, uploadMetadata);
 		
 		if (executionEnvironment.getVirtualMachines() == null || 
 				executionEnvironment.getVirtualMachines().isEmpty()) {
 			throw new ModelExecutionException("Control instance was not found");
 		}
-			
 		try {
-			modelResultMetadata.appendExecutionLog(String.format("Starting extraction of modelMetadataExtractor [%s] in Amazon environment...", 
+			modelResultMetadata.appendSystemLog(String.format("Starting extraction of modelMetadataExtractor [%s] in Amazon environment...", 
 					modelMetadataExtractor.getTag()));
-			modelResultMetadata.appendExecutionLog(String.format("Setting up amazon environment [%s] for extraction...", 
+			modelResultMetadata.appendSystemLog(String.format("Setting up amazon environment [%s] for extraction...", 
 					executionEnvironment.getTag()));
+			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
 			
-			modelResultMetadata = modelResultMetadataService.save(modelResultMetadata);
-			
-			AmazonEC2Client amazonClient = cloudProvider.authenticateProvider(executionEnvironment);
+			AmazonEC2Client amazonClient = cloudProviderService.authenticateProvider(executionEnvironment);
 
 			String absolutePath = System.getProperty("user.dir");
-			cloudProvider.createCluster(amazonClient, executionEnvironment, absolutePath);
+			cloudProviderService.createCluster(amazonClient, executionEnvironment, absolutePath);
 
-			AmazonMachine amazonMachineInstance = cloudProvider.getControlInstancesFromCluster(
+			AmazonMachine amazonMachineInstance = cloudProviderService.getControlInstancesFromCluster(
 					amazonClient, executionEnvironment.getClusterName());
 
 			if (amazonMachineInstance == null) {
 				log.warn("Control instance was not found!");
-				modelResultMetadata = updateExecutionOutput(modelResultMetadata, "Control instance was not found");
+				modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, "Control instance was not found");
 				return;
                 
 			} else {
 				try {
-					modelResultMetadata = updateExecutionOutput(modelResultMetadata, 
+					modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, 
 							String.format("Starting ssh connection with environment [%s] in Amazon control node [%s] for extraction...", 
 							executionEnvironment.getTag(), amazonMachineInstance.getPublicDNS()));
 					
 					log.info("Executing command START in control node [{}]", amazonMachineInstance.getPublicDNS());
 
-	                connection = sshProvider.openEnvironmentConnection(
+	                connection = sshProviderService.openEnvironmentConnection(
 	                		amazonMachineInstance.getPublicDNS(), 
 	                		executionEnvironment.getUsername(), 
 	                		executionEnvironment.getPassword());
 	                
-	                modelResultMetadata = handleExtractorExecution(connection, modelMetadataExtractor, modelResultMetadata);
+	                modelResultMetadata = handleExtractorExecution(connection, executionEnvironment.getComputationalModel(), modelResultMetadata);
+	                checkExecutionExtractionStatus(modelResultMetadata);
 	                
 				} catch (Exception e) {
 					log.error("Error while invoking extractor", e);
 					modelResultMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
 					
-					modelResultMetadata = updateExecutionOutput(modelResultMetadata, 
+					modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, 
 							String.format("Error while starting modelMetadataExtractor [%s]", 
 							modelMetadataExtractor.getTag()));
-					
-					modelMetadataExtractor.setExecutionStatus(ExecutionStatus.FAILURE);
-					modelMetadataExtractor.setUserAgent(modelResultMetadata.getModelExecutor().getUserAgent());
-					modelMetadataExtractor = modelMetadataExtractorService.update(modelMetadataExtractor);
-					
-					List<ExtractorMetadata> extractorMetadatas = new ArrayList<>();
-					extractorMetadatas.add(extractorMetadataService.save(ExtractorMetadata.builder()
-							.modelResultMetadata(modelResultMetadata)
-							.modelMetadataExtractor(modelMetadataExtractor)
-							.build()));
-					modelResultMetadata.setExtractorMetadatas(new HashSet<>(extractorMetadatas));
 					
 					throw new ModelExecutionException("Error while invoking START command in cloud environment");
 					
@@ -201,8 +185,6 @@ public abstract class ModelExtractor extends BaseInvoker {
 					if (connection != null) {
 						connection.close();
 					}
-						
-					modelResultMetadata.setExecutionStatus(ExecutionStatus.FINISHED);
 					modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
 					modelResultMetadataService.update(modelResultMetadata);
 				}
@@ -214,43 +196,34 @@ public abstract class ModelExtractor extends BaseInvoker {
 	}
 	
 	private void handleClusterEnvironmentStartExtraction(ExecutionEnvironment executionEnvironment,
-			ModelMetadataExtractor modelMetadataExtractor) throws Exception {
+			ModelMetadataExtractor modelMetadataExtractor, Boolean uploadMetadata) throws Exception {
 
 		Connection connection = null;
-		ModelResultMetadata modelResultMetadata = modelResultMetadataService.save(ModelResultMetadata.builder()
-				.computationalModel(executionEnvironment.getComputationalModel())
-				.userAgent(modelMetadataExtractor.getUserAgent())
-				.executionEnvironment(executionEnvironment)
-				.executionStartDate(Calendar.getInstance())
-				.build());
+		modelMetadataExtractor.setExecutionStatus(ExecutionStatus.RUNNING);
+		modelMetadataExtractor = modelMetadataExtractorService.update(modelMetadataExtractor);
+		ModelResultMetadata modelResultMetadata = setupModelResultMetadata(executionEnvironment, modelMetadataExtractor, uploadMetadata);
 		
 		try {
-			modelResultMetadata.appendExecutionLog(String.format("Starting extraction of modelMetadataExtractor [%s] in Cluster environment...", 
+			modelResultMetadata.appendSystemLog(String.format("Starting extraction of modelMetadataExtractor [%s] in Cluster environment...", 
 					modelMetadataExtractor.getTag()));
-			modelResultMetadata.appendExecutionLog(String.format("Starting ssh connection with Cluster environment [%s]...", 
+			modelResultMetadata.appendSystemLog(String.format("Starting ssh connection with Cluster environment [%s]...", 
 					executionEnvironment.getTag()));
 			
-			modelResultMetadata = modelResultMetadataService.save(modelResultMetadata);
+			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
 			
-			connection = sshProvider.openEnvironmentConnection(executionEnvironment.getHostAddress(),
+			connection = sshProviderService.openEnvironmentConnection(executionEnvironment.getHostAddress(),
 					executionEnvironment.getUsername(), executionEnvironment.getPassword());
 			
-            modelResultMetadata = handleExtractorExecution(connection, modelMetadataExtractor, modelResultMetadata);
-
+            modelResultMetadata = handleExtractorExecution(connection, executionEnvironment.getComputationalModel(), modelResultMetadata);
+            checkExecutionExtractionStatus(modelResultMetadata);
+            
 		} catch (Exception e) {
 			log.error("Error while invoking extractor", e);
 			modelResultMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
 			
-			modelMetadataExtractor.setExecutionStatus(ExecutionStatus.FAILURE);
-			modelMetadataExtractor.setUserAgent(modelResultMetadata.getModelExecutor().getUserAgent());
-			modelMetadataExtractor = modelMetadataExtractorService.update(modelMetadataExtractor);
-			
-			List<ExtractorMetadata> extractorMetadatas = new ArrayList<>();
-			extractorMetadatas.add(extractorMetadataService.save(ExtractorMetadata.builder()
-					.modelResultMetadata(modelResultMetadata)
-					.modelMetadataExtractor(modelMetadataExtractor)
-					.build()));
-			modelResultMetadata.setExtractorMetadatas(new HashSet<>(extractorMetadatas));
+			modelResultMetadata = modelResultMetadataService
+					.updateExecutionOutput(modelResultMetadata, String.format("Error while starting modelMetadataExtractor [%s]", 
+					modelMetadataExtractor.getTag()));
 			
 			throw new ModelExecutionException("Error while invoking START command in cluster environment");
 			
@@ -258,156 +231,176 @@ public abstract class ModelExtractor extends BaseInvoker {
 			if (connection != null) {
 				connection.close();
 			}
-			
-			modelResultMetadata.setExecutionStatus(ExecutionStatus.FINISHED);
 			modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
 			modelResultMetadataService.update(modelResultMetadata);
 		}
 	}
-	
-	protected ModelResultMetadata handleExtractorExecution(Connection connection, ModelMetadataExtractor modelMetadataExtractor, 
-			ModelResultMetadata modelResultMetadata) throws IOException, InterruptedException, NotFoundApiException, GoogleErrorApiException {
+
+	private ModelResultMetadata setupModelResultMetadata(ExecutionEnvironment executionEnvironment,
+			ModelMetadataExtractor modelMetadataExtractor, Boolean uploadMetadata) {
 		
-		if (modelMetadataExtractor == null) {
-			log.info("No ModelMetadataExtractor configured");
-		}
+		ModelResultMetadata modelResultMetadata = modelResultMetadataService.save(ModelResultMetadata.builder()
+				.computationalModel(executionEnvironment.getComputationalModel())
+				.userAgent(modelMetadataExtractor.getUserAgent())
+				.executionEnvironment(executionEnvironment)
+				.executionStartDate(Calendar.getInstance())
+				.uploadMetadata(uploadMetadata)
+				.build());
+		modelResultMetadata.setExtractorMetadatas(getExecutionExtractor(modelMetadataExtractor , modelResultMetadata));
+		modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
 		
-		List<ExtractorMetadata> extractorMetadatas = new ArrayList<>();
-		
-		if (modelMetadataExtractor.getExtractorFileId() != null && !"".equals(modelMetadataExtractor.getExtractorFileId())) {
-			modelResultMetadata = updateExecutionOutput(modelResultMetadata, String.format("Downloading extractor [%s]...", 
-					modelMetadataExtractor.getTag()));
-			
-			String fileTempName = handleFileDownload(modelMetadataExtractor.getExtractorFileId(), "executor-" + 
-					modelMetadataExtractor.getComputationalModel().getId());
-			
-			modelResultMetadata.appendExecutionLog(String.format("Finished downloading extractor [%s]", 
-					modelMetadataExtractor.getTag()));
-			modelResultMetadata.appendExecutionLog(String.format("Uploading extractor [%s] to environment...", 
-					modelMetadataExtractor.getTag()));
-			
-			modelResultMetadata = modelResultMetadataService.save(modelResultMetadata);
-			
-			sshProvider.sendDataByScp(connection, fileTempName, REMOTE_MOUNT_POINT);
-			
-			modelResultMetadata = updateExecutionOutput(modelResultMetadata, String.format("Finished uploading extractor [%s] to environment", 
-					modelMetadataExtractor.getTag()));
-		}
-			
-		ExtractorMetadata extractorMetadata = collectExtractorMetadata(connection, modelResultMetadata, modelMetadataExtractor);
-		if (extractorMetadata != null) {
-			extractorMetadatas.add(extractorMetadata);
-		}
-		
-		modelResultMetadata.setExtractorMetadatas(new HashSet<>(extractorMetadatas));
-		return modelResultMetadataService.update(modelResultMetadata);
+		return modelResultMetadata;
 	}
 	
-	protected ModelResultMetadata handleExtractorExecution(Connection connection, ComputationalModel computationalModel, 
+	public ModelResultMetadata handleExtractorExecution(Connection connection, ComputationalModel computationalModel, 
 			ModelResultMetadata modelResultMetadata) throws IOException, InterruptedException, GoogleErrorApiException {
-		
-		List<ModelMetadataExtractor> modelMetadataExtractors = modelMetadataExtractorService.findAllByComputationalModelAndActive(
-				computationalModel, Boolean.TRUE);
-		if (modelMetadataExtractors == null || modelMetadataExtractors.isEmpty()) {
-			log.info("No ModelMetadataExtractor configured");
+
+		if (modelResultMetadata.getExtractorMetadatas() == null || modelResultMetadata.getExtractorMetadatas().isEmpty()) {
+			log.warn("No Execution Extractors configured for this execution");
 			return modelResultMetadata;
 		}
 		
-		List<ExtractorMetadata> extractorMetadatas = new ArrayList<>();
-		
-		for (ModelMetadataExtractor modelMetadataExtractor : modelMetadataExtractors) {
-			if (modelMetadataExtractor.getExtractorFileId() != null && !"".equals(modelMetadataExtractor.getExtractorFileId())) {
-				try {
-					modelResultMetadata = updateExecutionOutput(modelResultMetadata, String.format("Downloading extractor [%s]...", 
-							modelMetadataExtractor.getTag()));
-					
-					String fileTempName = handleFileDownload(modelMetadataExtractor.getExtractorFileId(), "executor-" + 
-							modelMetadataExtractor.getComputationalModel().getId());
-					
-					modelResultMetadata.appendExecutionLog(String.format("Finished downloading extractor [%s]", 
-							modelMetadataExtractor.getTag()));
-					modelResultMetadata.appendExecutionLog(String.format("Uploading extractor [%s] to environment...", 
-							modelMetadataExtractor.getTag()));
-					
-					modelResultMetadata = modelResultMetadataService.save(modelResultMetadata);
-					
-					sshProvider.sendDataByScp(connection, fileTempName, REMOTE_MOUNT_POINT);
-					
-				} catch (Exception e) {
-					log.error("Error while sending extractor by scp", e);
-					
-					modelResultMetadata = updateExecutionOutput(modelResultMetadata, String.format("Error while sending extractor [%s] by scp", 
-							modelMetadataExtractor.getTag()));
-					
-					modelMetadataExtractor.setExecutionStatus(ExecutionStatus.FAILURE);
-					modelMetadataExtractor.setUserAgent(modelResultMetadata.getModelExecutor().getUserAgent());
-					modelMetadataExtractor = modelMetadataExtractorService.update(modelMetadataExtractor);
-					
-					extractorMetadatas.add(extractorMetadataService.save(ExtractorMetadata.builder()
-						.modelResultMetadata(modelResultMetadata)
-						.modelMetadataExtractor(modelMetadataExtractor)
-						.build()));
-					continue;
+		for (ExtractorMetadata extractorMetadata : modelResultMetadata.getExtractorMetadatas()) {
+			if (!ExecutionStatus.RUNNING.equals(extractorMetadata.getModelMetadataExtractor().getExecutionStatus())) {
+			
+				if (extractorMetadata.getModelMetadataExtractor().getExtractorFileId() != null && 
+						!"".equals(extractorMetadata.getModelMetadataExtractor().getExtractorFileId())) {
+					try {
+						if (extractorMetadata.getModelMetadataExtractor().getUserAgent() == null && modelResultMetadata.getModelExecutor() != null) {
+							extractorMetadata.getModelMetadataExtractor().setUserAgent(modelResultMetadata.getModelExecutor().getUserAgent());
+						}
+						extractorMetadata.setExecutionStatus(ExecutionStatus.RUNNING);
+						extractorMetadata.getModelMetadataExtractor().setExecutionStatus(ExecutionStatus.RUNNING);
+						
+						extractorMetadata.setModelMetadataExtractor(modelMetadataExtractorService.update(extractorMetadata.getModelMetadataExtractor()));
+						extractorMetadata = extractorMetadataService.update(extractorMetadata);
+						
+						modelResultMetadata = modelResultMetadataService
+								.updateExecutionOutput(modelResultMetadata, String.format("Downloading extractor [%s]...", 
+								extractorMetadata.getModelMetadataExtractor().getTag()));
+						
+						DriveFile extractorDriveFile = handleFileDownload(extractorMetadata.getModelMetadataExtractor().getExtractorFileId());
+						
+						modelResultMetadata.appendSystemLog(String.format("Finished downloading extractor [%s]", 
+								extractorMetadata.getModelMetadataExtractor().getTag()));
+						modelResultMetadata.appendSystemLog(String.format("Uploading extractor [%s] to environment...", 
+								extractorMetadata.getModelMetadataExtractor().getTag()));
+						modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
+						
+						sshProviderService.sendDataByScp(connection, extractorDriveFile.getFullPath(), REMOTE_MOUNT_POINT);
+						
+						String extractionPermissionCommand = getExecutionPermissionCommand(Boolean.FALSE, extractorDriveFile.getFileName(), connection);
+						sshProviderService.executeCommand(connection, extractionPermissionCommand);
+						
+					} catch (Exception e) {
+						log.error("Error while sending extractor by scp", e);
+						
+						modelResultMetadata = modelResultMetadataService
+								.updateExecutionOutput(modelResultMetadata, String.format("Error while sending extractor [%s] by scp", 
+										extractorMetadata.getModelMetadataExtractor().getTag()));
+						
+						extractorMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
+						extractorMetadata.getModelMetadataExtractor().setExecutionStatus(ExecutionStatus.IDLE);
+						
+						extractorMetadata.setModelMetadataExtractor(modelMetadataExtractorService.update(extractorMetadata.getModelMetadataExtractor()));
+						extractorMetadata = extractorMetadataService.update(extractorMetadata);
+						continue;
+					}
 				}
+				
+				try {
+					modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, 
+							String.format("Starting extraction metadata with command [%s]...", 
+							extractorMetadata.getModelMetadataExtractor().getExecutionCommand()));
+					
+					byte[] executionMetadata = sshProviderService.executeCommand(connection, extractorMetadata.getModelMetadataExtractor().getExecutionCommand());
+					
+					modelResultMetadata = modelResultMetadataService
+							.updateExecutionOutput(modelResultMetadata, String.format("Finished extraction of metadata of the extractor [%s]", 
+									extractorMetadata.getModelMetadataExtractor().getTag()));
+					try {
+						if (executionMetadata != null && executionMetadata.length > 0 && modelResultMetadata.getUploadMetadata() != null && modelResultMetadata.getUploadMetadata()) {
+							modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, "Uploading extraction metadata...");
+							
+							DriveFile driveFile = uploadMetadata(modelResultMetadata.getSlug(), 
+									extractorMetadata.getModelMetadataExtractor().getTag(), executionMetadata);
+							extractorMetadata.setExecutionMetadataFileId(driveFile.getFileId());
+							
+							modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, "Finished uploading extraction metadata");
+						}
+						
+						extractorMetadata.getModelMetadataExtractor().setExecutionStatus(ExecutionStatus.IDLE);
+						extractorMetadata.setExecutionStatus(ExecutionStatus.FINISHED);
+						
+					} catch (Exception e) {
+						log.error("Error uploading extracted metadata", e);
+						extractorMetadata.getModelMetadataExtractor().setExecutionStatus(ExecutionStatus.IDLE);
+						extractorMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
+					}
+					
+					extractorMetadata.setModelMetadataExtractor(modelMetadataExtractorService.update(extractorMetadata.getModelMetadataExtractor()));
+					extractorMetadata = extractorMetadataService.update(extractorMetadata);
+					
+				} catch (IOException | InterruptedException e ) {
+					log.error("Error while executing extractor command of ModelMetadataExtractor of slug [{}]", 
+							extractorMetadata.getModelMetadataExtractor().getSlug());
+					
+					modelResultMetadata = modelResultMetadataService
+							.updateExecutionOutput(modelResultMetadata, String.format("Error while executing extractor [%s]", 
+									extractorMetadata.getModelMetadataExtractor().getTag()));
+					
+					extractorMetadata.getModelMetadataExtractor().setExecutionStatus(ExecutionStatus.IDLE);
+					extractorMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
+					
+					extractorMetadata.setModelMetadataExtractor(modelMetadataExtractorService.update(extractorMetadata.getModelMetadataExtractor()));
+					extractorMetadata = extractorMetadataService.update(extractorMetadata);
+				} 
 			}
-			
-			modelMetadataExtractor.setExecutionStatus(ExecutionStatus.RUNNING);
-			modelMetadataExtractor.setUserAgent(modelResultMetadata.getModelExecutor().getUserAgent());
-			modelMetadataExtractor = modelMetadataExtractorService.update(modelMetadataExtractor);
-			
-			ExtractorMetadata extractorMetadata = collectExtractorMetadata(connection, modelResultMetadata, modelMetadataExtractor);
-			if (extractorMetadata != null) {
-				extractorMetadatas.add(extractorMetadata);
-			}
-			
-			if (!ExecutionStatus.FAILURE.equals(modelMetadataExtractor.getExecutionStatus())) {
-				modelMetadataExtractor.setExecutionStatus(ExecutionStatus.FINISHED);
-			}
-			
-			modelMetadataExtractorService.update(modelMetadataExtractor);
 		}
-		
-		modelResultMetadata.setExtractorMetadatas(new HashSet<>(extractorMetadatas));
 		
 		return modelResultMetadataService.update(modelResultMetadata);
 	}
-	
-	private ExtractorMetadata collectExtractorMetadata(Connection connection, ModelResultMetadata modelResultMetadata,
-			ModelMetadataExtractor modelMetadataExtractor) throws IOException, GoogleErrorApiException {
 
-		ExtractorMetadata extractorMetadata = extractorMetadataService.save(ExtractorMetadata.builder()
-				.modelResultMetadata(modelResultMetadata)
-				.modelMetadataExtractor(modelMetadataExtractor)
-				.build());
-		byte[] executionMetadata = null;
-		
-		try {
-			modelResultMetadata = updateExecutionOutput(modelResultMetadata, String.format("Starting extraction metadata with command [%s]...", 
-					modelMetadataExtractor.getExecutionCommand()));
-			
-			executionMetadata = sshProvider.executeCommand(connection, modelMetadataExtractor.getExecutionCommand());
-			
-			modelResultMetadata = updateExecutionOutput(modelResultMetadata, String.format("Finished extraction of metadata of the extractor [%s]", 
-					modelMetadataExtractor.getTag()));
-			
-			extractorMetadata.setExecutionStatus(ExecutionStatus.FINISHED);
-			
-		} catch (IOException | InterruptedException e ) {
-			log.error("Error while executing extractor command of ModelMetadataExtractor of slug [{}]", modelMetadataExtractor.getSlug());
-			
-			modelResultMetadata = updateExecutionOutput(modelResultMetadata, String.format("Error while executing extractor [%s]", 
-					modelMetadataExtractor.getTag()));
-			
-			modelMetadataExtractor.setExecutionStatus(ExecutionStatus.FAILURE);
-			extractorMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
-		} 
-
-		if (executionMetadata != null) {
-			DriveFile driveFile = uploadMetadata(modelResultMetadata.getSlug(), modelMetadataExtractor.getTag(), executionMetadata);
-			extractorMetadata.setExecutionMetadataFileId(driveFile.getFileId());
+	public Set<ExtractorMetadata> getExecutionExtractors(List<String> executionExtractors, ModelResultMetadata modelResultMetadata) {
+		List<ExtractorMetadata> extractorMetadatas = new ArrayList<>();
+		List<ModelMetadataExtractor> modelMetadataExtractors = null;
+				
+		if (executionExtractors != null && !executionExtractors.isEmpty()) {
+			modelMetadataExtractors = modelMetadataExtractorService.findAllBySlugInAndActive(executionExtractors, Boolean.TRUE);
+		} else {
+			modelMetadataExtractors = modelMetadataExtractorService.findAllByComputationalModelAndActiveAndExecutionStatusNot(
+					modelResultMetadata.getComputationalModel(), Boolean.TRUE, ExecutionStatus.RUNNING);
 		}
 		
-		return extractorMetadataService.update(extractorMetadata);
+		if (modelMetadataExtractors != null && !modelMetadataExtractors.isEmpty()) {
+			for (ModelMetadataExtractor modelMetadataExtractor : modelMetadataExtractors) {
+				modelMetadataExtractor.setExecutionStatus(ExecutionStatus.SCHEDULED);
+				modelMetadataExtractor = modelMetadataExtractorService.update(modelMetadataExtractor);
+				extractorMetadatas.add(extractorMetadataService.save(ExtractorMetadata.builder()
+						.modelResultMetadata(modelResultMetadata)
+						.executionStatus(modelMetadataExtractor.getExecutionStatus())
+						.modelMetadataExtractor(modelMetadataExtractor)
+						.build()));
+			}
+		}
+		
+		return new HashSet<>(extractorMetadatas);
+	}
+	
+	public Set<ExtractorMetadata> getExecutionExtractor(ModelMetadataExtractor modelMetadataExtractor, ModelResultMetadata modelResultMetadata) {
+		List<ExtractorMetadata> extractorMetadatas = new ArrayList<>();
+		
+		if (modelMetadataExtractor != null ) {
+			modelMetadataExtractor.setExecutionStatus(ExecutionStatus.SCHEDULED);
+			modelMetadataExtractor = modelMetadataExtractorService.update(modelMetadataExtractor);
+			extractorMetadatas.add(extractorMetadataService.save(ExtractorMetadata.builder()
+					.modelResultMetadata(modelResultMetadata)
+					.executionStatus(modelMetadataExtractor.getExecutionStatus())
+					.modelMetadataExtractor(modelMetadataExtractor)
+					.build()));
+		}
+		
+		return new HashSet<>(extractorMetadatas);
 	}
 	
 }	

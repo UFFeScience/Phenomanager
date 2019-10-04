@@ -9,6 +9,7 @@ import org.springframework.util.StringUtils;
 
 import com.uff.phenomanager.domain.Phenomenon;
 import com.uff.phenomanager.domain.Project;
+import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;
 import com.uff.phenomanager.repository.ProjectRepository;
 import com.uff.phenomanager.service.api.SciManagerService;
@@ -48,7 +49,7 @@ public class ProjectService extends ApiPermissionRestService<Project, ProjectRep
 	}
 	
 	@Override
-	public Integer delete(String slug) throws NotFoundApiException {
+	public Integer delete(String slug) throws ApiException {
 		Project project = findBySlug(slug);
 		
 		List<Phenomenon> phenomenons = phenomenonService.findAllByProject(project);

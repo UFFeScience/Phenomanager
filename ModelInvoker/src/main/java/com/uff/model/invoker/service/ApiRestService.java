@@ -31,21 +31,21 @@ public abstract class ApiRestService<ENTITY extends BaseApiEntity, REPOSITORY ex
 	}
 	
 	public ENTITY update(ENTITY entity) {
-      entity.setUpdateDate(Calendar.getInstance());
+		entity.setUpdateDate(Calendar.getInstance());
       
-      if (entity.getActive() != null && entity.getActive()) {
-         entity.setDeleteDate(null);
-      }
+      	if (entity.getActive() != null && entity.getActive()) {
+      		entity.setDeleteDate(null);
+      	}
       
-      return getRepository().saveAndFlush(entity);
+      	return getRepository().saveAndFlush(entity);
    }
 
    public void delete(String slug) {
-      getRepository().deleteBySlug(slug);
+	   	getRepository().deleteBySlug(slug);
    }
    
    public void deleteInBatch(List<ENTITY> entities) {
-      getRepository().deleteInBatch(entities);
+	   getRepository().deleteInBatch(entities);
    }
 
 	public ENTITY save(ENTITY entity) {

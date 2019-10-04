@@ -98,7 +98,7 @@ public class UserService extends ApiRestService<User, UserRepository> {
 	}
 	
 	@Override
-	public Integer delete(String slug) throws NotFoundApiException {
+	public Integer delete(String slug) throws ApiException {
 		User user = findBySlug(slug);
 		
 		if (user.getProfileImageFileId() != null && !"".equals(user.getProfileImageFileId())) {

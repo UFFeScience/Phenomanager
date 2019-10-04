@@ -1267,7 +1267,8 @@ select.full-width + .select2-container {
             }
         }
         .select2-search--inline {
-            margin-left: 8px;
+            margin-left: 0px;
+            padding-left: 0px; 
         }
     }
     &.select2-container-active {
@@ -2242,7 +2243,7 @@ div.cs-skin-slide{
 }
 
 .select2-search__field::placeholder {
-    color: #bfbfbf;
+    color: #626262;
 }
 
 select.form-control:invalid {
@@ -2362,6 +2363,7 @@ select.form-control:invalid {
 .filter-form {
     border: 2px solid rgba(0, 0, 0, 0.07);
     max-width: 200px;
+    margin-bottom: 5px;
 }
 
 .cropper-container {

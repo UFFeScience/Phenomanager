@@ -12,7 +12,9 @@ import org.springframework.util.StringUtils;
 import com.uff.phenomanager.Constants;
 import com.uff.phenomanager.Constants.MSG_ERROR;
 import com.uff.phenomanager.domain.ComputationalModel;
+import com.uff.phenomanager.domain.ExecutionStatus;
 import com.uff.phenomanager.domain.ExtractorMetadata;
+import com.uff.phenomanager.domain.ModelMetadataExtractor;
 import com.uff.phenomanager.domain.ModelResultMetadata;
 import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;
@@ -49,7 +51,7 @@ public class ExtractorMetadataService extends ApiPermissionRestService<Extractor
 		return StringUtils.uncapitalize(ComputationalModel.class.getSimpleName());
 	}
 	
-	public ExtractorMetadata findBySlug(String slug, String authorization) throws ApiException {
+	public ExtractorMetadata findBySlug(String slug, String authorization, String computationalModelSlug) throws ApiException {
 		ExtractorMetadata entity = findBySlug(slug);
 		
 		if (entity.getModelMetadataExtractor().getComputationalModel().getIsPublicData()) {
@@ -65,7 +67,7 @@ public class ExtractorMetadataService extends ApiPermissionRestService<Extractor
         } else if (!tokenAuthenticationService.validateToken(token)) {
 			hasAuthorization = Boolean.FALSE;
 		
-        } else if (!allowPermissionReadAccess(authorization, slug)) {
+        } else if (!allowPermissionReadAccess(authorization, computationalModelSlug)) {
         	hasAuthorization = Boolean.FALSE;
         }
         
@@ -103,6 +105,12 @@ public class ExtractorMetadataService extends ApiPermissionRestService<Extractor
 		}
 		
 		return deletedResult;
+	}
+	
+	public ExtractorMetadata findByModelMetadataExtractorAndExecutionStatus(
+			ModelMetadataExtractor modelMetadataExtractor, ExecutionStatus executionStatus) {
+		return extractorMetadataRepository.findByModelMetadataExtractorAndExecutionStatus(
+				modelMetadataExtractor, executionStatus);
 	}
 	
 }

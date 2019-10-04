@@ -184,7 +184,7 @@
                 permissionService
                     .insert(vm.permission)
                     .then(function(resp) {
-                        vm.changePage();
+                        vm.changePermissionPage();
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
@@ -194,7 +194,7 @@
                 permissionService
                     .update(vm.permission)
                     .then(function(resp) {
-                        vm.changePage();
+                        vm.changePermissionPage();
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
@@ -223,7 +223,9 @@
                     
                     } else if (vm.updateLogOutput) {
                         $timeout(function() {
-                            vm.getModelResultExecution(modelResultMetadataSlug);
+                            if ($location.$$path && $location.$$path.includes('/computational-models/')) {
+                                vm.getModelResultExecution(modelResultMetadataSlug);
+                            }
                         }, 2000);
                     }
                 })
@@ -240,27 +242,47 @@
                 .getAllModelResultMetadatas(vm.modelResultMetadataCurrentPage - 1, vm.limit, vm.computationalModel.slug)
                 .then(function(resp) {
                     var hasRunningModel = false;
+                    var hasRunningExtractor = false;
 
                     for (var i = 0; i < resp.data.records.length; i++) {
                         resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
                         resp.data.records[i].parsedExecutionFinishDate = new Date(resp.data.records[i].executionFinishDate);
                         resp.data.records[i].parsedExecutionStartDate = new Date(resp.data.records[i].executionStartDate);
                     
-                        if (resp.data.records[i].executionStatus === 'RUNNING') {
+                        if (resp.data.records[i].executionStatus === 'RUNNING' || resp.data.records[i].executionStatus === 'SCHEDULED' ||
+                                (resp.data.records[i].modelExecutor && 
+                                (resp.data.records[i].modelExecutor.executionStatus === 'RUNNING' ||
+                                resp.data.records[i].modelExecutor.executionStatus === 'SCHEDULED'))) {
                             hasRunningModel = true;
                         }
 
-                        if (resp.data.records[i].modelExecutor.slug === vm.activeModelExecutor.slug) {		
-                            vm.activeModelExecutor.executionStatus = resp.data.records[i].modelExecutor.executionStatus;		
+                        for (var j = 0; j < resp.data.records[i].extractorMetadatas; j++) {
+                            if (resp.data.records[i].extractorMetadatas[j].executionStatus === 'RUNNING' || 
+                                    resp.data.records[i].extractorMetadatas[j].executionStatus === 'SCHEDULED' ||
+                                    resp.data.records[i].extractorMetadatas[j].modelMetadataExtractor.executionStatus === 'RUNNING' ||
+                                    resp.data.records[i].extractorMetadatas[j].modelMetadataExtractor.executionStatus === 'SCHEDULED') {
+                                var hasRunningExtractor = false;
+                            }
                         }
                     }
+
                     vm.modelResultMetadatas = resp.data.records;
                     vm.totalModelResultMetadataCount = resp.data.metadata.totalCount;
                     vm.loadingModelResultMetadata = false;
 
-                    if (hasRunningModel) {
+                    if (hasRunningModel || hasRunningExtractor || resp.data.records.length === 0) {
                         $timeout(function() {
-                            vm.refreshModelResults();
+                            if ($location.$$path && $location.$$path.includes('/computational-models/')) {
+                                if (vm.tab === 'modelResults') {
+                                    vm.refreshModelResults();
+                                
+                                } else if(vm.tab === 'executors') {
+                                    vm.refreshExecutors();
+
+                                } else if(vm.tab === 'extractors') {
+                                    vm.refreshExtractors();
+                                }
+                            }
                         }, 2000);
                     }
                 })
@@ -281,20 +303,39 @@
                         resp.data.records[i].parsedExecutionFinishDate = new Date(resp.data.records[i].executionFinishDate);
                         resp.data.records[i].parsedExecutionStartDate = new Date(resp.data.records[i].executionStartDate);
                     
-                        if (resp.data.records[i].executionStatus === 'RUNNING') {
+                        if (resp.data.records[i].executionStatus === 'RUNNING' || resp.data.records[i].executionStatus === 'SCHEDULED' ||
+                                (resp.data.records[i].modelExecutor && 
+                                (resp.data.records[i].modelExecutor.executionStatus === 'RUNNING' ||
+                                resp.data.records[i].modelExecutor.executionStatus === 'SCHEDULED'))) {
                             hasRunningModel = true;
                         }
 
-                        if (resp.data.records[i].modelExecutor.slug === vm.activeModelExecutor.slug) {		
-                            vm.activeModelExecutor.executionStatus = resp.data.records[i].modelExecutor.executionStatus;		
+                        for (var j = 0; j < resp.data.records[i].extractorMetadatas; j++) {
+                            if (resp.data.records[i].extractorMetadatas[j].executionStatus === 'RUNNING' || 
+                                    resp.data.records[i].extractorMetadatas[j].executionStatus === 'SCHEDULED' ||
+                                    resp.data.records[i].extractorMetadatas[j].modelMetadataExtractor.executionStatus === 'RUNNING' ||
+                                    resp.data.records[i].extractorMetadatas[j].modelMetadataExtractor.executionStatus === 'SCHEDULED') {
+                                var hasRunningExtractor = false;
+                            }
                         }
                     }
+
                     vm.modelResultMetadatas = resp.data.records;
                     vm.totalModelResultMetadataCount = resp.data.metadata.totalCount;
                
-                    if (hasRunningModel) {
+                    if (hasRunningModel || hasRunningExtractor || resp.data.records.length === 0) {
                         $timeout(function() {
-                            vm.refreshModelResults();
+                            if ($location.$$path && $location.$$path.includes('/computational-models/')) {
+                                if (vm.tab === 'modelResults') {
+                                    vm.refreshModelResults();
+                                
+                                } else if(vm.tab === 'executors') {
+                                    vm.refreshExecutors();
+
+                                } else if(vm.tab === 'extractors') {
+                                    vm.refreshExtractors();
+                                }
+                            }
                         }, 2000);
                     }
                 })
@@ -303,8 +344,6 @@
                     toastr.error('Error while refreshing model result metadatas.', 'Unexpected error!');
                 });
         }
-
-
 
         $scope.setValueFile = function(fileInput) {
             var files = fileInput.files;
@@ -535,7 +574,6 @@
                     vm.loadingUpload = false;
                     
                     vm.changeModelExecutorPage();
-                    getActiveModelExecutor();
 
                     toastr.success('Action performed with success.', 'Success!');
                     $rootScope.loadingAsync--;
@@ -738,23 +776,6 @@
             vm.modelExecutorSaveTitle = 'Create executor';
         }
 
-        vm.doActivateModelExecutor = function() {
-            vm.modelExecutor.active = true;
-            vm.modelExecutor.computationalModel = {
-                slug: vm.computationalModel.slug
-            };
-            
-            computationalModelService
-                .updateModelExecutor(vm.modelExecutor, vm.computationalModel.slug)
-                .then(function(resp) {
-                    vm.changeModelExecutorPage();
-                    toastr.success('Success!', 'Action performed with success.');
-                })
-                .catch(function(resp) {
-                    toastr.error('Error while performing action.', 'Unexpected error!');
-                });
-        }
-
         vm.doSaveModelExecutor = function() {
             vm.modelExecutor.computationalModel = {
                 slug: vm.computationalModel.slug
@@ -768,8 +789,6 @@
 
                         if (!vm.executor) {
                             vm.changeModelExecutorPage();
-                            getActiveModelExecutor();
-
                             toastr.success('Action performed with success.', 'Success!');
 
                         } else {
@@ -786,8 +805,6 @@
                         
                         if (!vm.executor) {
                             vm.changeModelExecutorPage();
-                            getActiveModelExecutor();
-
                             toastr.success('Action performed with success.', 'Success!');
                         } else {
                             vm.doUploadModelExecutorExecutor();
@@ -799,39 +816,77 @@
             }
         }
 
-        vm.doAbortModelExecutor = function(modelExecutorSlug) {
+        vm.doAbortModelExecutor = function(modelExecutorSlug, uploadMetadata) {
             var requestBody = {
                 modelExecutorSlug: modelExecutorSlug,
                 executionCommand: 'STOP',
-                computationalModelVersion: vm.computationalModel.currentVersion
+                uploadMetadata: uploadMetadata,
+                computationalModelVersion: vm.computationalModel.currentVersion,
+                computationalModelSlug: vm.computationalModel.slug
             };
 
             computationalModelService
                 .runModel(requestBody)
                 .then(function(resp) {
                     vm.changeModelExecutorPage();
-                    getActiveModelExecutor();
                 })
                 .catch(function(resp) {
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
 
-        vm.doRunModelExecutor = function(modelExecutorSlug) {
+        vm.runModelExecutor = function(modelExecutorSlug) {
+            vm.executionData = {
+                uploadMetadata: false
+            };
+            vm.modelExecutorSlug = modelExecutorSlug;
+        }
+
+        vm.runModelMetadataExtractor = function(modelMetadataExtractorSlug) {
+            vm.executionData = {
+                uploadMetadata: false
+            };
+            vm.modelMetadataExtractorSlug = modelMetadataExtractorSlug;
+        }
+
+        vm.doRunModelExecutor = function(modelExecutorSlug, environmentForExecution, executionExtractors, uploadMetadata) {
             var requestBody = {
                 modelExecutorSlug: modelExecutorSlug,
                 executionCommand: 'START',
-                computationalModelVersion: vm.computationalModel.currentVersion
-            };
+                uploadMetadata: uploadMetadata,
+                computationalModelVersion: vm.computationalModel.currentVersion,
+                computationalModelSlug: vm.computationalModel.slug
+            };  
+
+            if (environmentForExecution && environmentForExecution.slug) {
+                requestBody.executionEnvironmentSlug = environmentForExecution.slug;
+            }
+
+            if (executionExtractors && executionExtractors.length > 0) {
+                var extractorSlugs = [];
+                for (var i = 0; i < executionExtractors.length; i++) {
+                    extractorSlugs.push(executionExtractors[i].slug);
+                }
+                requestBody.executionExtractors = extractorSlugs;
+            }
 
             computationalModelService
                 .runModel(requestBody)
                 .then(function(resp) {
                     vm.changeModelExecutorPage();
-                    getActiveModelExecutor();
 
                     $timeout(function() {
-                        vm.refreshModelResults();
+                        if ($location.$$path && $location.$$path.includes('/computational-models/')) {
+                            if (vm.tab === 'modelResults') {
+                                vm.refreshModelResults();
+                            
+                            } else if(vm.tab === 'executors') {
+                                vm.refreshExecutors();
+
+                            } else if(vm.tab === 'extractors') {
+                                vm.refreshExtractors();
+                            }
+                        }
                     }, 2000);
                 })
                 .catch(function(resp) {
@@ -850,16 +905,85 @@
             computationalModelService
                 .getAllModelExecutors(vm.modelExecutorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
                 .then(function(resp) {
+                    var hasRunningModel = false;
+
                     for (var i = 0; i < resp.data.records.length; i++) {
                         resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
+                        
+                        if (resp.data.records[i].executionStatus === 'RUNNING' ||
+                                resp.data.records[i].executionStatus === 'SCHEDULED') {
+                            hasRunningModel = true;
+                        }
                     }
                     vm.modelExecutors = resp.data.records;
                     vm.totalModelExecutorCount = resp.data.metadata.totalCount;
                     vm.loadingModelExecutor = false;
+
+                    if (hasRunningModel) {
+                        $timeout(function() {
+                            if ($location.$$path && $location.$$path.includes('/computational-models/')) {
+                                if (vm.tab === 'modelResults') {
+                                    vm.refreshModelResults();
+                                
+                                } else if(vm.tab === 'executors') {
+                                    vm.refreshExecutors();
+
+                                } else if(vm.tab === 'extractors') {
+                                    vm.refreshExtractors();
+                                }
+                            }
+                        }, 2000);
+                    }
                 })
                 .catch(function(resp) {
                     vm.loadingModelExecutor = false;
                     toastr.error('Error while loading model executors.', 'Unexpected error!');
+                });
+        }
+
+        vm.refreshExecutors = function() {
+            var filter = null;
+
+            if (vm.filterModelExecutors) {
+                filter = 'tag=like=' + vm.filterModelExecutors;
+            }
+
+            computationalModelService
+                .getAllModelExecutors(vm.modelExecutorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
+                .then(function(resp) {
+                    var hasRunningModel = false;
+                    
+                    for (var i = 0; i < resp.data.records.length; i++) {
+                        resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
+                        
+                        if (resp.data.records[i].executionStatus === 'RUNNING' ||
+                                resp.data.records[i].executionStatus === 'SCHEDULED') {
+                            hasRunningModel = true;
+                        }
+                    }
+                    vm.modelExecutors = resp.data.records;
+                    vm.totalModelExecutorCount = resp.data.metadata.totalCount;
+                    vm.loadingModelExecutor = false;
+               
+                    if (hasRunningModel) {
+                        $timeout(function() {
+                            if ($location.$$path && $location.$$path.includes('/computational-models/')) {
+                                if (vm.tab === 'modelResults') {
+                                    vm.refreshModelResults();
+                                
+                                } else if(vm.tab === 'executors') {
+                                    vm.refreshExecutors();
+
+                                } else if(vm.tab === 'extractors') {
+                                    vm.refreshExtractors();
+                                }
+                            }
+                        }, 2000);
+                    }
+                })
+                .catch(function(resp) {
+                    vm.loadingModelResultMetadata = false;
+                    toastr.error('Error while refreshing model executors.', 'Unexpected error!');
                 });
         }
 
@@ -910,12 +1034,18 @@
             
         }
 
-        vm.doRunModelMetadataExtractor = function(modelMetadataExtractorSlug) {
+        vm.doRunModelMetadataExtractor = function(modelMetadataExtractorSlug, environmentForExecution, uploadMetadata) {
             var requestBody = {
-                modelExecutorSlug: modelMetadataExtractorSlug,
+                modelMetadataExtractorSlug: modelMetadataExtractorSlug,
                 executionCommand: 'START',
-                computationalModelVersion: vm.computationalModel.currentVersion
+                uploadMetadata: uploadMetadata,
+                computationalModelVersion: vm.computationalModel.currentVersion,
+                computationalModelSlug: vm.computationalModel.slug
             };
+
+            if (environmentForExecution && environmentForExecution.slug) {
+                requestBody.executionEnvironmentSlug = environmentForExecution.slug;
+            }
 
             computationalModelService
                 .runModel(requestBody)
@@ -976,8 +1106,8 @@
                 });
         }
 
-        vm.deleteModelMetadataExtractor = function(changeModelMetadataExtractorPage) {
-            vm.changeModelMetadataExtractorPage = changeModelMetadataExtractorPage;
+        vm.deleteModelMetadataExtractor = function(modelMetadataExtractorSlug) {
+            vm.modelMetadataExtractorSlug = modelMetadataExtractorSlug;
             vm.extractor = null;
         }
 
@@ -1085,16 +1215,85 @@
             computationalModelService
                 .getAllModelMetadataExtractors(vm.modelMetadataExtractorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
                 .then(function(resp) {
+                    var hasRunningModel = false;
+
                     for (var i = 0; i < resp.data.records.length; i++) {
                         resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
+
+                        if (resp.data.records[i].executionStatus === 'RUNNING' ||
+                                resp.data.records[i].executionStatus === 'SCHEDULED') {
+                            hasRunningModel = true;
+                        }
                     }
                     vm.modelMetadataExtractors = resp.data.records;
                     vm.totalModelMetadataExtractorCount = resp.data.metadata.totalCount;
                     vm.loadingModelMetadataExtractor = false;
+
+                    if (hasRunningModel) {
+                        $timeout(function() {
+                            if ($location.$$path && $location.$$path.includes('/computational-models/')) {
+                                if (vm.tab === 'modelResults') {
+                                    vm.refreshModelResults();
+                                
+                                } else if(vm.tab === 'executors') {
+                                    vm.refreshExecutors();
+
+                                } else if(vm.tab === 'extractors') {
+                                    vm.refreshExtractors();
+                                }
+                            }
+                        }, 2000);
+                    }
                 })
                 .catch(function(resp) {
                     vm.loadingModelMetadataExtractor = false;
                     toastr.error('Error while loading model metadata extractors.', 'Unexpected error!');
+                });
+        }
+
+        vm.refreshExtractors = function() {
+            var filter = null;
+
+            if (vm.filterModelMetadataExtractors) {
+                filter = 'tag=like=' + vm.filterModelMetadataExtractors;
+            }
+
+            computationalModelService
+                .getAllModelMetadataExtractors(vm.modelMetadataExtractorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
+                .then(function(resp) {
+                    var hasRunningExtractor = false;
+                    
+                    for (var i = 0; i < resp.data.records.length; i++) {
+                        resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
+                        
+                        if (resp.data.records[i].executionStatus === 'RUNNING' ||
+                                resp.data.records[i].executionStatus === 'SCHEDULED') {
+                            hasRunningExtractor = true;
+                        }
+                    }
+                    vm.modelExecutors = resp.data.records;
+                    vm.totalModelExecutorCount = resp.data.metadata.totalCount;
+                    vm.loadingModelExecutor = false;
+               
+                    if (hasRunningExtractor) {
+                        $timeout(function() {
+                            if ($location.$$path && $location.$$path.includes('/computational-models/')) {
+                                if (vm.tab === 'modelResults') {
+                                    vm.refreshModelResults();
+                                
+                                } else if(vm.tab === 'executors') {
+                                    vm.refreshExecutors();
+
+                                } else if(vm.tab === 'extractors') {
+                                    vm.refreshExtractors();
+                                }
+                            }
+                        }, 2000);
+                    }
+                })
+                .catch(function(resp) {
+                    vm.loadingModelResultMetadata = false;
+                    toastr.error('Error while refreshing model metadata extractors.', 'Unexpected error!');
                 });
         }
 
@@ -1205,8 +1404,6 @@
                     .insertExecutionEnvironment(vm.executionEnvironment, vm.computationalModel.slug)
                     .then(function(resp) {
                         vm.changeExecutionEnvironmentPage();
-                        getActiveExecutionEnvironment();
-
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
@@ -1223,20 +1420,6 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
-
-        vm.doActivateExecutionEnvironment = function() {
-            vm.executionEnvironment.active = true;
-
-            computationalModelService
-                .updateExecutionEnvironment(vm.executionEnvironment, vm.computationalModel.slug)
-                .then(function(resp) {
-                    vm.changeExecutionEnvironmentPage();
-                    toastr.success('Success!', 'Action performed with success.');
-                })
-                .catch(function(resp) {
-                    toastr.error('Error while performing action.', 'Unexpected error!');
-                });
         }
 
         vm.addVirtualMachineConfig = function(type, financialCost, diskSpace, ram, gflops, platform, numberOfCores) {
@@ -1299,40 +1482,6 @@
                 });
         }
 
-        function getActiveModelExecutor() {
-            vm.loadingActiveExecutor = true;
-
-            computationalModelService
-                .getAllModelExecutors(vm.modelExecutorCurrentPage - 1, vm.limit, vm.computationalModelSlug, 'active=true')
-                .then(function(resp) {
-                	if (resp.data && resp.data.records.length >= 1) {
-                		vm.activeModelExecutor = resp.data.records[0];
-                	}
-                    vm.loadingActiveExecutor = false;
-                })
-                .catch(function(resp) {
-                    vm.loadingActiveExecutor = false;
-                    toastr.error('Error while loading active model executor.', 'Unexpected error!');
-                });
-        }
-
-        function getActiveExecutionEnvironment() {
-            vm.loadingActiveExecutionEnvironment = true;
-
-            computationalModelService
-                .getAllExecutionEnvironments(vm.modelExecutorCurrentPage - 1, vm.limit, vm.computationalModelSlug, 'active=true')
-                .then(function(resp) {
-                	if (resp.data && resp.data.records.length >= 1) {
-                		vm.activeExecutionEnvironment = resp.data.records[0];
-                	}
-                    vm.loadingActiveExecutionEnvironment = false;
-                })
-                .catch(function(resp) {
-                    vm.loadingActiveExecutionEnvironment = false;
-                    toastr.error('Error while loading active execution environment.', 'Unexpected error!');
-                });
-        }
-
         function getComputationalModel() {
             vm.loadingComputationalModel = true;
 
@@ -1344,8 +1493,6 @@
                     vm.checkWriteAccess();
                     vm.loadingComputationalModel = false;
 
-                    getActiveModelExecutor();
-                    getActiveExecutionEnvironment();
                     vm.changeModelResultMetadataPage();
                 })
                 .catch(function(resp) {
@@ -1362,6 +1509,7 @@
                 vm.updateLogOutput = false;
             });
 
+            vm.tab = 'modelResults';
             vm.computationalModelSaveTitle = 'Update computational model';
             vm.updateComputationalModel = true;
 
@@ -1418,8 +1566,8 @@
                 'value': 'COMMAND',
                 'name': 'Command'
             }, {
-                'value': 'HTTP',
-                'name': 'Http'
+                'value': 'WEB_SERVICE',
+                'name': 'Web Service'
             }];
 
             vm.httpVerbs = [{
@@ -1436,7 +1584,7 @@
                 'name': 'DELETE'
             }];
 
-            vm.httpProtocolTypes = [{
+            vm.webServiceTypes = [{
                 'value': 'REST',
                 'name': 'REST'
             }, {

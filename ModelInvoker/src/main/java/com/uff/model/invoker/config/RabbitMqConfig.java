@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class RabbitMqConfig implements RabbitListenerConfigurer {
 	
 	public static final String MODEL_EXECUTION_QUEUE = "modelExecution";
+	public static final String MODEL_KILLER_QUEUE = "modelKiller";
 
 	@Bean
 	public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {

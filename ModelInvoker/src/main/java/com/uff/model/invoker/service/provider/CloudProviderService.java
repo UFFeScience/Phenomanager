@@ -1,4 +1,4 @@
-package com.uff.model.invoker.provider;
+package com.uff.model.invoker.service.provider;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -47,9 +47,9 @@ import com.uff.model.invoker.domain.NodeType;
 import com.uff.model.invoker.domain.VirtualMachineConfig;
 
 @Component
-public class CloudProvider {
+public class CloudProviderService {
 	
-	private static final Logger log = LoggerFactory.getLogger(CloudProvider.class);
+	private static final Logger log = LoggerFactory.getLogger(CloudProviderService.class);
 
 	private static final String IP_RANGE_PERMISSION = "0.0.0.0/0";
 	private static final String GROUP_NAME_LABEL = "group-name";
@@ -72,9 +72,7 @@ public class CloudProvider {
         DescribeInstancesResult controls = getDescribeControlFromCluster(amazonClient, clusterName);
      
         for (Reservation reservation : controls.getReservations()) {
-            
         	for (Instance instance : reservation.getInstances()) {
-            
         		return AmazonMachine.builder()
             			.publicDNS(instance.getPublicDnsName())
             			.publicIP(instance.getPublicIpAddress())
@@ -108,7 +106,6 @@ public class CloudProvider {
             for (AmazonMachine mac : machines) {
             	log.info("Machine mac address: [{}]", mac.toString());
             }
-            
             log.info("Amount of Virtual machines: [{}] ", machines.size());
         
         } else {
@@ -181,6 +178,7 @@ public class CloudProvider {
                 return Boolean.TRUE;
             }
         }
+		
         return Boolean.FALSE;
     }
 	
@@ -302,7 +300,6 @@ public class CloudProvider {
         Tag nameTag = new Tag(CLUSTER_LABEL_NAME, getVirtualMachinesName(clusterName));
         
         for (RunInstancesResult runInstanceResult : resultInstances) {
-            
             first = createTags(amazonClient, nameTag, runInstanceResult, resources, instanceIds, hasControlInstances,
 					hasCoreInstances, first);
 
@@ -397,7 +394,6 @@ public class CloudProvider {
         RunInstancesResult instanceResult = null;
         
         for (VirtualMachineConfig virtualMachine : virtualMachineConfigs) {
-           
         	if (virtualMachine.getAmountInstantiated() > 0) {
                 runInstanceRequest = new RunInstancesRequest(image, virtualMachine.getAmountInstantiated(), virtualMachine.getAmountInstantiated());
                 runInstanceRequest.setInstanceType(virtualMachine.getType());
@@ -425,7 +421,8 @@ public class CloudProvider {
         result = getDescribeNodesFromCluster(amazonClient, clusterName);
         for (Reservation reservation : result.getReservations()) {
         	Integer instances = reservation.getInstances().size();
-            if (instances > 0) {
+            
+        	if (instances > 0) {
                 return Boolean.TRUE;
             }
         }

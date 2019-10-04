@@ -184,7 +184,7 @@
                 permissionService
                     .insert(vm.permission)
                     .then(function(resp) {
-                        vm.changePage();
+                        vm.changePermissionPage();
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
@@ -194,7 +194,7 @@
                 permissionService
                     .update(vm.permission)
                     .then(function(resp) {
-                        vm.changePage();
+                        vm.changePermissionPage();
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
@@ -408,6 +408,35 @@
             vm.permission = {};
 
             vm.hasWriteAuthorization = false;
+
+            vm.researchDomains = [{
+                'value': 'MATH',
+                'name': 'Math'
+            }, {
+                'value': 'PHYSICS',
+                'name': 'Phisics'
+            }, {
+                'value': 'BIOLOGY',
+                'name': 'Biology'
+            }, {
+                'value': 'CHEMISTRY',
+                'name': 'Chemistry'
+            }, {
+                'value': 'BIO_CHEMISTRY',
+                'name': 'Biochemistry'
+            }, {
+                'value': 'ASTRONOMY',
+                'name': 'Astronomy'
+            }, {
+                'value': 'COMPUTER_SCIENCE',
+                'name': 'Computer Science'
+            }, {
+                'value': 'LINGUISTICS',
+                'name': 'Linguistics'
+            }, {
+                'value': 'OTHER',
+                'name': 'Other'
+            }];
 
             vm.states = [{
                 'value': 'FORMULATED',

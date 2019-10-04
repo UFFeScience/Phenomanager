@@ -1,4 +1,4 @@
-package com.uff.model.invoker.provider;
+package com.uff.model.invoker.service.provider;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,9 +12,9 @@ import com.uff.model.invoker.domain.VpnType;
 import com.uff.model.invoker.util.FileUtils;
 
 @Component
-public class VpnProvider {
+public class VpnProviderService {
 	
-	private static final Logger log = LoggerFactory.getLogger(VpnProvider.class);
+	private static final Logger log = LoggerFactory.getLogger(VpnProviderService.class);
 
 	public static final String VPNC_CONFIG_FILE_SUFIX = ".conf";
 	private static final String VPN_COMMAND = "sudo openvpn ";
@@ -42,7 +42,6 @@ public class VpnProvider {
 		if (vpnProcess.exitValue() != 0) {
 			log.warn("Failed to initialize VPN process");
 			return null;
-		
 		} else {
 			return vpnProcess;
 		}
@@ -60,7 +59,7 @@ public class VpnProvider {
 			return Boolean.TRUE;
 			
 		} catch (Exception e) {
-			log.info("Error while closing VPN conection");
+			log.error("Error while closing VPN conection", e);
 			return Boolean.FALSE;
 		}
 	}

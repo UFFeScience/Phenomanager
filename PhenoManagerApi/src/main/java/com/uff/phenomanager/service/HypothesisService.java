@@ -122,7 +122,7 @@ public class HypothesisService extends ApiPermissionRestService<Hypothesis, Hypo
 	}
 	
 	@Override
-	public Integer delete(String slug) throws NotFoundApiException {
+	public Integer delete(String slug) throws ApiException {
 		Hypothesis hypothesis = findBySlug(slug);
 		
 		List<Experiment> experiments = experimentService.findAllByHypothesis(hypothesis);

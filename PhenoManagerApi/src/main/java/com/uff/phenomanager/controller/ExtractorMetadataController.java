@@ -49,7 +49,7 @@ public class ExtractorMetadataController {
 		log.info("Downloading executionMetadata file of extractorMetadata of slug [{}]; and computationalModelSlug: [{}]", 
 				slug, computationalModelSlug);
 
-		ExtractorMetadata extractorMetadata = extractorMetadataService.findBySlug(slug, authorization);
+		ExtractorMetadata extractorMetadata = extractorMetadataService.findBySlug(slug, authorization, computationalModelSlug);
 		byte[] fileContent = extractorMetadataService.getExecutionMetadata(extractorMetadata.getExecutionMetadataFileId());
     	
 		String metadataFileName = "execution-extraction-metadata";
@@ -74,7 +74,7 @@ public class ExtractorMetadataController {
     		@PathVariable(CONTROLLER.SLUG) String slug) throws ApiException {
 		
 		log.info("Processing finOne by slug: [{}]; and computationalModelSlug: [{}]", slug, computationalModelSlug);
-		return new ResponseEntity<>(extractorMetadataService.findBySlug(slug, authorization), HttpStatus.OK);
+		return new ResponseEntity<>(extractorMetadataService.findBySlug(slug, authorization, computationalModelSlug), HttpStatus.OK);
 	}
 	
 }

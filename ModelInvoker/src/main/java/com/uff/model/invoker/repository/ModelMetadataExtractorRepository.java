@@ -5,11 +5,15 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.uff.model.invoker.domain.ComputationalModel;
+import com.uff.model.invoker.domain.ExecutionStatus;
 import com.uff.model.invoker.domain.ModelMetadataExtractor;
 
 @Repository
 public interface ModelMetadataExtractorRepository extends BaseRepository<ModelMetadataExtractor> {
 	
-	List<ModelMetadataExtractor> findAllByComputationalModelAndActive(ComputationalModel computationalModel, Boolean active);
+	List<ModelMetadataExtractor> findAllByComputationalModelAndActiveAndExecutionStatusNot(
+			ComputationalModel computationalModel, Boolean active, ExecutionStatus executionStatus);
+	
+	List<ModelMetadataExtractor> findAllBySlugInAndActive(List<String> slugs, Boolean active);
 	
 }

@@ -58,7 +58,7 @@ public class GoogleDriveService {
 		return googleDriveRepository.deleteFile(fileId);
 	}
 	
-	public byte[] getFileBytesContent(String fileId) throws NotFoundApiException {
+	public DriveFile getFileBytesContent(String fileId) throws NotFoundApiException {
 		return googleDriveRepository.downloadFile(fileId);
 	}
 	
