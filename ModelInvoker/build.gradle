@@ -14,9 +14,7 @@ apply plugin: 'eclipse-wtp'
 apply plugin: 'idea' 
 apply plugin: 'org.springframework.boot' 
 
-springBoot {
-    mainClass = 'com.uff.model.invoker.ModelInvokerApplication'
-}
+def mainClassName = 'com.uff.model.invoker.ModelInvokerApplication'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -72,9 +70,21 @@ task wrapper(type: Wrapper) {
 jar {
   	manifest {
     	attributes(
-      		'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-      		'Main-Class': 'com.uff.model.invoker.ModelInvokerApplication'
+      		'Main-Class': "$mainClassName"
     	)
   	}
+  	zip64 = true
+	from {
+    	configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+  	}
   	baseName 'model-invoker-api'
+}
+
+bootRepackage {
+    mainClass = "$mainClassName"
+}
+
+springBoot {
+    mainClass = "$mainClassName"
+    executable = true
 }

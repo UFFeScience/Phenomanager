@@ -14,9 +14,7 @@ apply plugin: 'eclipse-wtp'
 apply plugin: 'idea' 
 apply plugin: 'org.springframework.boot' 
 
-springBoot {
-    mainClass = 'com.uff.phenomanager.PhenoManagerApiApplication'
-}
+def mainClassName = 'com.uff.phenomanager.PhenoManagerApiApplication'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -67,9 +65,21 @@ task wrapper(type: Wrapper) {
 jar {
   	manifest {
     	attributes(
-      		'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-      		'Main-Class': 'com.uff.phenomanager.PhenoManagerApiApplication'
+      		'Main-Class': "$mainClassName"
     	)
   	}
+  	zip64 = true
+	from {
+    	configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+  	}
   	baseName 'pheno-manager-api'
+}
+
+bootRepackage {
+    mainClass = "$mainClassName"
+}
+
+springBoot {
+    mainClass = "$mainClassName"
+    executable = true
 }
