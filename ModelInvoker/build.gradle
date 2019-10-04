@@ -77,7 +77,7 @@ jar {
 	from {
     	configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
   	}
-  	baseName 'model-invoker-api'
+  	baseName 'model-invoker'
 }
 
 bootRepackage {
