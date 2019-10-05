@@ -16,6 +16,12 @@ public interface Constants {
 	final String IMAGE_BASE_64_PREFIX = "data:image/png;base64,";
 	final int IMG_WIDTH = 100;
 	final int IMG_HEIGHT = 100;
+	final String PROFILE_PROPERTY = "${spring.profiles.active:default}";
+	final String DEFAULT_PROFILE = "default";
+	final String CHECK_IP_FIRST_OPTION = "http://checkip.amazonaws.com/";
+	final String CHECK_IP_SECOND_OPTION = "https://ipv4.icanhazip.com/";
+	final String LOCALHOST = "localhost";
+	final String SYSTEM_HOST_ADDRESS_NAME = "phenomanager.ic.uff.br";
 	
 	public interface API_CLIENT {
 		public interface SCI_MANAGER {
@@ -307,10 +313,14 @@ public interface Constants {
 		final String GET_DRIVE_DOWNLOAD_FILE_NOT_FOUND = "Error while downloading file from google drive, file not found";
 		final String GET_DRIVE_FOLDER_FILES_ERROR = "Error while getting drive folder files data";
 		final String GOOGLE_OAUTH2_ERROR = "Error while getting access token for google api connection";
+		final String ERROR_GET_LOCAL_IP = "Error while obtaining local IP addresses";
+		final String ERROR_GET_EXTERNAL_IP = "Error trying to get external IP from [{}]";
+		final String INVALID_ENVIRONMENT_WORKSPACE_ADDRESS = "Invalid Host Address for local workspace [{}]";
 	}
 	
 	public interface MSG_WARN {
 		final String GOOGLE_FILE_NOT_FOUND = "File with fileId [{}], not found";
+		final String INVALID_INCOMING_IP = "Null or empty incoming IP";
 	}
 
 }

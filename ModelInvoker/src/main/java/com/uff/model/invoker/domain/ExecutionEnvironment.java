@@ -100,7 +100,7 @@ public class ExecutionEnvironment extends BaseApiEntity {
 	}
 
 	public void setHostAddress(String hostAddress) {
-		this.hostAddress = hostAddress;
+		this.hostAddress = hostAddress.trim();
 	}
 
 	public String getUsername() {
@@ -108,7 +108,7 @@ public class ExecutionEnvironment extends BaseApiEntity {
 	}
 
 	public void setUsername(String username) {
-		this.username = username;
+		this.username = username.trim();
 	}
 
 	public String getPassword() {
@@ -116,7 +116,7 @@ public class ExecutionEnvironment extends BaseApiEntity {
 	}
 
 	public void setPassword(String password) {
-		this.password = password;
+		this.password = password.trim();
 	}
 
 	public String getSecretKey() {
@@ -124,7 +124,7 @@ public class ExecutionEnvironment extends BaseApiEntity {
 	}
 
 	public void setSecretKey(String secretKey) {
-		this.secretKey = secretKey;
+		this.secretKey = secretKey.trim();
 	}
 
 	public String getAccessKey() {
@@ -132,7 +132,7 @@ public class ExecutionEnvironment extends BaseApiEntity {
 	}
 
 	public void setAccessKey(String accessKey) {
-		this.accessKey = accessKey;
+		this.accessKey = accessKey.trim();
 	}
 	
 	public String getClusterName() {
@@ -140,7 +140,7 @@ public class ExecutionEnvironment extends BaseApiEntity {
 	}
 
 	public void setClusterName(String clusterName) {
-		this.clusterName = clusterName;
+		this.clusterName = clusterName.trim();
 	}
 	
 	public String getImage() {

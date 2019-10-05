@@ -32,6 +32,7 @@ import com.uff.model.invoker.invoker.ModelInvoker;
 import com.uff.model.invoker.repository.ComputationalModelRepository;
 import com.uff.model.invoker.service.provider.ClusterProviderService;
 import com.uff.model.invoker.service.provider.SshProviderService;
+import com.uff.model.invoker.util.IpAddressValidator;
 
 import ch.ethz.ssh2.Connection;
 
@@ -92,8 +93,9 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 		
 		ExecutionEnvironment executionEnvironment = executionEnvironmentService.findBySlug(
 				modelExecutionMessageDto.getExecutionEnvironmentSlug());
-		if (executionEnvironment == null) {
-			log.error("Error while invoking process, ExecutionEnvironment of slug [{}] not found", 
+		if (executionEnvironment == null || (executionEnvironment != null && 
+				new IpAddressValidator().validateWorkspaceAddress(executionEnvironment.getHostAddress()))) {
+			log.error("Error while invoking process, ExecutionEnvironment of slug [{}] not found or has invalid Host Address", 
 					modelExecutionMessageDto.getExecutionEnvironmentSlug());
 			modelExecutor.setExecutionStatus(ExecutionStatus.IDLE);
 			modelExecutorService.update(modelExecutor);
@@ -187,8 +189,9 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 		
 		ExecutionEnvironment executionEnvironment = executionEnvironmentService.findBySlug(
 				modelExecutionMessageDto.getExecutionEnvironmentSlug());
-		if (executionEnvironment == null) {
-			log.error("Error while invoking process, ExecutionEnvironment of slug [{}] not found", 
+		if (executionEnvironment == null || (executionEnvironment != null && 
+				new IpAddressValidator().validateWorkspaceAddress(executionEnvironment.getHostAddress()))) {
+			log.error("Error while invoking process, ExecutionEnvironment of slug [{}] not found or has invalid Host Address", 
 					modelExecutionMessageDto.getExecutionEnvironmentSlug());
 			modelMetadataExtractor.setExecutionStatus(ExecutionStatus.IDLE);
 			modelMetadataExtractorService.update(modelMetadataExtractor);

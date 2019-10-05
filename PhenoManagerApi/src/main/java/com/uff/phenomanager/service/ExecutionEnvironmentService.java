@@ -14,6 +14,7 @@ import com.uff.phenomanager.exception.BadRequestApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;
 import com.uff.phenomanager.repository.ExecutionEnvironmentRepository;
 import com.uff.phenomanager.service.core.ApiPermissionRestService;
+import com.uff.phenomanager.util.IpAddressValidator;
 import com.uff.phenomanager.util.KeyUtils;
 
 @Service
@@ -67,6 +68,11 @@ public class ExecutionEnvironmentService extends ApiPermissionRestService<Execut
 		
 		executionEnvironment.setComputationalModel(parentComputationalModel);
 		ExecutionEnvironment executionEnvironmentSaved = super.save(executionEnvironment);
+		
+		if (!new IpAddressValidator().validateWorkspaceAddress(executionEnvironment.getHostAddress())) {
+			throw new BadRequestApiException(
+					String.format(Constants.MSG_ERROR.INVALID_ENVIRONMENT_WORKSPACE_ADDRESS, executionEnvironment.getHostAddress()));
+		}
 		
 		executionEnvironmentSaved.setVirtualMachines(virtualMachineConfigService.save(
 				executionEnvironment.getVirtualMachines(), executionEnvironmentSaved));
