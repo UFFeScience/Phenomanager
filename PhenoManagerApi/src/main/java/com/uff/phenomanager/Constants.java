@@ -301,11 +301,12 @@ public interface Constants {
 		final String COMPUTATIONAL_MODEL_INVALID_TARGET_ERROR = "Computational Model can't start process, invalid request target";
 		final String COMPUTATIONAL_MODEL_INVALID_COMMAND_ERROR = "Computational Model can't start process, invalid command";
 		final String EXECUTOR_NOT_FOUND_ERROR = "Executor not found";
-		final String EXECUTOR_NOT_RUNNING_ERROR = "Can't stop Executor because it isn't running";
-		final String EXTRACTOR_NOT_RUNNING_ERROR = "Can't stop Extractor because it isn't running";
+		final String EXECUTION_NOT_RUNNING_ERROR = "Can't stop execution because it isn't running anymore";
+		final String EXTRACTOR_NOT_RUNNING_ERROR = "No data aailable for extractor. Extractor isn't running";
 		final String ENVIRONMENT_NOT_FOUND_ERROR = "Environment not found";
 		final String EXECUTOR_CAN_NOT_BE_DELETED_ERROR = "Executor can't be deleted because it's currently running an execution";
 		final String EXTRACTOR_NOT_FOUND_ERROR = "Extractor not found";
+		final String METADATA_RESULT_NOT_FOUND_ERROR = "Metadata Result not found";
 		final String EXTRACTOR_CAN_NOT_BE_DELETED_ERROR = "Extractor can't be deleted because it's currently running an execution";
 		final String ENVIRONMENT_CAN_NOT_BE_DELETED_ERROR = "Environment can't be deleted because thnere are one or more running executions related to it";
 		final String GET_DRIVE_UPLOAD_FILE_ERROR = "Error while uploading file for drive folder";

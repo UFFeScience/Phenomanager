@@ -34,6 +34,8 @@ import com.uff.phenomanager.domain.ModelExecutor;
 import com.uff.phenomanager.domain.ModelResultMetadata;
 import com.uff.phenomanager.domain.Permission;
 import com.uff.phenomanager.domain.User;
+import com.uff.phenomanager.domain.core.filter.FilterOperator;
+import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;
 import com.uff.phenomanager.exception.UnauthorizedApiException;
@@ -404,9 +406,35 @@ public class ModelResultMetadataService extends ApiPermissionRestService<ModelRe
 	public Long countByExecutionEnvironmentAndExecutionStatus(ExecutionEnvironment executionEnvironment, ExecutionStatus executionStatus) {
 		return modelResultMetadataRepository.countByExecutionEnvironmentAndExecutionStatus(executionEnvironment, executionStatus);
 	}
+
+	public Long countByModelExecutorAndExecutionStatus(ModelExecutor modelExecutor, ExecutionStatus executionStatus) {
+		return modelResultMetadataRepository.countByModelExecutorAndExecutionStatus(modelExecutor, executionStatus);
+	}
+
+	public Long countByModelExecutorAndExecutionEnvironmentAndExecutionStatus(ModelExecutor modelExecutor,
+			ExecutionEnvironment executionEnvironment, ExecutionStatus executionStatus) {
+		return modelResultMetadataRepository.countByModelExecutorAndExecutionEnvironmentAndExecutionStatus(
+				modelExecutor, executionEnvironment, executionStatus);
+	}
 	
-	public ModelResultMetadata findByModelExecutorAndExecutionStatus(ModelExecutor modelExecutor, ExecutionStatus executionStatus) {
-		return modelResultMetadataRepository.findByModelExecutorAndExecutionStatus(modelExecutor, executionStatus);
+	public Map<String, Long> countAllRunningModels(String authorization) throws ApiException {
+		RequestFilter runningFilter = new RequestFilter();
+		runningFilter.addAndFilter("executionStatus", ExecutionStatus.RUNNING, FilterOperator.EQ);
+		
+		Map<String, Long> totalRunningModels = new HashMap<>();
+		totalRunningModels.put("totalRunningModels", countAll(runningFilter, authorization));
+		
+		return totalRunningModels;
+	}
+
+	public Map<String, Long> countAllErrorModels(String authorization) throws ApiException {
+		RequestFilter errorFilter = new RequestFilter();
+		errorFilter.addAndFilter("executionStatus", ExecutionStatus.FAILURE, FilterOperator.EQ);
+		
+		Map<String, Long> totalErrorModels = new HashMap<>();
+		totalErrorModels.put("totalErrorModels", countAll(errorFilter, authorization));
+		
+		return totalErrorModels;
 	}
 	
 }

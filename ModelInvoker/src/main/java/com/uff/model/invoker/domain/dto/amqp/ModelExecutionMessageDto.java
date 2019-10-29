@@ -12,6 +12,7 @@ public class ModelExecutionMessageDto implements Serializable {
 	
 	private String modelExecutorSlug;
 	private String modelMetadataExtractorSlug;
+	private String modelResultMetadataSlug;
 	private List<String> executionExtractors;
 	private String executionEnvironmentSlug;
 	private String userSlug;
@@ -24,6 +25,7 @@ public class ModelExecutionMessageDto implements Serializable {
 	
 	public ModelExecutionMessageDto(ModelExecutionMessageDtoBuilder builder) {
 		this.modelExecutorSlug = builder.modelExecutorSlug;
+		this.modelResultMetadataSlug = builder.modelResultMetadataSlug;
 		this.executionExtractors = builder.executionExtractors;
 		this.modelMetadataExtractorSlug = builder.modelMetadataExtractorSlug;
 		this.executionEnvironmentSlug = builder.executionEnvironmentSlug;
@@ -105,6 +107,14 @@ public class ModelExecutionMessageDto implements Serializable {
 	public void setUploadMetadata(Boolean uploadMetadata) {
 		this.uploadMetadata = uploadMetadata;
 	}
+	
+	public String getModelResultMetadataSlug() {
+		return modelResultMetadataSlug;
+	}
+
+	public void setModelResultMetadataSlug(String modelResultMetadataSlug) {
+		this.modelResultMetadataSlug = modelResultMetadataSlug;
+	}
 
 	public static ModelExecutionMessageDtoBuilder builder() {
 		return new ModelExecutionMessageDtoBuilder();
@@ -114,6 +124,7 @@ public class ModelExecutionMessageDto implements Serializable {
 		
 		private String modelExecutorSlug;
 		private String modelMetadataExtractorSlug;
+		private String modelResultMetadataSlug;
 		private List<String> executionExtractors;
 		private String executionEnvironmentSlug;
 		private String userSlug;
@@ -124,6 +135,11 @@ public class ModelExecutionMessageDto implements Serializable {
 		
 		public ModelExecutionMessageDtoBuilder modelExecutorSlug(String modelExecutorSlug) {
             this.modelExecutorSlug = modelExecutorSlug;
+            return this;
+        }
+		
+		public ModelExecutionMessageDtoBuilder modelResultMetadataSlug(String modelResultMetadataSlug) {
+            this.modelResultMetadataSlug = modelResultMetadataSlug;
             return this;
         }
 		
@@ -175,10 +191,11 @@ public class ModelExecutionMessageDto implements Serializable {
 	@Override
 	public String toString() {
 		return "ModelExecutionMessageDto [modelExecutorSlug=" + modelExecutorSlug + ", modelMetadataExtractorSlug="
-				+ modelMetadataExtractorSlug + ", executionExtractors=" + executionExtractors
-				+ ", executionEnvironmentSlug=" + executionEnvironmentSlug + ", userSlug=" + userSlug
-				+ ", executionDate=" + executionDate + ", computationalModelVersion=" + computationalModelVersion
-				+ ", executionCommand=" + executionCommand + ", uploadMetadata=" + uploadMetadata + "]";
+				+ modelMetadataExtractorSlug + ", modelResultMetadataSlug=" + modelResultMetadataSlug
+				+ ", executionExtractors=" + executionExtractors + ", executionEnvironmentSlug="
+				+ executionEnvironmentSlug + ", userSlug=" + userSlug + ", executionDate=" + executionDate
+				+ ", computationalModelVersion=" + computationalModelVersion + ", executionCommand=" + executionCommand
+				+ ", uploadMetadata=" + uploadMetadata + "]";
 	}
 	
 }

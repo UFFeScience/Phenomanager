@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.uff.model.invoker.domain.EnvironmentType;
+import com.uff.model.invoker.domain.ExecutionEnvironment;
 import com.uff.model.invoker.domain.ExecutionStatus;
 import com.uff.model.invoker.domain.ModelExecutor;
 import com.uff.model.invoker.domain.ModelResultMetadata;
@@ -15,7 +16,8 @@ public interface ModelResultMetadataRepository extends BaseRepository<ModelResul
 	
 	List<ModelResultMetadata> findByExecutionEnvironmentTypeAndExecutionStatus(EnvironmentType type,
 			ExecutionStatus executionStatus, Pageable pageable);
-	
-	ModelResultMetadata findByModelExecutorAndExecutorExecutionStatus(ModelExecutor modelExecutor, ExecutionStatus executorExecutionStatus);
+
+	ModelResultMetadata findByModelExecutorAndExecutionEnvironmentAndExecutionStatus(ModelExecutor modelExecutor,
+			ExecutionEnvironment executionEnvironment, ExecutionStatus executionStatus);
 	
 }

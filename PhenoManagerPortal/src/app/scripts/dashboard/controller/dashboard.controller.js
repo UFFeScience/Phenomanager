@@ -53,6 +53,7 @@
                     vm.hypotheses = resp.data.records;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while searching for hypotheses.', 'Unexpected error!');
                 });
         }
@@ -65,6 +66,7 @@
                     vm.computationalModels = resp.data.records;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while searching for computational models.', 'Unexpected error!');
                 });
         }
@@ -77,6 +79,7 @@
                     vm.projects = resp.data.records;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while searching for projects.', 'Unexpected error!');
                 });
         }
@@ -90,6 +93,7 @@
                     vm.loadingValidation = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while searching for validation statistics.', 'Unexpected error!');
                 });
 
@@ -100,6 +104,7 @@
                     vm.loadingTotalRunning = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while searching for running models count.', 'Unexpected error!');
                 });
 
@@ -110,6 +115,7 @@
                     vm.loadingTotalError = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while searching for models with error count.', 'Unexpected error!');
                 });
         }

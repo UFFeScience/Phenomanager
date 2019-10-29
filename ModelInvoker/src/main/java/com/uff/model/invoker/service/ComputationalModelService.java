@@ -18,7 +18,6 @@ import com.rabbitmq.client.Channel;
 import com.uff.model.invoker.Constants;
 import com.uff.model.invoker.domain.ComputationalModel;
 import com.uff.model.invoker.domain.EnvironmentType;
-import com.uff.model.invoker.domain.ExecutionCommand;
 import com.uff.model.invoker.domain.ExecutionEnvironment;
 import com.uff.model.invoker.domain.ExecutionStatus;
 import com.uff.model.invoker.domain.JobStatus;
@@ -28,6 +27,7 @@ import com.uff.model.invoker.domain.ModelResultMetadata;
 import com.uff.model.invoker.domain.Permission;
 import com.uff.model.invoker.domain.User;
 import com.uff.model.invoker.domain.dto.amqp.ModelExecutionMessageDto;
+import com.uff.model.invoker.exception.AbortedExecutionException;
 import com.uff.model.invoker.invoker.ModelInvoker;
 import com.uff.model.invoker.repository.ComputationalModelRepository;
 import com.uff.model.invoker.service.provider.ClusterProviderService;
@@ -81,6 +81,66 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 		return ComputationalModel.class;
 	}
 	
+	public void invokeModelTaskStop(ModelExecutionMessageDto modelExecutionMessageDto, Channel channel, Long tag) throws IOException {
+		log.info("Starting stop of ModelResultMetadata of slug [{}]", modelExecutionMessageDto.getModelResultMetadataSlug());
+
+		ModelResultMetadata modelResultMetadata = modelResultMetadataService.findBySlug(modelExecutionMessageDto.getModelResultMetadataSlug());
+		if (modelResultMetadata == null) {
+			log.error("Error while invoking process, ModelResultMetadata of slug [{}] not found", modelExecutionMessageDto.getModelResultMetadataSlug());
+			channel.basicAck(tag, Boolean.TRUE);
+			return;
+		}
+		
+		ExecutionEnvironment executionEnvironment = executionEnvironmentService.findBySlug(
+				modelExecutionMessageDto.getExecutionEnvironmentSlug());
+		if (executionEnvironment == null || (executionEnvironment != null && 
+				new IpAddressValidator().validateWorkspaceAddress(executionEnvironment.getHostAddress()))) {
+			log.error("Error while invoking process, ExecutionEnvironment of slug [{}] not found or has invalid Host Address", 
+					modelExecutionMessageDto.getExecutionEnvironmentSlug());
+			channel.basicAck(tag, Boolean.TRUE);
+			return;
+		}
+		
+		User user = userService.findBySlug(modelExecutionMessageDto.getUserSlug());
+		if (user == null) {
+			log.error("Error while invoking process, User of slug [{}] not found", modelExecutionMessageDto.getUserSlug());
+			channel.basicAck(tag, Boolean.TRUE);
+			return;
+		}
+		
+		try {
+			if (!canAccessComputationalModel(user, modelResultMetadata.getComputationalModel())) {
+				log.error("User of slug [{}] doesn't have permission to manage actions on ComputationalModel of slug [{}]", 
+						user.getSlug(), modelResultMetadata.getComputationalModel().getSlug());
+				channel.basicAck(tag, Boolean.TRUE);
+				return;
+			}
+			
+			String strategyBeanName = String.format("%sInvokerStrategy", 
+					modelResultMetadata.getComputationalModel().getType().getTypeName());
+			ModelInvoker modelInvokerStrategy = beanFactory.getBean(strategyBeanName, ModelInvoker.class);
+			
+			if (!modelResultMetadata.getExecutionStatus().equals(ExecutionStatus.RUNNING) && 
+					!modelResultMetadata.getExecutionStatus().equals(ExecutionStatus.SCHEDULED)) {
+				log.warn("Error while invoking process, modelResultMetadata of slug [{}] of ComputationalModel of slug [{}] is not RUNNING and nor SCHEDULED", 
+						modelResultMetadata.getSlug(), modelResultMetadata.getComputationalModel().getSlug());
+				channel.basicAck(tag, Boolean.TRUE);
+				return;
+			}
+			modelInvokerStrategy.stopModelExecutor(modelResultMetadata, executionEnvironment);
+		
+		} catch (Exception e) {
+			log.error("Unexpected error while invoking ComputationalModel", e);
+			channel.basicAck(tag, Boolean.TRUE);
+			return;
+		
+		}
+
+		channel.basicAck(tag, Boolean.TRUE);
+		log.info("Execution Process of ComputationalModel stopped with success for ComputationalModel of slug [{}], currentVersion [{}] and ModelResultMetadata of Slug", 
+				modelResultMetadata.getComputationalModel().getSlug(), modelResultMetadata.getComputationalModel().getCurrentVersion(), modelResultMetadata.getSlug());
+	}
+
 	public void invokeModelTaskExecutor(ModelExecutionMessageDto modelExecutionMessageDto, Channel channel, Long tag) throws IOException {
 		log.info("Starting execution of ModelExecutor of slug [{}]", modelExecutionMessageDto.getModelExecutorSlug());
 
@@ -97,8 +157,6 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 				new IpAddressValidator().validateWorkspaceAddress(executionEnvironment.getHostAddress()))) {
 			log.error("Error while invoking process, ExecutionEnvironment of slug [{}] not found or has invalid Host Address", 
 					modelExecutionMessageDto.getExecutionEnvironmentSlug());
-			modelExecutor.setExecutionStatus(ExecutionStatus.IDLE);
-			modelExecutorService.update(modelExecutor);
 			channel.basicAck(tag, Boolean.TRUE);
 			return;
 		}
@@ -106,19 +164,14 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 		User user = userService.findBySlug(modelExecutionMessageDto.getUserSlug());
 		if (user == null) {
 			log.error("Error while invoking process, User of slug [{}] not found", modelExecutionMessageDto.getUserSlug());
-			modelExecutor.setExecutionStatus(ExecutionStatus.IDLE);
-			modelExecutorService.update(modelExecutor);
 			channel.basicAck(tag, Boolean.TRUE);
 			return;
 		}
-		modelExecutor.setUserAgent(user);
 		
 		try {
 			if (!canAccessComputationalModel(user, modelExecutor.getComputationalModel())) {
 				log.error("User of slug [{}] doesn't have permission to manage actions on ComputationalModel of slug [{}]", 
 						user.getSlug(), modelExecutor.getComputationalModel().getSlug());
-				modelExecutor.setExecutionStatus(ExecutionStatus.IDLE);
-				modelExecutorService.update(modelExecutor);
 				channel.basicAck(tag, Boolean.TRUE);
 				return;
 			}
@@ -126,42 +179,14 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 			String strategyBeanName = String.format("%sInvokerStrategy", 
 					modelExecutor.getComputationalModel().getType().getTypeName());
 			ModelInvoker modelInvokerStrategy = beanFactory.getBean(strategyBeanName, ModelInvoker.class);
-			
-			if (ExecutionCommand.START.equals(modelExecutionMessageDto.getExecutionCommand())) {
-				if (modelExecutor.getExecutionStatus().equals(ExecutionStatus.RUNNING)) {
-					log.warn("Error while invoking process, ModelExecutor of slug [{}] of ComputationalModel of slug [{}] is already RUNNING", 
-							modelExecutor.getSlug(), modelExecutor.getComputationalModel().getSlug());
-					channel.basicAck(tag, Boolean.TRUE);
-					return;
-				}
-				modelInvokerStrategy.startModelExecutor(modelExecutor, executionEnvironment, 
+			modelInvokerStrategy.startModelExecutor(modelExecutor, executionEnvironment, user,
 						modelExecutionMessageDto.getExecutionExtractors(), modelExecutionMessageDto.getUploadMetadata());
-				
-			} else if (ExecutionCommand.STOP.equals(modelExecutionMessageDto.getExecutionCommand())) {
-				if (modelExecutor.getExecutionStatus().equals(ExecutionStatus.RUNNING)) {
-					log.warn("Error while invoking process, ComputationalModel of slug [{}] is not RUNNING, so it can't be stopped", 
-							modelExecutor.getComputationalModel().getSlug());
-					channel.basicAck(tag, Boolean.TRUE);
-					return;
-				}
-				modelInvokerStrategy.stopModelExecutor(modelExecutor, executionEnvironment);
-				
-			} else {
-				log.warn("Unexpected command [{}] for ComputationalModel of slug [{}]", 
-						modelExecutionMessageDto.getExecutionCommand(), modelExecutor.getComputationalModel().getSlug());
-				modelExecutor.setExecutionStatus(ExecutionStatus.IDLE);
-				modelExecutorService.update(modelExecutor);
-			}
 		
 		} catch (Exception e) {
 			log.error("Unexpected error while invoking ComputationalModel", e);
 			channel.basicAck(tag, Boolean.TRUE);
 			return;
-		
-		} finally {
-			modelExecutor.setExecutionStatus(ExecutionStatus.IDLE);
-			modelExecutorService.update(modelExecutor);
-		}
+		} 
 
 		channel.basicAck(tag, Boolean.TRUE);
 		log.info("Execution Process of ComputationalModel started with success for ComputationalModel of slug [{}], currentVersion [{}] and ModelExecutor of Slug", 
@@ -180,21 +205,12 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 			return;
 		}
 		
-		if (modelMetadataExtractor.getExecutionStatus().equals(ExecutionStatus.RUNNING)) {
-			log.error("Error while invoking process, the ModelMetadataExtractor of slug [{}] of ComputationalModel of slug [{}] is already RUNNING", 
-					modelMetadataExtractor.getSlug(), modelMetadataExtractor.getComputationalModel().getSlug());
-			channel.basicAck(tag, Boolean.TRUE);
-			return;
-		}
-		
 		ExecutionEnvironment executionEnvironment = executionEnvironmentService.findBySlug(
 				modelExecutionMessageDto.getExecutionEnvironmentSlug());
 		if (executionEnvironment == null || (executionEnvironment != null && 
 				new IpAddressValidator().validateWorkspaceAddress(executionEnvironment.getHostAddress()))) {
 			log.error("Error while invoking process, ExecutionEnvironment of slug [{}] not found or has invalid Host Address", 
 					modelExecutionMessageDto.getExecutionEnvironmentSlug());
-			modelMetadataExtractor.setExecutionStatus(ExecutionStatus.IDLE);
-			modelMetadataExtractorService.update(modelMetadataExtractor);
 			channel.basicAck(tag, Boolean.TRUE);
 			return;
 		}
@@ -202,19 +218,14 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 		User user = userService.findBySlug(modelExecutionMessageDto.getUserSlug());
 		if (user == null) {
 			log.error("Error while invoking process, User of slug [{}] not found", modelExecutionMessageDto.getUserSlug());
-			modelMetadataExtractor.setExecutionStatus(ExecutionStatus.IDLE);
-			modelMetadataExtractorService.update(modelMetadataExtractor);
 			channel.basicAck(tag, Boolean.TRUE);
 			return;
 		}
-		modelMetadataExtractor.setUserAgent(user);
 		
 		try {
 			if (!canAccessComputationalModel(user, modelMetadataExtractor.getComputationalModel())) {
 				log.error("User of slug [{}] doesn't have permission to manage actions on ComputationalModel of slug [{}]", 
 						user.getSlug(), modelMetadataExtractor.getComputationalModel().getSlug());
-				modelMetadataExtractor.setExecutionStatus(ExecutionStatus.IDLE);
-				modelMetadataExtractorService.update(modelMetadataExtractor);
 				channel.basicAck(tag, Boolean.TRUE);
 				return;
 			}
@@ -222,13 +233,11 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 			String strategyBeanName = String.format("%sInvokerStrategy", 
 					modelMetadataExtractor.getComputationalModel().getType().getTypeName());
 			ModelInvoker modelInvokerStrategy = beanFactory.getBean(strategyBeanName, ModelInvoker.class);
-			modelInvokerStrategy.startModelExtractor(modelMetadataExtractor, executionEnvironment, 
+			modelInvokerStrategy.startModelExtractor(modelMetadataExtractor, executionEnvironment, user,
 					modelExecutionMessageDto.getUploadMetadata());
 		
 		} catch (Exception e) {
 			log.error("Unexpected error while invoking ComputationalModel extractor", e);
-			modelMetadataExtractor.setExecutionStatus(ExecutionStatus.IDLE);
-			modelMetadataExtractorService.update(modelMetadataExtractor);
 			channel.basicAck(tag, Boolean.TRUE);
 			return;
 		}
@@ -284,26 +293,27 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 						JobStatus jobStatus = clusterProviderService.checkJobStatus(connection, modelResultMetadata.getModelExecutor().getJobName());
 	
 						if (JobStatus.CANCELLED.equals(jobStatus)) {
-							modelResultMetadata.getModelExecutor().setExecutionStatus(ExecutionStatus.IDLE);
 							modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
 							modelResultMetadata.setExecutionStatus(ExecutionStatus.ABORTED);
 							modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.ABORTED);
 							modelResultMetadata.appendSystemLog(String.format("Finished execution with job status [%s]", jobStatus.name()));
 							
 						} else if (JobStatus.COMPLETED.equals(jobStatus)) {
-							modelResultMetadata.getModelExecutor().setExecutionStatus(ExecutionStatus.IDLE);
 							modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.FINISHED);
-							modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, 
+							modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
 									String.format("Finished execution with job status [%s]", jobStatus.name()));
-							
+							String strategyBeanName = String.format("%sInvokerStrategy", 
+									modelResultMetadata.getComputationalModel().getType().getTypeName());
+							ModelInvoker modelInvokerStrategy = beanFactory.getBean(strategyBeanName, ModelInvoker.class);
+
 							try {
-								String strategyBeanName = String.format("%sInvokerStrategy", 
-										modelResultMetadata.getComputationalModel().getType().getTypeName());
-								ModelInvoker modelInvokerStrategy = beanFactory.getBean(strategyBeanName, ModelInvoker.class);
-								modelResultMetadata = modelInvokerStrategy.handleExtractorExecution(
-										connection, modelResultMetadata.getComputationalModel(), modelResultMetadata);
-								
-								modelResultMetadata.setExecutionStatus(ExecutionStatus.FINISHED);
+								modelResultMetadata = modelInvokerStrategy.handleExtractorExecution(connection, 
+										modelResultMetadata.getComputationalModel(), modelResultMetadata);
+								modelResultMetadata = modelInvokerStrategy.checkExecutionExtractionStatus(modelResultMetadata);
+
+							} catch (AbortedExecutionException e) {
+								log.warn("Task was aborted during execution", e);
+								modelResultMetadata = modelInvokerStrategy.handlePendingExtraction(modelResultMetadata);
 								
 							} catch (Exception e) {
 								log.error("Error while extracting metadata of Cluster");
@@ -314,8 +324,6 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 							
 						} else if (JobStatus.FAILED.equals(jobStatus) || JobStatus.NODE_FAIL.equals(jobStatus) ||
 								JobStatus.TIMEOUT.equals(jobStatus)) {
-							
-							modelResultMetadata.getModelExecutor().setExecutionStatus(ExecutionStatus.IDLE);
 							modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
 							modelResultMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
 							modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.FAILURE);
@@ -329,7 +337,6 @@ public class ComputationalModelService extends ApiRestService<ComputationalModel
 						if (connection != null) {
 							connection.close();
 						}
-						modelResultMetadata.setModelExecutor(modelExecutorService.update(modelResultMetadata.getModelExecutor()));
 						modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
 					}
 				}

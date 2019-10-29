@@ -135,6 +135,7 @@
                     toastr.success('Action performed with success.', 'Success!');
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -164,6 +165,7 @@
                     vm.permission = resp.data;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -188,6 +190,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     }); 
             } else {
@@ -198,6 +201,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     }); 
             }
@@ -230,6 +234,7 @@
                     }
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.updateLogOutput = false;
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
@@ -249,19 +254,14 @@
                         resp.data.records[i].parsedExecutionFinishDate = new Date(resp.data.records[i].executionFinishDate);
                         resp.data.records[i].parsedExecutionStartDate = new Date(resp.data.records[i].executionStartDate);
                     
-                        if (resp.data.records[i].executionStatus === 'RUNNING' || resp.data.records[i].executionStatus === 'SCHEDULED' ||
-                                (resp.data.records[i].modelExecutor && 
-                                (resp.data.records[i].modelExecutor.executionStatus === 'RUNNING' ||
-                                resp.data.records[i].modelExecutor.executionStatus === 'SCHEDULED'))) {
+                        if (resp.data.records[i].executionStatus === 'RUNNING' || resp.data.records[i].executionStatus === 'SCHEDULED') {
                             hasRunningModel = true;
                         }
 
-                        for (var j = 0; j < resp.data.records[i].extractorMetadatas; j++) {
+                        for (var j = 0; j < resp.data.records[i].extractorMetadatas.length; j++) {
                             if (resp.data.records[i].extractorMetadatas[j].executionStatus === 'RUNNING' || 
-                                    resp.data.records[i].extractorMetadatas[j].executionStatus === 'SCHEDULED' ||
-                                    resp.data.records[i].extractorMetadatas[j].modelMetadataExtractor.executionStatus === 'RUNNING' ||
-                                    resp.data.records[i].extractorMetadatas[j].modelMetadataExtractor.executionStatus === 'SCHEDULED') {
-                                var hasRunningExtractor = false;
+                                    resp.data.records[i].extractorMetadatas[j].executionStatus === 'SCHEDULED') {
+                                hasRunningExtractor = true;
                             }
                         }
                     }
@@ -275,18 +275,13 @@
                             if ($location.$$path && $location.$$path.includes('/computational-models/')) {
                                 if (vm.tab === 'modelResults') {
                                     vm.refreshModelResults();
-                                
-                                } else if(vm.tab === 'executors') {
-                                    vm.refreshExecutors();
-
-                                } else if(vm.tab === 'extractors') {
-                                    vm.refreshExtractors();
-                                }
+                                } 
                             }
                         }, 2000);
                     }
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingModelResultMetadata = false;
                     toastr.error('Error while loading model result metadatas.', 'Unexpected error!');
                 });
@@ -297,25 +292,21 @@
                 .getAllModelResultMetadatas(vm.modelResultMetadataCurrentPage - 1, vm.limit, vm.computationalModel.slug)
                 .then(function(resp) {
                     var hasRunningModel = false;
+                    var hasRunningExtractor = false;
                     
                     for (var i = 0; i < resp.data.records.length; i++) {
                         resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
                         resp.data.records[i].parsedExecutionFinishDate = new Date(resp.data.records[i].executionFinishDate);
                         resp.data.records[i].parsedExecutionStartDate = new Date(resp.data.records[i].executionStartDate);
                     
-                        if (resp.data.records[i].executionStatus === 'RUNNING' || resp.data.records[i].executionStatus === 'SCHEDULED' ||
-                                (resp.data.records[i].modelExecutor && 
-                                (resp.data.records[i].modelExecutor.executionStatus === 'RUNNING' ||
-                                resp.data.records[i].modelExecutor.executionStatus === 'SCHEDULED'))) {
+                        if (resp.data.records[i].executionStatus === 'RUNNING' || resp.data.records[i].executionStatus === 'SCHEDULED') {
                             hasRunningModel = true;
                         }
 
-                        for (var j = 0; j < resp.data.records[i].extractorMetadatas; j++) {
+                        for (var j = 0; j < resp.data.records[i].extractorMetadatas.length; j++) {
                             if (resp.data.records[i].extractorMetadatas[j].executionStatus === 'RUNNING' || 
-                                    resp.data.records[i].extractorMetadatas[j].executionStatus === 'SCHEDULED' ||
-                                    resp.data.records[i].extractorMetadatas[j].modelMetadataExtractor.executionStatus === 'RUNNING' ||
-                                    resp.data.records[i].extractorMetadatas[j].modelMetadataExtractor.executionStatus === 'SCHEDULED') {
-                                var hasRunningExtractor = false;
+                                    resp.data.records[i].extractorMetadatas[j].executionStatus === 'SCHEDULED') {
+                                hasRunningExtractor = true;
                             }
                         }
                     }
@@ -328,18 +319,13 @@
                             if ($location.$$path && $location.$$path.includes('/computational-models/')) {
                                 if (vm.tab === 'modelResults') {
                                     vm.refreshModelResults();
-                                
-                                } else if(vm.tab === 'executors') {
-                                    vm.refreshExecutors();
-
-                                } else if(vm.tab === 'extractors') {
-                                    vm.refreshExtractors();
-                                }
+                                } 
                             }
                         }, 2000);
                     }
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingModelResultMetadata = false;
                     toastr.error('Error while refreshing model result metadatas.', 'Unexpected error!');
                 });
@@ -385,6 +371,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingUpload = false;
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
@@ -421,6 +408,7 @@
                         } 
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
@@ -437,6 +425,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--; 
                 });
@@ -458,6 +447,7 @@
                     vm.instanceParam.hasValueFile = vm.instanceParam.valueFileId ? true : false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -491,6 +481,7 @@
                         }
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             } else {
@@ -508,6 +499,7 @@
                         }
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
@@ -532,6 +524,7 @@
                     vm.loadingInstanceParam = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingInstanceParam = false;
                     toastr.error('Error while loading instance params.', 'Unexpected error!');
                 });
@@ -579,6 +572,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingUpload = false;
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
@@ -614,6 +608,7 @@
                         } 
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
@@ -647,6 +642,7 @@
                         } 
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
@@ -680,6 +676,7 @@
                         } 
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
@@ -713,6 +710,7 @@
                         } 
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
@@ -730,6 +728,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
@@ -746,6 +745,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
@@ -766,6 +766,7 @@
                     vm.modelExecutor = resp.data;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -796,6 +797,7 @@
                         }
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             } else {
@@ -811,26 +813,34 @@
                         }
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
         }
 
-        vm.doAbortModelExecutor = function(modelExecutorSlug, uploadMetadata) {
+        vm.doAbortModelExecutor = function(modelResultMetadataSlug, uploadMetadata) {
             var requestBody = {
-                modelExecutorSlug: modelExecutorSlug,
+                modelResultMetadataSlug: modelResultMetadataSlug,
                 executionCommand: 'STOP',
                 uploadMetadata: uploadMetadata,
                 computationalModelVersion: vm.computationalModel.currentVersion,
                 computationalModelSlug: vm.computationalModel.slug
             };
 
+            for (var i = 0; i < vm.modelResultMetadatas.length; i++) {
+                if (vm.modelResultMetadatas[i].slug === modelResultMetadataSlug) {
+                    vm.modelResultMetadatas[i].hasAbortRequested = true;
+                }
+            }
+
             computationalModelService
                 .runModel(requestBody)
                 .then(function(resp) {
-                    vm.changeModelExecutorPage();
+                    vm.changeModelResultMetadataPage();
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -840,6 +850,13 @@
                 uploadMetadata: false
             };
             vm.modelExecutorSlug = modelExecutorSlug;
+        }
+
+        vm.abortModelResultMetadata = function(modelResultMetadataSlug) {
+            vm.executionData = {
+                uploadMetadata: false
+            };
+            vm.modelResultMetadataSlug = modelResultMetadataSlug;
         }
 
         vm.runModelMetadataExtractor = function(modelMetadataExtractorSlug) {
@@ -879,17 +896,12 @@
                         if ($location.$$path && $location.$$path.includes('/computational-models/')) {
                             if (vm.tab === 'modelResults') {
                                 vm.refreshModelResults();
-                            
-                            } else if(vm.tab === 'executors') {
-                                vm.refreshExecutors();
-
-                            } else if(vm.tab === 'extractors') {
-                                vm.refreshExtractors();
                             }
                         }
                     }, 2000);
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -905,85 +917,17 @@
             computationalModelService
                 .getAllModelExecutors(vm.modelExecutorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
                 .then(function(resp) {
-                    var hasRunningModel = false;
-
                     for (var i = 0; i < resp.data.records.length; i++) {
                         resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
-                        
-                        if (resp.data.records[i].executionStatus === 'RUNNING' ||
-                                resp.data.records[i].executionStatus === 'SCHEDULED') {
-                            hasRunningModel = true;
-                        }
                     }
                     vm.modelExecutors = resp.data.records;
                     vm.totalModelExecutorCount = resp.data.metadata.totalCount;
                     vm.loadingModelExecutor = false;
-
-                    if (hasRunningModel) {
-                        $timeout(function() {
-                            if ($location.$$path && $location.$$path.includes('/computational-models/')) {
-                                if (vm.tab === 'modelResults') {
-                                    vm.refreshModelResults();
-                                
-                                } else if(vm.tab === 'executors') {
-                                    vm.refreshExecutors();
-
-                                } else if(vm.tab === 'extractors') {
-                                    vm.refreshExtractors();
-                                }
-                            }
-                        }, 2000);
-                    }
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingModelExecutor = false;
                     toastr.error('Error while loading model executors.', 'Unexpected error!');
-                });
-        }
-
-        vm.refreshExecutors = function() {
-            var filter = null;
-
-            if (vm.filterModelExecutors) {
-                filter = 'tag=like=' + vm.filterModelExecutors;
-            }
-
-            computationalModelService
-                .getAllModelExecutors(vm.modelExecutorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
-                .then(function(resp) {
-                    var hasRunningModel = false;
-                    
-                    for (var i = 0; i < resp.data.records.length; i++) {
-                        resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
-                        
-                        if (resp.data.records[i].executionStatus === 'RUNNING' ||
-                                resp.data.records[i].executionStatus === 'SCHEDULED') {
-                            hasRunningModel = true;
-                        }
-                    }
-                    vm.modelExecutors = resp.data.records;
-                    vm.totalModelExecutorCount = resp.data.metadata.totalCount;
-                    vm.loadingModelExecutor = false;
-               
-                    if (hasRunningModel) {
-                        $timeout(function() {
-                            if ($location.$$path && $location.$$path.includes('/computational-models/')) {
-                                if (vm.tab === 'modelResults') {
-                                    vm.refreshModelResults();
-                                
-                                } else if(vm.tab === 'executors') {
-                                    vm.refreshExecutors();
-
-                                } else if(vm.tab === 'extractors') {
-                                    vm.refreshExtractors();
-                                }
-                            }
-                        }, 2000);
-                    }
-                })
-                .catch(function(resp) {
-                    vm.loadingModelResultMetadata = false;
-                    toastr.error('Error while refreshing model executors.', 'Unexpected error!');
                 });
         }
 
@@ -1027,6 +971,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingUpload = false;
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
@@ -1053,6 +998,7 @@
                     vm.changeModelMetadataExtractorPage();
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -1085,6 +1031,7 @@
                         } 
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
@@ -1101,6 +1048,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
@@ -1121,6 +1069,7 @@
                     vm.modelMetadataExtractor = resp.data;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -1150,6 +1099,7 @@
                         }
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             } else {
@@ -1165,6 +1115,7 @@
                         }
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
@@ -1183,6 +1134,7 @@
                     toastr.success('Success!', 'Action performed with success.');
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -1200,6 +1152,7 @@
                     toastr.success('Success!', 'Action performed with success.');
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -1215,85 +1168,17 @@
             computationalModelService
                 .getAllModelMetadataExtractors(vm.modelMetadataExtractorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
                 .then(function(resp) {
-                    var hasRunningModel = false;
-
                     for (var i = 0; i < resp.data.records.length; i++) {
                         resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
-
-                        if (resp.data.records[i].executionStatus === 'RUNNING' ||
-                                resp.data.records[i].executionStatus === 'SCHEDULED') {
-                            hasRunningModel = true;
-                        }
                     }
                     vm.modelMetadataExtractors = resp.data.records;
                     vm.totalModelMetadataExtractorCount = resp.data.metadata.totalCount;
                     vm.loadingModelMetadataExtractor = false;
-
-                    if (hasRunningModel) {
-                        $timeout(function() {
-                            if ($location.$$path && $location.$$path.includes('/computational-models/')) {
-                                if (vm.tab === 'modelResults') {
-                                    vm.refreshModelResults();
-                                
-                                } else if(vm.tab === 'executors') {
-                                    vm.refreshExecutors();
-
-                                } else if(vm.tab === 'extractors') {
-                                    vm.refreshExtractors();
-                                }
-                            }
-                        }, 2000);
-                    }
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingModelMetadataExtractor = false;
                     toastr.error('Error while loading model metadata extractors.', 'Unexpected error!');
-                });
-        }
-
-        vm.refreshExtractors = function() {
-            var filter = null;
-
-            if (vm.filterModelMetadataExtractors) {
-                filter = 'tag=like=' + vm.filterModelMetadataExtractors;
-            }
-
-            computationalModelService
-                .getAllModelMetadataExtractors(vm.modelMetadataExtractorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
-                .then(function(resp) {
-                    var hasRunningExtractor = false;
-                    
-                    for (var i = 0; i < resp.data.records.length; i++) {
-                        resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
-                        
-                        if (resp.data.records[i].executionStatus === 'RUNNING' ||
-                                resp.data.records[i].executionStatus === 'SCHEDULED') {
-                            hasRunningExtractor = true;
-                        }
-                    }
-                    vm.modelExecutors = resp.data.records;
-                    vm.totalModelExecutorCount = resp.data.metadata.totalCount;
-                    vm.loadingModelExecutor = false;
-               
-                    if (hasRunningExtractor) {
-                        $timeout(function() {
-                            if ($location.$$path && $location.$$path.includes('/computational-models/')) {
-                                if (vm.tab === 'modelResults') {
-                                    vm.refreshModelResults();
-                                
-                                } else if(vm.tab === 'executors') {
-                                    vm.refreshExecutors();
-
-                                } else if(vm.tab === 'extractors') {
-                                    vm.refreshExtractors();
-                                }
-                            }
-                        }, 2000);
-                    }
-                })
-                .catch(function(resp) {
-                    vm.loadingModelResultMetadata = false;
-                    toastr.error('Error while refreshing model metadata extractors.', 'Unexpected error!');
                 });
         }
 
@@ -1311,6 +1196,7 @@
                     vm.loadingPermission = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingPermission = false;
                     toastr.error('Error while loading permissions.', 'Unexpected error!');
                 });
@@ -1323,6 +1209,7 @@
                     toastr.success('Success!', 'Action performed with success.');
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -1335,6 +1222,7 @@
                     toastr.success('Action performed with success.', 'Success!');
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -1366,6 +1254,7 @@
                     }
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -1407,6 +1296,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             } else {
@@ -1417,6 +1307,7 @@
                         toastr.success('Success!', 'Action performed with success.');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
@@ -1477,6 +1368,7 @@
                     vm.loadingExecutionEnvironment = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingExecutionEnvironment = false;
                     toastr.error('Error while loading execution environments.', 'Unexpected error!');
                 });
@@ -1496,6 +1388,7 @@
                     vm.changeModelResultMetadataPage();
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingComputationalModel = false;
                     toastr.error('Error while loading computational model.', 'Unexpected error!');
                 });

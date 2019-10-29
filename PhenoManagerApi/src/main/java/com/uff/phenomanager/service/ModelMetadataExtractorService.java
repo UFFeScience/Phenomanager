@@ -44,6 +44,9 @@ public class ModelMetadataExtractorService extends ApiPermissionRestService<Mode
 	@Autowired
 	private ComputationalModelService computationalModelService;
 	
+	@Autowired
+	private ExtractorMetadataService extractorMetadataService;
+	
 	@Lazy
 	@Autowired
 	private GoogleDriveService googleDriveService;
@@ -143,8 +146,10 @@ public class ModelMetadataExtractorService extends ApiPermissionRestService<Mode
 	@Override
 	public Integer delete(String slug) throws ApiException {
 		ModelMetadataExtractor modelMetadataExtractor = findBySlug(slug);
-		
-		if (ExecutionStatus.RUNNING.equals(modelMetadataExtractor.getExecutionStatus())) {
+		Long totalRunning = extractorMetadataService
+				.countByModelMetadataExtractorAndExecutionStatus(modelMetadataExtractor, ExecutionStatus.RUNNING);
+
+		if (totalRunning > 0) {
 			throw new BadRequestApiException(Constants.MSG_ERROR.EXTRACTOR_CAN_NOT_BE_DELETED_ERROR);
 		}
 		

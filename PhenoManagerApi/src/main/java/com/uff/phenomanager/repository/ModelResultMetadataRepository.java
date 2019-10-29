@@ -21,8 +21,11 @@ public interface ModelResultMetadataRepository extends BaseRepository<ModelResul
 
 	List<ModelResultMetadata> findAllByComputationalModel(ComputationalModel computationalModel);
 	
-	ModelResultMetadata findByModelExecutorAndExecutionStatus(ModelExecutor modelExecutor, ExecutionStatus executionStatus);
-	
 	Long countByExecutionEnvironmentAndExecutionStatus(ExecutionEnvironment executionEnvironment, ExecutionStatus executionStatus);
+
+	Long countByModelExecutorAndExecutionStatus(ModelExecutor modelExecutor, ExecutionStatus executionStatus);
+
+	Long countByModelExecutorAndExecutionEnvironmentAndExecutionStatus(ModelExecutor modelExecutor,
+			ExecutionEnvironment executionEnvironment, ExecutionStatus executionStatus);
 	
 }

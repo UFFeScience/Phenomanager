@@ -30,7 +30,7 @@ public class ComputationalModel extends ResearchObject {
 	
 	@ManyToOne
 	@Cascade(CascadeType.SAVE_UPDATE)
-	@JoinColumn(name = "id_experiment", nullable = true)
+	@JoinColumn(name = "id_experiment")
 	private Experiment experiment;
 	
 	@Column(name = "is_public_data")

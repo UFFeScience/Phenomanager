@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import com.uff.phenomanager.domain.ExecutionEnvironment;
 import com.uff.phenomanager.domain.ExecutionStatus;
 import com.uff.phenomanager.domain.ExtractorMetadata;
 import com.uff.phenomanager.domain.ModelMetadataExtractor;
@@ -18,5 +19,12 @@ public interface ExtractorMetadataRepository extends BaseRepository<ExtractorMet
 	ExtractorMetadata findByModelMetadataExtractorAndExecutionStatus(ModelMetadataExtractor modelMetadataExtractor, ExecutionStatus executionStatus);
 	
 	Integer deleteByModelResultMetadata(ModelResultMetadata modelResultMetadata);
+
+	Long countByModelMetadataExtractorAndModelResultMetadataExecutionStatus(
+			ModelMetadataExtractor modelMetadataExtractor, ExecutionStatus executionStatus);
+
+	Long countByModelMetadataExtractorAndModelResultMetadataExecutionEnvironmentAndModelResultMetadataExecutionStatus(
+			ModelMetadataExtractor modelMetadataExtractor, ExecutionEnvironment executionEnvironment,
+			ExecutionStatus executionStatus);
 	
 }

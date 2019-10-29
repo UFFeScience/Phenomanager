@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Date;
 
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
@@ -20,10 +21,11 @@ public class FileUtils {
 	}
 	
 	public static String buildTmpPath(String fileName) {
-		StringBuilder tmpFilePath = new StringBuilder(System.getProperty(Constants.TMP_DIR))
+		return new StringBuilder(System.getProperty(Constants.TMP_DIR))
 				.append(Constants.PATH_SEPARATOR)
-				.append(fileName);
-		return tmpFilePath.toString();
+				.append(fileName)
+				.append("-")
+				.append(new Date().getTime()).toString();
 	}
 	
 	public static File writeStringToFile(String prefix, String sufix, String textContent) throws IOException {

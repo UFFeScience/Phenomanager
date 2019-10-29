@@ -4,6 +4,7 @@ public interface Constants {
 	
 	final Integer DEFAULT_LIMIT = 20;
 	final String TMP_DIR = "java.io.tmpdir";
+	final String USER_HOME_DIR = System.getProperty("user.dir");
 	final String PATH_SEPARATOR = "/";
 	final Integer MAX_LOG_LINES = 10000;
 	final String PROFILE_PROPERTY = "${spring.profiles.active:default}";

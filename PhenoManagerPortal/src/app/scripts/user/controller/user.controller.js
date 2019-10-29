@@ -30,6 +30,7 @@
                     vm.loading = false;
             })
             .catch(function(resp) {
+                console.log(resp);
                 vm.loading = false;
                 toastr.error('Error while performing action.', 'Unexpected error!');
             });
@@ -46,10 +47,12 @@
             userService
                 .syncSciManager(userSlug)
                 .then(function(resp) {
+                    console.log(resp);
                     toastr.success('Success!', 'Action performed with succes, user data is being synced.');
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
@@ -66,6 +69,7 @@
                         $rootScope.loadingAsync--;
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
@@ -85,6 +89,7 @@
                         vm.user = resp.data;
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
         }
@@ -105,6 +110,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         if (resp.status === 400) {
                             toastr.warning('Duplicate user email.', 'Invalid data!');
                         } else {
@@ -120,6 +126,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }

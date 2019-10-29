@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 import com.uff.phenomanager.Constants;
 import com.uff.phenomanager.Constants.MSG_ERROR;
 import com.uff.phenomanager.domain.ComputationalModel;
+import com.uff.phenomanager.domain.ExecutionEnvironment;
 import com.uff.phenomanager.domain.ExecutionStatus;
 import com.uff.phenomanager.domain.ExtractorMetadata;
 import com.uff.phenomanager.domain.ModelMetadataExtractor;
@@ -111,6 +112,19 @@ public class ExtractorMetadataService extends ApiPermissionRestService<Extractor
 			ModelMetadataExtractor modelMetadataExtractor, ExecutionStatus executionStatus) {
 		return extractorMetadataRepository.findByModelMetadataExtractorAndExecutionStatus(
 				modelMetadataExtractor, executionStatus);
+	}
+
+	public Long countByModelMetadataExtractorAndExecutionStatus(ModelMetadataExtractor modelMetadataExtractor, ExecutionStatus executionStatus) {
+		return extractorMetadataRepository
+				.countByModelMetadataExtractorAndModelResultMetadataExecutionStatus(
+						modelMetadataExtractor, executionStatus);
+	}
+
+	public Long countByModelMetadataExtractorAndExecutionEnvironmentAndExecutionStatus(ModelMetadataExtractor modelMetadataExtractor, 
+			ExecutionEnvironment executionEnvironment, ExecutionStatus executionStatus) {
+		return extractorMetadataRepository
+				.countByModelMetadataExtractorAndModelResultMetadataExecutionEnvironmentAndModelResultMetadataExecutionStatus(
+				modelMetadataExtractor, executionEnvironment, executionStatus);
 	}
 	
 }

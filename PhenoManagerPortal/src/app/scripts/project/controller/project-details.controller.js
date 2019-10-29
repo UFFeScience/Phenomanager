@@ -136,6 +136,7 @@
                     toastr.success('Action performed with success.', 'Success!');
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -165,6 +166,7 @@
                     vm.permission = resp.data;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -189,6 +191,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     }); 
             } else {
@@ -199,6 +202,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     }); 
             }
@@ -215,6 +219,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
@@ -234,6 +239,7 @@
                     vm.phenomenon = resp.data;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -257,6 +263,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             } else {
@@ -267,6 +274,7 @@
                         toastr.success('Success!', 'Action performed with success.');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
@@ -291,6 +299,7 @@
                     vm.loadingPhenomenon = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingPhenomenon = false;
                     toastr.error('Error while loading phenomenons.', 'Unexpected error!');
                 });
@@ -310,6 +319,7 @@
                     vm.loadingPermission = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingPermission = false;
                     toastr.error('Error while loading permissions.', 'Unexpected error!');
                 });
@@ -325,6 +335,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
@@ -337,6 +348,7 @@
                     toastr.success('Success!', 'Action performed with success.');
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -355,6 +367,7 @@
                     vm.changePhenomenonPage();
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingProject = false;
                     toastr.error('Error while loading project.', 'Unexpected error!');
                 });

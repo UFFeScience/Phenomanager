@@ -73,6 +73,7 @@
                                         $rootScope.loadingAsync--;
                                     })
                                     .catch(function(resp) {
+                                        console.log(resp);
                                         toastr.error('Error while performing action.', 'Unexpected error!');
                                         $rootScope.loadingAsync--;
                                     });

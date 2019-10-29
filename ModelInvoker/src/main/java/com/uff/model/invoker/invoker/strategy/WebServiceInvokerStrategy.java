@@ -28,6 +28,7 @@ import com.uff.model.invoker.domain.ExecutionEnvironment;
 import com.uff.model.invoker.domain.ExecutionStatus;
 import com.uff.model.invoker.domain.ModelExecutor;
 import com.uff.model.invoker.domain.ModelResultMetadata;
+import com.uff.model.invoker.domain.User;
 import com.uff.model.invoker.domain.WebServiceType;
 import com.uff.model.invoker.domain.api.google.DriveFile;
 import com.uff.model.invoker.exception.GoogleErrorApiException;
@@ -46,7 +47,7 @@ public class WebServiceInvokerStrategy extends ModelInvoker {
 	private VpnProviderService vpnProviderService;
 	
 	@Override
-	public void startModelExecutor(ModelExecutor modelExecutor, ExecutionEnvironment executionEnvironment, 
+	public void startModelExecutor(ModelExecutor modelExecutor, ExecutionEnvironment executionEnvironment, User userAgent,
 			List<String> executionExtractors, Boolean uploadMetadata) throws Exception {
 		if (modelExecutor == null) {
 			log.warn("ModelExecutor not found");
@@ -61,10 +62,10 @@ public class WebServiceInvokerStrategy extends ModelInvoker {
 		}
 		
 		if (WebServiceType.REST.equals(modelExecutor.getWebServiceType())) {
-			handleRestCall(modelExecutor, executionEnvironment, uploadMetadata);
+			handleRestCall(modelExecutor, executionEnvironment, userAgent, uploadMetadata);
 		
 		} else if (WebServiceType.SOAP.equals(modelExecutor.getWebServiceType())) {
-			handleSoapCall( modelExecutor, executionEnvironment, uploadMetadata);
+			handleSoapCall( modelExecutor, executionEnvironment, userAgent, uploadMetadata);
 			
 		} else {
 			log.warn("Unknown HTTP Protocol [{}]", modelExecutor.getWebServiceType());
@@ -73,14 +74,15 @@ public class WebServiceInvokerStrategy extends ModelInvoker {
 		vpnProviderService.closeVpnConnection(vpnProcess);
 	}
 
-	private void handleRestCall(ModelExecutor modelExecutor, ExecutionEnvironment executionEnvironment,
+	private void handleRestCall(ModelExecutor modelExecutor, ExecutionEnvironment executionEnvironment, User userAgent, 
 			Boolean uploadMetadata) throws IOException, GoogleErrorApiException {
 		
 		ModelResultMetadata modelResultMetadata = modelResultMetadataService.save(ModelResultMetadata.builder()
 				.computationalModel(executionEnvironment.getComputationalModel())
     			.modelExecutor(modelExecutor)
+    			.executorExecutionStatus(ExecutionStatus.RUNNING)
     			.executionEnvironment(executionEnvironment)
-    			.userAgent(modelExecutor.getUserAgent())
+    			.userAgent(userAgent)
 				.executionStartDate(Calendar.getInstance())
 				.uploadMetadata(uploadMetadata)
 				.build());
@@ -88,7 +90,7 @@ public class WebServiceInvokerStrategy extends ModelInvoker {
 		HttpMethod httpMethod = HttpMethod.valueOf(modelExecutor.getHttpVerb().name());
 		String url = modelExecutor.getExecutionCommand();
 
-		modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, 
+		modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
 				String.format("Starting execution of modelExecutor [%s] of [%s], verb [%s], body [%s], headers [%s] to url [%s]", 
 				modelExecutor.getTag(), modelExecutor.getWebServiceType(), modelExecutor.getHttpVerb(), modelExecutor.getHttpBody(),
 				modelExecutor.getHttpHeaders(), modelExecutor.getExecutionCommand()));
@@ -108,22 +110,18 @@ public class WebServiceInvokerStrategy extends ModelInvoker {
 		responseMetadata.addProperty("statusCode", response.getStatusCode().toString());
 		
 		modelResultMetadata = modelResultMetadataService
-				.updateExecutionOutput(modelResultMetadata, String.format("Finished making HTTP request for modelExecutor [%s] with status [%s]", 
+				.updateSystemLog(modelResultMetadata, String.format("Finished making HTTP request for modelExecutor [%s] with status [%s]", 
 						modelExecutor.getTag(), response.getStatusCode().name()));
 		
 		if (response.getStatusCode().is2xxSuccessful()) {
 			modelResultMetadata = handleUploadRestCallMetadata(modelExecutor, executionEnvironment, modelResultMetadata, responseMetadata);
-			
 			modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
-			modelExecutor.setExecutionStatus(ExecutionStatus.IDLE);
 			modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.FINISHED);
 			modelResultMetadata.setExecutionStatus(ExecutionStatus.FINISHED);
 			
 		} else {
 			modelResultMetadata = handleUploadRestCallMetadata(modelExecutor, executionEnvironment, modelResultMetadata, responseMetadata);
-			
 			modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
-			modelExecutor.setExecutionStatus(ExecutionStatus.IDLE);
 			modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.FAILURE);
 			modelResultMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
 		}
@@ -138,14 +136,12 @@ public class WebServiceInvokerStrategy extends ModelInvoker {
 		
 		if (modelResultMetadata.getUploadMetadata() != null && modelResultMetadata.getUploadMetadata()) {
 			modelResultMetadata = modelResultMetadataService
-					.updateExecutionOutput(modelResultMetadata, String.format("Uploading execution metadata...", 
+					.updateSystemLog(modelResultMetadata, String.format("Uploading execution metadata...", 
 							executionEnvironment.getTag()));
-			
-			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
 			
 			DriveFile driveFile = uploadMetadata(modelResultMetadata.getSlug(), modelExecutor.getTag(), responseMetadata.toString().getBytes());
 			modelResultMetadata.setExecutionMetadataFileId(driveFile.getFileId());
-			modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, "Finished uploading execution metadata");
+			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, "Finished uploading execution metadata");
 		}
 		return modelResultMetadata;
 	}
@@ -165,14 +161,15 @@ public class WebServiceInvokerStrategy extends ModelInvoker {
 		return headerValues;
 	}
 	
-	private void handleSoapCall(ModelExecutor modelExecutor, ExecutionEnvironment executionEnvironment,
+	private void handleSoapCall(ModelExecutor modelExecutor, ExecutionEnvironment executionEnvironment, User userAgent,
 			Boolean uploadMetadataToDrive) throws IOException, GoogleErrorApiException {
 		
 		ModelResultMetadata modelResultMetadata = modelResultMetadataService.save(ModelResultMetadata.builder()
 			.computationalModel(executionEnvironment.getComputationalModel())
 			.modelExecutor(modelExecutor)
+			.executorExecutionStatus(ExecutionStatus.RUNNING)
 			.executionEnvironment(executionEnvironment)
-			.userAgent(modelExecutor.getUserAgent())
+			.userAgent(userAgent)
 			.executionStartDate(Calendar.getInstance())
 			.build());
 		
@@ -180,7 +177,7 @@ public class WebServiceInvokerStrategy extends ModelInvoker {
 		String outputString = "";
 		String webserviceURL = modelExecutor.getExecutionUrl();
 		
-		modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, 
+		modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
 				String.format("Starting execution of modelExecutor [%s] of [%s], verb [%s], body [%s], headers [%s] to url [%s] and SOAP action", 
 				modelExecutor.getTag(), modelExecutor.getWebServiceType(), modelExecutor.getHttpVerb(), modelExecutor.getHttpBody(),
 				modelExecutor.getHttpHeaders(), modelExecutor.getExecutionUrl(), modelExecutor.getExecutionCommand()));
@@ -223,20 +220,19 @@ public class WebServiceInvokerStrategy extends ModelInvoker {
 		}
 		
 		modelResultMetadata = modelResultMetadataService
-				.updateExecutionOutput(modelResultMetadata, String.format("Finished making HTTP request for modelExecutor [%s] with response [%s]", 
+				.updateSystemLog(modelResultMetadata, String.format("Finished making HTTP request for modelExecutor [%s] with response [%s]", 
 						modelExecutor.getTag(), responseString));
 		
 		if (uploadMetadataToDrive != null && uploadMetadataToDrive) {
 			modelResultMetadata = modelResultMetadataService
-					.updateExecutionOutput(modelResultMetadata, String.format("Uploading execution metadata...", 
+					.updateSystemLog(modelResultMetadata, String.format("Uploading execution metadata...", 
 							executionEnvironment.getTag()));
 			
 			DriveFile driveFile = uploadMetadata(modelResultMetadata.getSlug(), modelExecutor.getTag(), outputString.getBytes());
 			modelResultMetadata.setExecutionMetadataFileId(driveFile.getFileId());
-			modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, "Finished uploading execution metadata");
+			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, "Finished uploading execution metadata");
 		}
 		
-		modelExecutor.setExecutionStatus(ExecutionStatus.IDLE);
 		modelResultMetadata.setExecutionStatus(ExecutionStatus.FINISHED);
 		modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
 		modelResultMetadataService.update(modelResultMetadata);
@@ -245,7 +241,7 @@ public class WebServiceInvokerStrategy extends ModelInvoker {
 	}
 	
 	@Override
-	public void stopModelExecutor(ModelExecutor modelExecutor, ExecutionEnvironment executionEnvironment)
+	public void stopModelExecutor(ModelResultMetadata modelResultMetadata, ExecutionEnvironment executionEnvironment)
 			throws IOException, ModelExecutionException, InterruptedException {
 		log.info("Not allowed to STOP Web Service call. Invalid command.");
 		return;

@@ -73,12 +73,16 @@ public class ModelResultMetadata extends BaseApiEntity {
 	@Column(name = "upload_metadata", nullable = false)
 	private Boolean uploadMetadata;
 	
+	@Column(name = "has_abort_requested")
+	private Boolean hasAbortRequested;
+	
 	public ModelResultMetadata() {}
 
 	public ModelResultMetadata(ModelResultMetadataBuilder builder) {
 		this.executionStatus = builder.executionStatus;
 		this.computationalModel = builder.computationalModel;
 		this.modelExecutor = builder.modelExecutor;
+		this.hasAbortRequested = builder.hasAbortRequested;
 		this.extractorMetadatas = builder.extractorMetadatas;
 		this.executionMetadataFileId = builder.executionMetadataFileId;
 		this.abortMetadataFileId = builder.abortMetadataFileId;
@@ -189,6 +193,14 @@ public class ModelResultMetadata extends BaseApiEntity {
 		this.executionStatus = executionStatus;
 	}
 	
+	public Boolean getHasAbortRequested() {
+		return hasAbortRequested;
+	}
+
+	public void setHasAbortRequested(Boolean hasAbortRequested) {
+		this.hasAbortRequested = hasAbortRequested;
+	}
+
 	public ExecutionEnvironment getExecutionEnvironment() {
 		return executionEnvironment;
 	}
@@ -222,11 +234,17 @@ public class ModelResultMetadata extends BaseApiEntity {
 		private ExecutionEnvironment executionEnvironment;
 		private ExecutionStatus executionStatus = ExecutionStatus.RUNNING;
 		private String executionOutput;
+		private Boolean hasAbortRequested;
 		private ExecutionStatus executorExecutionStatus;
 		private Boolean uploadMetadata;
 		
 		public ModelResultMetadataBuilder executionOutput(String executionOutput) {
 			this.executionOutput = executionOutput;
+			return this;
+		}
+		
+		public ModelResultMetadataBuilder hasAbortRequested(Boolean hasAbortRequested) {
+			this.hasAbortRequested = hasAbortRequested;
 			return this;
 		}
 		

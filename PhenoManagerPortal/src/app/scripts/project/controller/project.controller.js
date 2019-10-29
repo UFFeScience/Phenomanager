@@ -29,6 +29,7 @@
                     vm.loading = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loading = false;
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
@@ -121,6 +122,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
@@ -137,6 +139,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
@@ -156,6 +159,7 @@
                     vm.project = resp.data;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -175,6 +179,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             } else {
@@ -185,6 +190,7 @@
                         toastr.success('Success!', 'Action performed with success.');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }

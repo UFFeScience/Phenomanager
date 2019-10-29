@@ -32,6 +32,7 @@
                                 $rootScope.loggedUser = resp.data;
                             })
                             .catch(function(resp) {
+                                console.log(resp);
                                 toastr.error('Error while performing action.', 'Unexpected error!');
                             });
                 };
@@ -48,6 +49,7 @@
                             toastr.success('Action performed with success.', 'Success!');
                         })
                         .catch(function(resp) {
+                            console.log(resp);
                             toastr.error('Error while performing action.', 'Unexpected error!');
                         });
                 };

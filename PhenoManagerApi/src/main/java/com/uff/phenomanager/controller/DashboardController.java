@@ -17,7 +17,7 @@ import com.uff.phenomanager.Constants.CONTROLLER;
 import com.uff.phenomanager.Constants.JWT_AUTH;
 import com.uff.phenomanager.domain.dto.ValidationStatisticsDto;
 import com.uff.phenomanager.exception.ApiException;
-import com.uff.phenomanager.service.ModelExecutorService;
+import com.uff.phenomanager.service.ModelResultMetadataService;
 import com.uff.phenomanager.service.ValidationItemService;
 
 @RestController
@@ -30,7 +30,7 @@ public class DashboardController {
 	private ValidationItemService validationItemService;
 	
 	@Autowired
-	private ModelExecutorService modelExecutorService;
+	private ModelResultMetadataService modelResultMetadataService;
 	
 	@GetMapping(value = CONTROLLER.DASHBOARD.VALIDATION_STATISTICS_NAME_PATH, 
 			produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -43,7 +43,7 @@ public class DashboardController {
 			produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Map<String, Long>> getCountRunningModels(@RequestHeader(JWT_AUTH.AUTHORIZATION) String authorization) throws ApiException {
 		log.info("Processing count all models running");
-    	return new ResponseEntity<>(modelExecutorService.countAllRunningModels(authorization), HttpStatus.OK);
+    	return new ResponseEntity<>(modelResultMetadataService.countAllRunningModels(authorization), HttpStatus.OK);
     }
 	
 	@GetMapping(value = CONTROLLER.DASHBOARD.ERROR_MODELS_PATH, 
@@ -51,7 +51,7 @@ public class DashboardController {
     public ResponseEntity<Map<String, Long>> getCountErrorModels(
     		@RequestHeader(JWT_AUTH.AUTHORIZATION) String authorization) throws ApiException {
 		log.info("Processing count all models with error");
-    	return new ResponseEntity<>(modelExecutorService.countAllErrorModels(authorization), HttpStatus.OK);
+    	return new ResponseEntity<>(modelResultMetadataService.countAllErrorModels(authorization), HttpStatus.OK);
     }
 	
 }

@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.uff.model.invoker.domain.ExecutionStatus;
 import com.uff.model.invoker.domain.ModelExecutor;
 import com.uff.model.invoker.domain.ModelResultMetadata;
 import com.uff.model.invoker.domain.api.google.DriveFile;
@@ -44,29 +43,29 @@ public class WorkflowInvokerStrategy extends ModelInvoker {
 			throws ModelExecutionException, IOException, InterruptedException, NotFoundApiException, GoogleErrorApiException {
 		
 		if (modelExecutor.getExecutorFileId() == null || "".equals(modelExecutor.getExecutorFileId())) {
-			modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, "No executor configured.");
+			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, "No executor configured.");
 			throw new ModelExecutionException("No executor configured");
 			
 		} else {
-			modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, String.format("Downloading modelExecutor [%s]...", modelExecutor.getTag()));
+			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, String.format("Downloading modelExecutor [%s]...", modelExecutor.getTag()));
 			
 			DriveFile executorDriveFile = handleFileDownload(modelExecutor.getExecutorFileId());
 			
-			modelResultMetadata.appendSystemLog(String.format(String.format("Finished downloading modelExecutor [%s]", 
-					modelExecutor.getTag())));
-			modelResultMetadata.appendSystemLog(String.format(String.format("Uploading modelExecutor [%s] to environment...", 
-					modelExecutor.getTag())));
-			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
+			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata,
+					new String[] { String.format("Finished downloading modelExecutor [%s]", 
+							modelExecutor.getTag()), 
+							String.format("Uploading modelExecutor [%s] to environment...", 
+									modelExecutor.getTag())});
 			
 			sshProviderService.sendDataByScp(connection, executorDriveFile.getFullPath(), REMOTE_MOUNT_POINT);
 			String executionCommand = getExecutionPermissionCommand(Boolean.TRUE, executorDriveFile.getFileName(), 
 					modelExecutor.getExecutionCommand(), connection);
 			
 			modelResultMetadata = modelResultMetadataService
-					.updateExecutionOutput(modelResultMetadata, String.format("Finished uploading modelExecutor [%s] to environment", modelExecutor.getTag()));
+					.updateSystemLog(modelResultMetadata, String.format("Finished uploading modelExecutor [%s] to environment", modelExecutor.getTag()));
 			
 			modelResultMetadata = modelResultMetadataService
-					.updateExecutionOutput(modelResultMetadata, String.format("Executing command [%s]:", executionCommand));
+					.updateSystemLog(modelResultMetadata, String.format("Executing command [%s]:", executionCommand));
 			
 			LogSaverWrapper logSaver = LogSaverWrapper.builder()
 					.modelResultMetadata(modelResultMetadata)
@@ -76,23 +75,19 @@ public class WorkflowInvokerStrategy extends ModelInvoker {
 			
 			modelResultMetadata = logSaver.getModelResultMetadata();
 			modelResultMetadata = modelResultMetadataService
-					.updateExecutionOutput(modelResultMetadata, String.format("Finished executing command [%s]", executionCommand));
+					.updateSystemLog(modelResultMetadata, String.format("Finished executing command [%s]", executionCommand));
 			
 			if (logSaver.getLogOutput() != null && !"".equals(logSaver.getLogOutput()) && modelResultMetadata.getUploadMetadata() != null && modelResultMetadata.getUploadMetadata()) {
 				modelResultMetadata = modelResultMetadataService
-						.updateExecutionOutput(modelResultMetadata, "Uploading execution metadata...");
+						.updateSystemLog(modelResultMetadata, "Uploading execution metadata...");
 				
 				DriveFile driveFile = uploadMetadata(modelResultMetadata.getSlug(), modelExecutor.getTag(), logSaver.getLogOutput().getBytes());
 				modelResultMetadata.setExecutionMetadataFileId(driveFile.getFileId());
 				modelResultMetadata = modelResultMetadataService
-						.updateExecutionOutput(modelResultMetadata, "Finished uploading execution metadata");
+						.updateSystemLog(modelResultMetadata, "Finished uploading execution metadata");
 			}
 			
-			modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.FINISHED);
-			modelExecutor.setExecutionStatus(ExecutionStatus.IDLE);
-			modelResultMetadata.setModelExecutor(modelExecutorService.update(modelExecutor));
-			
-			return modelResultMetadataService.update(modelResultMetadata);
+			return modelResultMetadata;
 		}
 	}
 	
@@ -103,27 +98,27 @@ public class WorkflowInvokerStrategy extends ModelInvoker {
 		if (modelExecutor.getExecutorFileId() == null || "".equals(modelExecutor.getExecutorFileId()) ||
 				modelExecutor.getExecutionCommand() == null) {
 			
-			modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, "No executor configured.");
+			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, "No executor configured.");
 			throw new ModelExecutionException("No executor configured");
 			
 		} else {
 			modelResultMetadata = modelResultMetadataService
-					.updateExecutionOutput(modelResultMetadata, String.format("Downloading modelExecutor [%s]...", modelExecutor.getTag()));
+					.updateSystemLog(modelResultMetadata, String.format("Downloading modelExecutor [%s]...", modelExecutor.getTag()));
 			
 			DriveFile executorDriveFile = handleFileDownload(modelExecutor.getExecutorFileId());
 			
-			modelResultMetadata.appendSystemLog(String.format(String.format("Finished downloading modelExecutor [%s]", 
-					modelExecutor.getTag())));
-			modelResultMetadata.appendSystemLog(String.format(String.format("Uploading modelExecutor [%s] to environment...", 
-					modelExecutor.getTag())));
-			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
+			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata,
+					new String[] { String.format("Finished downloading modelExecutor [%s]", 
+							modelExecutor.getTag()), 
+							String.format("Uploading modelExecutor [%s] to environment...", 
+									modelExecutor.getTag())});
 			
 			clusterProviderService.sendDataByScp(connection, executorDriveFile.getFullPath(), REMOTE_MOUNT_POINT);
 			
 			String configCommand = getExecutionPermissionCommand(Boolean.TRUE, executorDriveFile.getFileName(), connection);
 			
 			modelResultMetadata = modelResultMetadataService
-					.updateExecutionOutput(modelResultMetadata, String.format("Executing command [%s]:", modelExecutor.getExecutionCommand()));
+					.updateSystemLog(modelResultMetadata, String.format("Executing command [%s]:", modelExecutor.getExecutionCommand()));
 			
 			LogSaverWrapper logSaver = LogSaverWrapper.builder()
 					.modelResultMetadata(modelResultMetadata)
@@ -152,7 +147,7 @@ public class WorkflowInvokerStrategy extends ModelInvoker {
 			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
 			
 			modelResultMetadata = modelResultMetadataService
-					.updateExecutionOutput(modelResultMetadata, String.format("Executing command [%s]:", modelExecutor.getExecutionCommand()));
+					.updateSystemLog(modelResultMetadata, String.format("Executing command [%s]:", modelExecutor.getExecutionCommand()));
 			logSaver.setModelResultMetadata(modelResultMetadata);
 			
 			String permissionScratchCommand = getExecutionPermissionCommand(Boolean.FALSE, scratchFileName, connection);
@@ -161,16 +156,17 @@ public class WorkflowInvokerStrategy extends ModelInvoker {
 			
 			modelResultMetadata = logSaver.getModelResultMetadata();
 			modelResultMetadata = modelResultMetadataService
-					.updateExecutionOutput(modelResultMetadata, String.format("Finished submiting Job [%s]:", modelExecutor.getJobName()));
+					.updateSystemLog(modelResultMetadata, String.format("Finished submiting Job [%s]:", modelExecutor.getJobName()));
 			
-			if (executionMetadata != null && modelResultMetadata.getUploadMetadata() != null && modelResultMetadata.getUploadMetadata()) {
+			if (executionMetadata != null && executionMetadata.length > 0 && modelResultMetadata.getUploadMetadata() != null && 
+					modelResultMetadata.getUploadMetadata()) {
 				modelResultMetadata = modelResultMetadataService
-						.updateExecutionOutput(modelResultMetadata, "Uploading execution metadata...");
+						.updateSystemLog(modelResultMetadata, "Uploading execution metadata...");
 				
 				DriveFile driveFile = uploadMetadata(modelResultMetadata.getSlug(), modelExecutor.getTag(), executionMetadata);
 				modelResultMetadata.setExecutionMetadataFileId(driveFile.getFileId());
 				modelResultMetadata = modelResultMetadataService
-						.updateExecutionOutput(modelResultMetadata, "Finished uploading execution metadata");
+						.updateSystemLog(modelResultMetadata, "Finished uploading execution metadata");
 			}
 			
 			return modelResultMetadata;

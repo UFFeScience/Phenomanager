@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import com.uff.model.invoker.Constants.BASH;
 import com.uff.model.invoker.Constants.UPLOAD;
+import com.uff.model.invoker.domain.ExecutionStatus;
+import com.uff.model.invoker.domain.ExtractorMetadata;
 import com.uff.model.invoker.domain.ModelExecutor;
 import com.uff.model.invoker.domain.ModelResultMetadata;
 import com.uff.model.invoker.domain.api.google.DriveFile;
@@ -99,6 +101,43 @@ public abstract class BaseInvoker {
 	
 	protected String getExecutionPermissionCommand(Boolean isWorkflow, String fileName, Connection connection) {
 		return getExecutionPermissionCommand(isWorkflow, fileName, null, connection);
+	}
+	
+	public ModelResultMetadata checkExecutionExtractionStatus(ModelResultMetadata modelResultMetadata) {
+		if (modelResultMetadata.getExtractorMetadatas() != null && !modelResultMetadata.getExtractorMetadatas().isEmpty()) {
+			Boolean hasFailedExtraction = Boolean.FALSE;
+			
+			for (ExtractorMetadata extractorMetadata : modelResultMetadata.getExtractorMetadatas()) {
+				if (ExecutionStatus.FAILURE.equals(extractorMetadata.getExecutionStatus())) {
+					hasFailedExtraction = Boolean.TRUE;
+					break;
+				}
+			}
+			
+			if (hasFailedExtraction) {
+				modelResultMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
+			} else {
+				modelResultMetadata.setExecutionStatus(ExecutionStatus.FINISHED);
+			}
+		}
+		
+		return modelResultMetadata;
+	}
+	
+	public ModelResultMetadata handlePendingExtraction(ModelResultMetadata modelResultMetadata) {
+		modelResultMetadata = modelResultMetadataService.findBySlug(modelResultMetadata.getSlug());
+
+		if (modelResultMetadata.getExtractorMetadatas() != null && !modelResultMetadata.getExtractorMetadatas().isEmpty()) {
+			for (ExtractorMetadata extractorMetadata : modelResultMetadata.getExtractorMetadatas()) {
+				if (ExecutionStatus.SCHEDULED.equals(extractorMetadata.getExecutionStatus()) || 
+						ExecutionStatus.RUNNING.equals(extractorMetadata.getExecutionStatus())) {
+					extractorMetadata.setExecutionStatus(ExecutionStatus.ABORTED);
+				}
+				extractorMetadata = extractorMetadataService.update(extractorMetadata);
+			}
+		}
+		
+		return modelResultMetadata;
 	}
 	
 	protected String getExecutionPermissionCommand(Boolean isWorkflow, String fileName, String executionCommand, Connection connection) {

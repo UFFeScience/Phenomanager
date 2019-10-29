@@ -28,7 +28,7 @@ public class ModelKillerListener {
     		Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) Long tag) throws IOException {
 		
 		log.info("Received message for model kill [{}]", modelExecutionMessageDto);
-		computationalModelService.invokeModelTaskExecutor(modelExecutionMessageDto, channel, tag);
+		computationalModelService.invokeModelTaskStop(modelExecutionMessageDto, channel, tag);
 	}
 	
 }

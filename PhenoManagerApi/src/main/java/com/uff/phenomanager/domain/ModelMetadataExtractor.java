@@ -2,8 +2,6 @@ package com.uff.phenomanager.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -17,6 +15,9 @@ public class ModelMetadataExtractor extends BaseApiEntity {
 	
 	@Column(name = "execution_command", columnDefinition = "text")
 	private String executionCommand;
+	
+	@Column(name = "abort_command", columnDefinition = "text")
+	private String abortCommand;
 	
 	@Column(name = "tag", length = 80)
 	private String tag;
@@ -32,15 +33,6 @@ public class ModelMetadataExtractor extends BaseApiEntity {
 	@JoinColumn(name = "id_computational_model")
 	private ComputationalModel computationalModel;
 	
-	@Column(name = "execution_status")
-	@Enumerated(EnumType.STRING)
-	private ExecutionStatus executionStatus = ExecutionStatus.IDLE;
-	
-	@ManyToOne
-	@Cascade(CascadeType.SAVE_UPDATE)
-	@JoinColumn(name = "id_user_account_agent", referencedColumnName = "id")
-	private User userAgent;
-	
 	@Column(name = "extractor_file_name")
 	private String extractorFileName;
 	
@@ -55,8 +47,7 @@ public class ModelMetadataExtractor extends BaseApiEntity {
 		this.extractorFileContentType = builder.extractorFileContentType;
 		this.computationalModel = builder.computationalModel;
 		this.executionCommand = builder.executionCommand;
-		this.executionStatus = builder.executionStatus;
-		this.userAgent = builder.userAgent;
+		this.abortCommand = builder.abortCommand;
 		this.setId(builder.getId());
 		this.setSlug(builder.getSlug());
 		this.setActive(builder.getActive());
@@ -76,6 +67,14 @@ public class ModelMetadataExtractor extends BaseApiEntity {
 	public void setExecutionCommand(String executionCommand) {
 		this.executionCommand = executionCommand;
 	}
+	
+	public String getAbortCommand() {
+		return abortCommand;
+	}
+
+	public void setAbortCommand(String abortCommand) {
+		this.abortCommand = abortCommand;
+	}
 
 	public String getTag() {
 		return tag;
@@ -93,22 +92,6 @@ public class ModelMetadataExtractor extends BaseApiEntity {
 		this.computationalModel = computationalModel;
 	}
 
-	public ExecutionStatus getExecutionStatus() {
-		return executionStatus;
-	}
-
-	public void setExecutionStatus(ExecutionStatus executionStatus) {
-		this.executionStatus = executionStatus;
-	}
-
-	public User getUserAgent() {
-		return userAgent;
-	}
-
-	public void setUserAgent(User userAgent) {
-		this.userAgent = userAgent;
-	}
-	
 	public String getExtractorFileName() {
 		return extractorFileName;
 	}
@@ -144,12 +127,16 @@ public class ModelMetadataExtractor extends BaseApiEntity {
 		private String tag;
 		private ComputationalModel computationalModel;
 		private String executionCommand;
-		private ExecutionStatus executionStatus = ExecutionStatus.IDLE;
-		private User userAgent;
+		private String abortCommand;
 		private String extractorFileName;
 		
 		public ModelMetadataExtractorBuilder extractorFileContentType(String extractorFileContentType) {
 			this.extractorFileContentType = extractorFileContentType;
+			return this;
+		}
+		
+		public ModelMetadataExtractorBuilder abortCommand(String abortCommand) {
+			this.abortCommand = abortCommand;
 			return this;
 		}
 		
@@ -165,16 +152,6 @@ public class ModelMetadataExtractor extends BaseApiEntity {
 		
 		public ModelMetadataExtractorBuilder tag(String tag) {
 			this.tag = tag;
-			return this;
-		}
-		
-		public ModelMetadataExtractorBuilder executionStatus(ExecutionStatus executionStatus) {
-			this.executionStatus = executionStatus;
-			return this;
-		}
-		
-		public ModelMetadataExtractorBuilder userAgent(User userAgent) {
-			this.userAgent = userAgent;
 			return this;
 		}
 		

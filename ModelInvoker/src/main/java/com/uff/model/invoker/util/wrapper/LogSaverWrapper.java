@@ -15,30 +15,24 @@ public class LogSaverWrapper {
 		this.logOutput = builder.logOutput;
 	}
 	
-	public void saveLog() {
+	public void saveLog(String executionLog) {
 		if (modelResultMetadata != null && modelResultMetadataService != null) {
-			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
+			modelResultMetadata = modelResultMetadataService.updateExecutorOutput(modelResultMetadata, executionLog);
 		}
 	}
 	
 	public void appendLog(String executionLog) {
 		StringBuilder log = new StringBuilder();
-		
 		if (logOutput != null) {
 			log.append(logOutput);
 			log.append("\n");
 		}
-
 		logOutput = log.append(executionLog).toString();
-		
-		if (modelResultMetadata != null) {
-			modelResultMetadata.appendExecutionLog(executionLog);
-		}
 	}
 	
 	public void updateLog(String executionLog) {
 		appendLog(executionLog);
-		saveLog();
+		saveLog(executionLog);
 	}
 	
 	public ModelResultMetadata getModelResultMetadata() {

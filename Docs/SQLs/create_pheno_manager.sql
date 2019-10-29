@@ -63,8 +63,8 @@ CREATE TABLE public.computational_model (
     name character varying(80),
     current_version character varying(32),
     is_public_data boolean,
-    type character varying(255),
-    id_experiment bigint
+    type character varying(255) NOT NULL,
+    id_experiment bigint NOT NULL
 );
 
 
@@ -84,7 +84,7 @@ CREATE TABLE public.conceptual_param (
     update_date timestamp without time zone NOT NULL,
     description text,
     key character varying(80),
-    id_experiment bigint
+    id_experiment bigint NOT NULL
 );
 
 
@@ -113,7 +113,7 @@ CREATE TABLE public.execution_environment (
     username character varying(150),
     vpn_configuration text,
     vpn_type character varying(255),
-    id_computational_model bigint
+    id_computational_model bigint NOT NULL
 );
 
 
@@ -133,7 +133,7 @@ CREATE TABLE public.experiment (
     update_date timestamp without time zone NOT NULL,
     description text,
     name character varying(80),
-    id_hypothesis bigint
+    id_hypothesis bigint NOT NULL
 );
 
 
@@ -153,8 +153,8 @@ CREATE TABLE public.extractor_metadata (
     update_date timestamp without time zone NOT NULL,
     execution_metadata_file_id character varying(255),
     execution_status character varying(255),
-    id_model_metadata_extractor bigint,
-    id_model_result_metadata bigint
+    id_model_metadata_extractor bigint NOT NULL,
+    id_model_result_metadata bigint NOT NULL
 );
 
 
@@ -190,7 +190,7 @@ CREATE TABLE public.hypothesis (
     ranking bigint,
     state character varying(255),
     id_parent_hypothesis bigint,
-    id_phenomenon bigint
+    id_phenomenon bigint NOT NULL
 );
 
 
@@ -214,8 +214,8 @@ CREATE TABLE public.instance_param (
     value_file_content_type character varying(255),
     value_file_id character varying(255),
     value_file_name character varying(255),
-    id_computational_model bigint,
-    id_conceptual_param bigint
+    id_computational_model bigint NOT NULL,
+    id_conceptual_param bigint NOT NULL
 );
 
 
@@ -233,9 +233,8 @@ CREATE TABLE public.model_executor (
     creation_date timestamp without time zone NOT NULL,
     slug character varying(32) NOT NULL,
     update_date timestamp without time zone NOT NULL,
-    abort_command text,
-    execution_command text,
-    execution_status character varying(255),
+    abort_command text NOT NULL,
+    execution_command text NOT NULL,
     execution_url text,
     executor_file_content_type character varying(255),
     executor_file_id character varying(255),
@@ -244,11 +243,10 @@ CREATE TABLE public.model_executor (
     http_headers text,
     http_verb character varying(255),
     job_name character varying(150),
-    tag character varying(80),
+    tag character varying(80) NOT NULL,
     use_enviroment_variables boolean,
     web_service_type character varying(255),
-    id_computational_model bigint,
-    id_user_account_agent bigint
+    id_computational_model bigint NOT NULL
 );
 
 
@@ -266,14 +264,13 @@ CREATE TABLE public.model_metadata_extractor (
     creation_date timestamp without time zone NOT NULL,
     slug character varying(32) NOT NULL,
     update_date timestamp without time zone NOT NULL,
-    execution_command text,
-    execution_status character varying(255),
+    execution_command text NOT NULL,
+    abort_command text NOT NULL,
     extractor_file_content_type character varying(255),
     extractor_file_id character varying(255),
     extractor_file_name character varying(255),
-    tag character varying(80),
-    id_computational_model bigint,
-    id_user_account_agent bigint
+    tag character varying(80) NOT NULL,
+    id_computational_model bigint NOT NULL
 );
 
 
@@ -298,9 +295,10 @@ CREATE TABLE public.model_result_metadata (
     execution_start_date timestamp without time zone,
     execution_status character varying(255),
     executor_execution_status character varying(255),
+    has_abort_requested boolean,
     upload_metadata boolean NOT NULL,
-    id_computational_model bigint,
-    id_execution_environment bigint,
+    id_computational_model bigint NOT NULL,
+    id_execution_environment bigint NOT NULL,
     id_model_executor bigint,
     id_user_account_agent bigint
 );
@@ -320,7 +318,7 @@ CREATE TABLE public.permission (
     creation_date timestamp without time zone NOT NULL,
     slug character varying(32) NOT NULL,
     update_date timestamp without time zone NOT NULL,
-    role character varying(255),
+    role character varying(255) NOT NULL,
     id_computational_model bigint,
     id_experiment bigint,
     id_hypothesis bigint,
@@ -346,7 +344,7 @@ CREATE TABLE public.phase (
     slug character varying(32) NOT NULL,
     update_date timestamp without time zone NOT NULL,
     name character varying(80),
-    id_experiment bigint
+    id_experiment bigint NOT NULL
 );
 
 
@@ -367,7 +365,7 @@ CREATE TABLE public.phenomenon (
     description text,
     name character varying(80),
     research_domain character varying(255) NOT NULL,
-    id_project bigint
+    id_project bigint NOT NULL
 );
 
 
@@ -463,7 +461,7 @@ CREATE TABLE public.validation_item (
     validation_evidence_file_content_type character varying(255),
     validation_evidence_file_id character varying(255),
     validation_evidence_file_name character varying(255),
-    id_experiment bigint
+    id_experiment bigint NOT NULL
 );
 
 
@@ -488,7 +486,7 @@ CREATE TABLE public.virtual_machine_config (
     platform character varying(150),
     ram integer,
     type character varying(150),
-    id_execution_environment bigint
+    id_execution_environment bigint NOT NULL
 );
 
 
@@ -943,30 +941,12 @@ ALTER TABLE ONLY public.model_metadata_extractor
 
 
 --
--- TOC entry 2162 (class 2606 OID 29457)
--- Name: fkrjm4vtmkxjnq469tdqkv6rt2a; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.model_executor
-    ADD CONSTRAINT fkrjm4vtmkxjnq469tdqkv6rt2a FOREIGN KEY (id_user_account_agent) REFERENCES public.user_account(id);
-
-
---
 -- TOC entry 2165 (class 2606 OID 29472)
 -- Name: fkru709mtlcceeikbjry3y9iqjs; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.model_result_metadata
     ADD CONSTRAINT fkru709mtlcceeikbjry3y9iqjs FOREIGN KEY (id_computational_model) REFERENCES public.computational_model(id);
-
-
---
--- TOC entry 2164 (class 2606 OID 29467)
--- Name: fks16r5rpcrovmxmdiv52fnibeb; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.model_metadata_extractor
-    ADD CONSTRAINT fks16r5rpcrovmxmdiv52fnibeb FOREIGN KEY (id_user_account_agent) REFERENCES public.user_account(id);
 
 
 --

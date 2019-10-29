@@ -23,6 +23,7 @@
                     $state.go('dashboard');
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loading = false;
                     vm.error = true;
     	            vm.message = resp.data.message;

@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 
 import javax.imageio.ImageIO;
 
@@ -44,10 +45,11 @@ public class FileUtils {
 	}
 	
 	public static String buildTmpPath(String fileName) {
-		StringBuilder tmpFilePath = new StringBuilder(System.getProperty(Constants.TMP_DIR))
+		return  new StringBuilder(System.getProperty(Constants.TMP_DIR))
 				.append(CONTROLLER.PATH_SEPARATOR)
-				.append(fileName);
-		return tmpFilePath.toString();
+				.append(fileName)
+				.append("-")
+				.append(new Date().getTime()).toString();
 	}
 
 	public static byte[] getBytesArray(File file) throws FileNotFoundException, IOException {

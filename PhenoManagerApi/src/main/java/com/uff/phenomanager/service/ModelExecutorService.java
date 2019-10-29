@@ -1,9 +1,7 @@
 package com.uff.phenomanager.service;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +19,6 @@ import com.uff.phenomanager.domain.ExecutionStatus;
 import com.uff.phenomanager.domain.Experiment;
 import com.uff.phenomanager.domain.ModelExecutor;
 import com.uff.phenomanager.domain.api.google.DriveFile;
-import com.uff.phenomanager.domain.core.filter.FilterOperator;
-import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.BadRequestApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;
@@ -45,6 +41,9 @@ public class ModelExecutorService extends ApiPermissionRestService<ModelExecutor
 	
 	@Autowired
 	private ComputationalModelService computationalModelService;
+	
+	@Autowired
+	private ModelResultMetadataService modelResultMetadataService;
 	
 	@Lazy
 	@Autowired
@@ -142,8 +141,9 @@ public class ModelExecutorService extends ApiPermissionRestService<ModelExecutor
 	@Override
 	public Integer delete(String slug) throws ApiException {
 		ModelExecutor modelExecutor = findBySlug(slug);
+		Long totalRunning = modelResultMetadataService.countByModelExecutorAndExecutionStatus(modelExecutor, ExecutionStatus.RUNNING);
 		
-		if (ExecutionStatus.RUNNING.equals(modelExecutor.getExecutionStatus())) {
+		if (totalRunning > 0) {
 			throw new BadRequestApiException(Constants.MSG_ERROR.EXECUTOR_CAN_NOT_BE_DELETED_ERROR);
 		}
 		
@@ -181,26 +181,6 @@ public class ModelExecutorService extends ApiPermissionRestService<ModelExecutor
 		}
 		
 		return deletedResult;
-	}
-
-	public Map<String, Long> countAllRunningModels(String authorization) throws ApiException {
-		RequestFilter runningFilter = new RequestFilter();
-		runningFilter.addAndFilter("executionStatus", ExecutionStatus.RUNNING, FilterOperator.EQ);
-		
-		Map<String, Long> totalRunningModels = new HashMap<>();
-		totalRunningModels.put("totalRunningModels", countAll(runningFilter, authorization));
-		
-		return totalRunningModels;
-	}
-
-	public Map<String, Long> countAllErrorModels(String authorization) throws ApiException {
-		RequestFilter errorFilter = new RequestFilter();
-		errorFilter.addAndFilter("executionStatus", ExecutionStatus.FAILURE, FilterOperator.EQ);
-		
-		Map<String, Long> totalErrorModels = new HashMap<>();
-		totalErrorModels.put("totalErrorModels", countAll(errorFilter, authorization));
-		
-		return totalErrorModels;
 	}
 
 	public ModelExecutor uploadExecutor(String slug, MultipartFile executor) throws ApiException, IOException {

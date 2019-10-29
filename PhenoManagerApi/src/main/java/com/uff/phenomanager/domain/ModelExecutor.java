@@ -58,15 +58,6 @@ public class ModelExecutor extends BaseApiEntity {
 	@Column(name = "use_enviroment_variables")
 	private Boolean useEnviromentVariables;
 	
-	@Column(name = "execution_status")
-	@Enumerated(EnumType.STRING)
-	private ExecutionStatus executionStatus = ExecutionStatus.IDLE;
-	
-	@ManyToOne
-	@Cascade(CascadeType.SAVE_UPDATE)
-	@JoinColumn(name = "id_user_account_agent", referencedColumnName = "id")
-	private User userAgent;
-	
 	@Column(name = "executor_file_name")
 	private String executorFileName;
 	
@@ -89,8 +80,6 @@ public class ModelExecutor extends BaseApiEntity {
 		this.jobName = builder.jobName;
 		this.tag = builder.tag;
 		this.useEnviromentVariables = builder.useEnviromentVariables;
-		this.executionStatus = builder.executionStatus;
-		this.userAgent = builder.userAgent;
 		this.setId(builder.getId());
 		this.setSlug(builder.getSlug());
 		this.setActive(builder.getActive());
@@ -207,22 +196,6 @@ public class ModelExecutor extends BaseApiEntity {
 		this.useEnviromentVariables = useEnviromentVariables;
 	}
 
-	public ExecutionStatus getExecutionStatus() {
-		return executionStatus;
-	}
-
-	public void setExecutionStatus(ExecutionStatus executionStatus) {
-		this.executionStatus = executionStatus;
-	}
-
-	public User getUserAgent() {
-		return userAgent;
-	}
-
-	public void setUserAgent(User userAgent) {
-		this.userAgent = userAgent;
-	}
-	
 	public String getExecutorFileName() {
 		return executorFileName;
 	}
@@ -249,8 +222,6 @@ public class ModelExecutor extends BaseApiEntity {
 		private String executionUrl;
 		private String jobName;
 		private Boolean useEnviromentVariables = Boolean.FALSE;
-		private ExecutionStatus executionStatus = ExecutionStatus.IDLE;
-		private User userAgent;
 		private String tag;
 		private String executorFileName;
 		
@@ -278,15 +249,6 @@ public class ModelExecutor extends BaseApiEntity {
 			return this;
 		}
 		
-		public ModelExecutorBuilder executionStatus(ExecutionStatus executionStatus) {
-			this.executionStatus = executionStatus;
-			return this;
-		}
-		
-		public ModelExecutorBuilder userAgent(User userAgent) {
-			this.userAgent = userAgent;
-			return this;
-		}
 		public ModelExecutorBuilder jobName(String jobName) {
 			this.jobName = jobName;
 			return this;

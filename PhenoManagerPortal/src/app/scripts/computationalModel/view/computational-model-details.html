@@ -68,11 +68,17 @@
                                                         <span class="text-primary">
                                                             <b>Scheduled <i class="fa fa-clock-o"></i></b>
                                                         </span>
+                                                        <a data-target="#abort-model-executor" ng-if="vm.hasWriteAuthorization && !modelResultMetadata.hasAbortRequested && (modelResultMetadata.executorExecutionStatus === 'RUNNING' || modelResultMetadata.executionStatus === 'RUNNING' || modelResultMetadata.executorExecutionStatus === 'SCHEDULED' || modelResultMetadata.executionStatus === 'SCHEDULED')" data-toggle="modal" ng-click="vm.abortModelResultMetadata(modelResultMetadata.slug)" uib-tooltip="Stop executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
+                                                            <i  class="fa fa-stop text-danger pointer"></i>
+                                                        </a>
                                                     </p>
                                                     <p ng-if="modelResultMetadata.executionStatus === 'RUNNING'">
                                                         <span class="text-complete">
                                                             <b>Running <i class="fa fa-refresh fa-spin"></i></b>
                                                         </span>
+                                                        <a data-target="#abort-model-executor" ng-if="vm.hasWriteAuthorization && !modelResultMetadata.hasAbortRequested && (modelResultMetadata.executorExecutionStatus === 'RUNNING' || modelResultMetadata.executionStatus === 'RUNNING' || modelResultMetadata.executorExecutionStatus === 'SCHEDULED' || modelResultMetadata.executionStatus === 'SCHEDULED')" data-toggle="modal" ng-click="vm.abortModelResultMetadata(modelResultMetadata.slug)" uib-tooltip="Stop executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
+                                                            <i  class="fa fa-stop text-danger pointer"></i>
+                                                        </a>
                                                     </p>
                                                     <p ng-if="modelResultMetadata.executionStatus === 'FINISHED'">
                                                         <span class="text-success">
@@ -137,10 +143,6 @@
                                                         </p>
                                                         <p ng-if="modelResultMetadata.executorExecutionStatus === 'RUNNING'">
                                                             <span class="text-complete">Running <i class="fa fa-refresh fa-spin"></i></span>
-
-                                                            <a data-target="#abort-model-executor" ng-if="vm.hasWriteAuthorization && modelResultMetadata.executorExecutionStatus === 'RUNNING' && modelResultMetadata.modelExecutor.executionStatus === 'RUNNING'" data-toggle="modal" ng-click="vm.runModelExecutor(modelResultMetadata.modelExecutor.slug)" uib-tooltip="Stop executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
-                                                                <i  class="fa fa-stop text-danger pointer"></i>
-                                                            </a>
                                                         </p>
 
                                                         <p ng-if="modelResultMetadata.modelExecutor.executorFileId || modelResultMetadata.executionMetadataFileId || modelResultMetadata.abortMetadataFileId">
@@ -289,7 +291,6 @@
                                                 <th ng-if="vm.computationalModel && vm.computationalModel.type !== 'WEB_SERVICE'">Abort Command</th>
                                                 <th ng-if="vm.computationalModel && vm.computationalModel.type !== 'WEB_SERVICE'">Job Name</th>
                                                 <th ng-if="vm.computationalModel && vm.computationalModel.type !== 'WEB_SERVICE' && vm.computationalModel.type !== 'COMMAND'" class="h-align-center">Executor</th>
-                                                <th class="h-align-center">Status</th>
                                                 <th>Creation Date</th>
                                                 <th class="h-align-right" style="min-width: 155px;"></th>
                                             </tr>
@@ -335,55 +336,19 @@
                                                         <span ng-if="!modelExecutor.executorFileId">--</span>
                                                     </p>
                                                 </td>
-                                                <td class="v-align-middle h-align-center">
-                                                    <p ng-if="modelExecutor.executionStatus === 'SCHEDULED'">
-                                                        <span class="text-primary">
-                                                            <b>Scheduled <i class="fa fa-clock-o"></i></b>
-                                                        </span>
-                                                    </p>
-                                                    <p ng-if="modelExecutor.executionStatus === 'RUNNING'">
-                                                        <span class="text-complete">
-                                                            <b>Running <i class="fa fa-refresh fa-spin"></i></b>
-                                                        </span>
-                                                    </p>
-                                                    <p ng-if="modelExecutor.executionStatus === 'FINISHED'">
-                                                        <span class="text-success">
-                                                            <b>Finished <i class="fa fa-check-circle-o"></i></b>
-                                                        </span>
-                                                    </p>
-                                                    <p ng-if="modelExecutor.executionStatus === 'FAILURE'">
-                                                        <span class="text-danger">
-                                                            <b>Failure <i class="fa fa-warning"></i></b>
-                                                        </span>
-                                                    </p>
-                                                    <p ng-if="modelExecutor.executionStatus === 'ABORTED'">
-                                                        <span class="text-warning">
-                                                            <b>Aborted <i class="fa fa-exclamation-circle"></i></b>
-                                                        </span>
-                                                    </p>
-                                                    <p ng-if="modelExecutor.executionStatus === 'IDLE'">
-                                                        <span class="hint-text">
-                                                            <b>idle</b>
-                                                        </span>
-                                                    </p>
-                                                </td>
                                                 <td class="v-align-middle">
                                                     <p>{{ modelExecutor.parsedInsertDate | date : 'dd/MM/y' }}</p>
                                                 </td>
                                                 <td class="text-right v-align-middle">
 
-                                                    <a data-target="#abort-model-executor" data-toggle="modal" ng-if="vm.hasWriteAuthorization && modelExecutor.active === true && modelExecutor.executionStatus === 'RUNNING'" ng-click="vm.runModelExecutor(modelExecutor.slug)" uib-tooltip="Abort executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
-                                                        <i class="fa fa-stop text-danger pointer"></i>
-                                                    </a>
-
-                                                    <a ng-if="vm.hasWriteAuthorization && modelExecutor.active === true && modelExecutor.executionStatus !== 'RUNNING' && modelExecutor.executionStatus !== 'SCHEDULED'" data-target="#run-model-executor" data-toggle="modal" ng-click="vm.runModelExecutor(modelExecutor.slug)" uib-tooltip="Run executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
+                                                    <a ng-if="vm.hasWriteAuthorization && modelExecutor.active === true" data-target="#run-model-executor" data-toggle="modal" ng-click="vm.runModelExecutor(modelExecutor.slug)" uib-tooltip="Run executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
                                                         <i class="fa fa-play text-success pointer"></i>
                                                     </a>
 
-                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && modelExecutor.executionStatus !== 'RUNNING'" data-toggle="modal" ng-click="vm.editModelExecutor(modelExecutor.slug)" data-target="#save-model-executor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization" data-toggle="modal" ng-click="vm.editModelExecutor(modelExecutor.slug)" data-target="#save-model-executor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
                                                         <i class="fa fa-pencil"></i>
                                                     </a>
-                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization && modelExecutor.executionStatus !== 'RUNNING' && modelExecutor.executionStatus !== 'SCHEDULED'" ng-click="vm.deleteModelExecutor(modelExecutor.slug)" data-toggle="modal" data-target="#delete-model-executor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization" ng-click="vm.deleteModelExecutor(modelExecutor.slug)" data-toggle="modal" data-target="#delete-model-executor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
                                                         <i class="fa fa-trash"></i>
                                                     </a>
                                                 </td>
@@ -436,7 +401,6 @@
                                                 <th>Tag</th>
                                                 <th>Execution Command</th>
                                                 <th class="h-align-center">Extractor</th>
-                                                <th class="h-align-center">Status</th>
                                                 <th>Creation Date</th>
                                                 <th>Active</th>
                                                 <th class="h-align-right" style="min-width: 155px;"></th>
@@ -459,38 +423,6 @@
                                                         <span ng-if="!modelMetadataExtractor.extractorFileId">--</span>
                                                     </p>
                                                 </td>
-                                                <td class="v-align-middle h-align-center">
-                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'SCHEDULED'">
-                                                        <span class="text-primary">
-                                                            <b>Scheduled <i class="fa fa-clock-o"></i></b>
-                                                        </span>
-                                                    </p>
-                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'RUNNING'">
-                                                        <span class="text-complete">
-                                                            <b>Running <i class="fa fa-refresh fa-spin"></i></b>
-                                                        </span>
-                                                    </p>
-                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'FINISHED'">
-                                                        <span class="text-success">
-                                                            <b>Finished <i class="fa fa-check-circle-o"></i></b>
-                                                        </span>
-                                                    </p>
-                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'FAILURE'">
-                                                        <span class="text-danger">
-                                                            <b>Failure <i class="fa fa-warning"></i></b>
-                                                        </span>
-                                                    </p>
-                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'ABORTED'">
-                                                        <span class="text-warning">
-                                                            <b>Aborted <i class="fa fa-exclamation-circle"></i></b>
-                                                        </span>
-                                                    </p>
-                                                    <p ng-if="modelMetadataExtractor.executionStatus === 'IDLE'">
-                                                        <span class="hint-text">
-                                                            <b>idle</b>
-                                                        </span>
-                                                    </p>
-                                                </td>
                                                 <td class="v-align-middle">
                                                     <p>{{ modelMetadataExtractor.parsedInsertDate | date : 'dd/MM/y' }}</p>
                                                 </td>
@@ -499,7 +431,7 @@
                                                     <p class="hint-text" ng-if="modelMetadataExtractor.active == false">No</p>
                                                 </td>
                                                 <td class="text-right v-align-middle">
-                                                    <a data-target="#run-model-metadata-extractor" data-toggle="modal" ng-if="vm.hasWriteAuthorization && modelMetadataExtractor.active === true && modelMetadataExtractor.executionStatus !== 'RUNNING' && modelMetadataExtractor.executionStatus !== 'SCHEDULED'" ng-click="vm.runModelMetadataExtractor(modelMetadataExtractor.slug)" uib-tooltip="Run executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
+                                                    <a data-target="#run-model-metadata-extractor" data-toggle="modal" ng-if="vm.hasWriteAuthorization && modelMetadataExtractor.active === true" ng-click="vm.runModelMetadataExtractor(modelMetadataExtractor.slug)" uib-tooltip="Run executor" class="btn btn-master-lighter btn-cons btn-actions" href="javascript:;">
                                                         <i  class="fa fa-play text-success pointer"></i>
                                                     </a>
 
@@ -507,14 +439,14 @@
                                                         <i  class="fa fa-circle-o-notch"></i>
                                                     </a>
 
-                                                    <a data-target="#deactivate-model-metadata-extractor" data-toggle="modal" ng-if="vm.hasWriteAuthorization && modelMetadataExtractor.active === true && modelMetadataExtractor.executionStatus !== 'RUNNING'" ng-click="vm.editModelMetadataExtractor(modelMetadataExtractor.slug)" uib-tooltip="Deactivate" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                    <a data-target="#deactivate-model-metadata-extractor" data-toggle="modal" ng-if="vm.hasWriteAuthorization && modelMetadataExtractor.active === true" ng-click="vm.editModelMetadataExtractor(modelMetadataExtractor.slug)" uib-tooltip="Deactivate" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
                                                         <i  class="fa fa-ban text-danger pointer"></i>
                                                     </a>
 
-                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && modelMetadataExtractor.executionStatus !== 'RUNNING'" data-toggle="modal" ng-click="vm.editModelMetadataExtractor(modelMetadataExtractor.slug)" data-target="#save-model-metadata-extractor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization" data-toggle="modal" ng-click="vm.editModelMetadataExtractor(modelMetadataExtractor.slug)" data-target="#save-model-metadata-extractor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
                                                         <i class="fa fa-pencil"></i>
                                                     </a>
-                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization && modelMetadataExtractor.executionStatus !== 'RUNNING' && modelMetadataExtractor.executionStatus !== 'SCHEDULED'" ng-click="vm.deleteModelmetadataExtractor(modelMetadataExtractor.slug)" data-toggle="modal" data-target="#delete-model-metadata-extractor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization" ng-click="vm.deleteModelmetadataExtractor(modelMetadataExtractor.slug)" data-toggle="modal" data-target="#delete-model-metadata-extractor" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
                                                         <i class="fa fa-trash"></i>
                                                     </a>
                                                 </td>
@@ -683,10 +615,10 @@
                                                     <p>{{ executionEnvironment.parsedInsertDate | date : 'dd/MM/y' }}</p>
                                                 </td>
                                                 <td class="text-right">
-                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization && executionEnvironment.active == false" data-toggle="modal" ng-click="vm.editExecutionEnvironment(executionEnvironment.slug)" data-target="#save-execution-environment" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                    <a uib-tooltip="Edit" ng-if="vm.hasWriteAuthorization" data-toggle="modal" ng-click="vm.editExecutionEnvironment(executionEnvironment.slug)" data-target="#save-execution-environment" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
                                                         <i class="fa fa-pencil"></i>
                                                     </a>
-                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization && executionEnvironment.active == false" ng-click="vm.deleteExecutionEnvironment(executionEnvironment.slug)" data-toggle="modal" data-target="#delete-execution-environment" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
+                                                    <a uib-tooltip="Remove" ng-if="vm.hasWriteAuthorization" ng-click="vm.deleteExecutionEnvironment(executionEnvironment.slug)" data-toggle="modal" data-target="#delete-execution-environment" class="btn btn-primary-dark btn-cons btn-actions" href="javascript:;">
                                                         <i class="fa fa-trash"></i>
                                                     </a>
                                                 </td>

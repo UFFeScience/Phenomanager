@@ -135,6 +135,7 @@
                     toastr.success('Action performed with success.', 'Success!');
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -164,6 +165,7 @@
                     vm.permission = resp.data;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -188,6 +190,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     }); 
             } else {
@@ -198,6 +201,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     }); 
             }
@@ -214,6 +218,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
@@ -234,6 +239,7 @@
                     $rootScope.loadingAsync--;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
@@ -253,6 +259,7 @@
                     vm.experiment = resp.data;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -276,6 +283,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             } else {
@@ -286,6 +294,7 @@
                         toastr.success('Success!', 'Action performed with success.');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
@@ -301,6 +310,7 @@
                     vm.childHypothesis = resp.data;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -336,11 +346,13 @@
                                 vm.hypothesis = resp.data;
                             })
                             .catch(function(resp) {
+                                console.log(resp);
                                 toastr.error('Error while updating parent hypothesis state.', 'Unexpected error!');
                             });
 
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             } else {
@@ -351,6 +363,7 @@
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
+                        console.log(resp);
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
@@ -375,6 +388,7 @@
                     vm.loadingExperiment = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingExperiment = false;
                     toastr.error('Error while loading experiments.', 'Unexpected error!');
                 });
@@ -399,6 +413,7 @@
                     vm.loadingHypothesisChildren = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingHypothesisChildren = false;
                     toastr.error('Error while loading children hypotheses.', 'Unexpected error!');
                 });
@@ -418,6 +433,7 @@
                     vm.loadingPermission = false;
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingPermission = false;
                     toastr.error('Error while loading permissions.', 'Unexpected error!');
                 });
@@ -430,6 +446,7 @@
                     toastr.success('Success!', 'Action performed with success.');
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
         }
@@ -448,6 +465,7 @@
                     vm.changeExperimentPage();
                 })
                 .catch(function(resp) {
+                    console.log(resp);
                     vm.loadingHypothesis = false;
                     toastr.error('Error while loading hypothesis.', 'Unexpected error!');
                 });

@@ -73,6 +73,9 @@ public class ModelResultMetadata extends BaseApiEntity {
 	@Column(name = "upload_metadata", nullable = false)
 	private Boolean uploadMetadata;
 	
+	@Column(name = "has_abort_requested")
+	private Boolean hasAbortRequested;
+	
 	@Column(name = "execution_output", columnDefinition = "text")
 	private String executionOutput;
 	
@@ -81,6 +84,7 @@ public class ModelResultMetadata extends BaseApiEntity {
 	public ModelResultMetadata(ModelResultMetadataBuilder builder) {
 		this.executionEnvironment = builder.executionEnvironment;
 		this.uploadMetadata = builder.uploadMetadata;
+		this.hasAbortRequested = builder.hasAbortRequested;
 		this.executionStatus = builder.executionStatus;
 		this.computationalModel = builder.computationalModel;
 		this.modelExecutor = builder.modelExecutor;
@@ -207,6 +211,14 @@ public class ModelResultMetadata extends BaseApiEntity {
 	public void setExecutorExecutionStatus(ExecutionStatus executorExecutionStatus) {
 		this.executorExecutionStatus = executorExecutionStatus;
 	}
+	
+	public Boolean getHasAbortRequested() {
+		return hasAbortRequested;
+	}
+
+	public void setHasAbortRequested(Boolean hasAbortRequested) {
+		this.hasAbortRequested = hasAbortRequested;
+	}
 
 	public void appendExecutionLog(String executionLog) {
 		StringBuilder log = new StringBuilder();
@@ -237,6 +249,14 @@ public class ModelResultMetadata extends BaseApiEntity {
 			
 		} else {
 			executionOutput = appendedOutput;
+		}
+	}
+	
+	public void appendSystemLogs(String[] executionLogs) {
+		if (executionLogs != null && executionLogs.length > 0) {
+			for (int i = 0; i < executionLogs.length; i++) {
+				appendSystemLog(executionLogs[i]);
+			}
 		}
 	}
 	
@@ -289,6 +309,7 @@ public class ModelResultMetadata extends BaseApiEntity {
 		private String abortMetadataFileId;
 		private String executionMetadataFileId;
 		private Boolean uploadMetadata;
+		private Boolean hasAbortRequested;
 		private User userAgent;
 		private Calendar executionStartDate;
 		private Calendar executionFinishDate;
@@ -300,6 +321,11 @@ public class ModelResultMetadata extends BaseApiEntity {
 		
 		public ModelResultMetadataBuilder executionOutput(String executionOutput) {
 			this.executionOutput = executionOutput;
+			return this;
+		}
+		
+		public ModelResultMetadataBuilder hasAbortRequested(Boolean hasAbortRequested) {
+			this.hasAbortRequested = hasAbortRequested;
 			return this;
 		}
 		

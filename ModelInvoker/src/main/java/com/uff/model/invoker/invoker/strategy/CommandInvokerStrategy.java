@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.springframework.stereotype.Component;
 
-import com.uff.model.invoker.domain.ExecutionStatus;
 import com.uff.model.invoker.domain.ModelExecutor;
 import com.uff.model.invoker.domain.ModelResultMetadata;
 import com.uff.model.invoker.domain.api.google.DriveFile;
@@ -23,7 +22,7 @@ public class CommandInvokerStrategy extends ModelInvoker {
 	public ModelResultMetadata runInSsh(ModelExecutor modelExecutor, ModelResultMetadata modelResultMetadata, Connection connection) 
 			throws IOException, InterruptedException, GoogleErrorApiException, AbortedExecutionException {
 		
-		modelResultMetadata = modelResultMetadataService.updateExecutionOutput(
+		modelResultMetadata = modelResultMetadataService.updateSystemLog(
 				modelResultMetadata, String.format("Executing command [%s]:", modelExecutor.getExecutionCommand()));
 		
 		LogSaverWrapper logSaver = LogSaverWrapper.builder()
@@ -33,27 +32,18 @@ public class CommandInvokerStrategy extends ModelInvoker {
 		sshProviderService.executeCommand(connection, modelExecutor.getExecutionCommand(), logSaver);
 		
 		modelResultMetadata = logSaver.getModelResultMetadata();
-		modelResultMetadata = modelResultMetadataService.updateExecutionOutput(
+		modelResultMetadata = modelResultMetadataService.updateSystemLog(
 				modelResultMetadata, String.format("Finished executing command [%s]", modelExecutor.getExecutionCommand()));
 		
 		if (logSaver.getLogOutput() != null && !"".equals(logSaver.getLogOutput()) && modelResultMetadata.getUploadMetadata() != null && modelResultMetadata.getUploadMetadata()) {
-			modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, "Uploading execution metadata...");
+			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, "Uploading execution metadata...");
 			
 			DriveFile driveFile = uploadMetadata(modelResultMetadata.getSlug(), modelExecutor.getTag(), logSaver.getLogOutput().getBytes());
 			modelResultMetadata.setExecutionMetadataFileId(driveFile.getFileId());
-			modelResultMetadata = modelResultMetadataService.updateExecutionOutput(modelResultMetadata, "Finished uploading execution metadata");
+			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, "Finished uploading execution metadata");
 		}
 		
-		modelExecutor = modelExecutorService.findBySlug(modelExecutor.getSlug());
-		if (modelExecutor == null || ExecutionStatus.ABORTED.equals(modelExecutor.getExecutionStatus())) {
-			throw new AbortedExecutionException("Task was aborted");
-		}
-		
-		modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.FINISHED);
-		modelExecutor.setExecutionStatus(ExecutionStatus.IDLE);
-		modelResultMetadata.setModelExecutor(modelExecutorService.update(modelExecutor));
-		
-		return modelResultMetadataService.update(modelResultMetadata);
+		return modelResultMetadata;
 	}
 	
 	@Override

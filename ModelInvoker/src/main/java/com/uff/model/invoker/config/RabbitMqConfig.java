@@ -2,6 +2,7 @@ package com.uff.model.invoker.config;
 
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar;
@@ -19,12 +20,23 @@ public class RabbitMqConfig implements RabbitListenerConfigurer {
 	
 	public static final String MODEL_EXECUTION_QUEUE = "modelExecution";
 	public static final String MODEL_KILLER_QUEUE = "modelKiller";
+	private static final Integer CONCURRENT_CONSUMERS = 3;
+	private static final Integer MAX_CONCURRENT_CONSUMERS = 10;
 
 	@Bean
 	public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
 		final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
 		rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
 		return rabbitTemplate;
+	}
+	
+	@Bean
+	public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(final ConnectionFactory connectionFactory) {
+		SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+		factory.setConnectionFactory(connectionFactory);
+		factory.setConcurrentConsumers(CONCURRENT_CONSUMERS);
+		factory.setMaxConcurrentConsumers(MAX_CONCURRENT_CONSUMERS);
+		return factory;
 	}
 
 	@Bean

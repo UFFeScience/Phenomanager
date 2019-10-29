@@ -36,6 +36,14 @@
                         <p ng-show="modelMetadataExtractorrForm.executionCommand.$invalid && !modelMetadataExtractorrForm.executionCommand.$pristine" class="error help-block">Required field</p>
                     </div>
 
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Abort command</label>
+                            <textarea autocomplete="off" name="abortCommand" class="form-control default-textarea" ng-model="vm.modelMetadataExtractor.abortCommand" required></textarea>
+                        </div>
+                        <p ng-show="modelMetadataExtractorForm.abortCommand.$invalid && !modelMetadataExtractorForm.modelMetadataExtractor.$pristine" class="error help-block">Required field</p>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-default" data-dismiss="modal">Cancel</button>
