@@ -1,0 +1,118 @@
+<div class="modal stick-up fade" tabindex="-1" id="save-executor" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">{{ vm.executorSaveTitle }}</h4>
+            </div>
+            <form name="executorForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Tag</label>
+                            <input autocomplete="off" type="text" name="tag" class="form-control" ng-model="vm.executor.tag" required>
+                        </div>
+                        <p ng-show="executorForm.tag.$invalid && !executorForm.tag.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.computationalModel.type === 'HTTP'">
+                        <div class="form-group form-group-default required">
+                            <label>HTTP Protocol type</label>
+                            <select class="form-control" ng-model="vm.executor.httpProtocolType" ng-options="httpProtocolType.value as httpProtocolType.name for httpProtocolType in vm.webServiceTypes">
+                                <option disabled selected value="">Select protocol type</option>
+                            </select>
+                        </div>
+                        <p ng-show="executorForm.webServiceTypes.$invalid && !executorForm.webServiceTypes.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.computationalModel.type === 'EXECUTABLE'">
+                        <label ng-class="{ 'disabled': loadingUpload }" class="next-step text-left full-width btn btn-default ng-binding" style="margin-top: 10px; margin-bottom: 10px;">
+                            Upload executor (executable)
+                            
+                            <i ng-if="!vm.loadingUpload" class="fa fa-upload"></i>
+                            <loading-small ng-if="vm.loadingUpload"></loading-small>
+
+                            <input title="file input" multiple="" type="file" hidden name="files" onchange="angular.element(this).scope().setExecutorFile(this)">
+                        </label>
+
+                        <p ng-if="vm.errorUploadSize" class="error help-block">Size of file exceed limit allowed (50 mb)</p>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.computationalModel.type === 'WORKFLOW'">
+                        <label ng-class="{ 'disabled': loadingUpload }" class="next-step text-left full-width btn btn-default ng-binding" style="margin-top: 10px; margin-bottom: 10px;">
+                            Upload executor (zip)
+                            
+                            <i ng-if="!vm.loadingUpload" class="fa fa-upload"></i>
+                            <loading-small ng-if="vm.loadingUpload"></loading-small>
+
+                            <input title="file input" multiple="" type="file" accept=".zip" hidden name="files" onchange="angular.element(this).scope().setExecutorFile(this)">
+                        </label>
+
+                        <p ng-if="vm.errorUploadSize" class="error help-block">Size of file exceed limit allowed (50 mb)</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label ng-if="vm.computationalModel.type !== 'HTTP'">Execution command</label>
+                            <label ng-if="vm.computationalModel.type === 'HTTP'">URL base</label>
+                            <textarea autocomplete="off" name="executionCommand" class="form-control default-textarea" ng-model="vm.executor.executionCommand" required></textarea>
+                        </div>
+                        <p ng-show="executorForm.executionCommand.$invalid && !executorForm.executionCommand.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.executor.httpProtocolType === 'SOAP'">
+                        <div class="form-group form-group-default">
+                            <label>SOAP Action</label>
+                            <input autocomplete="off" type="text" name="executionUrl" class="form-control" ng-model="vm.executor.executionUrl">
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.computationalModel.type !== 'HTTP'">
+                        <div class="form-group form-group-default required">
+                            <label>Abort command</label>
+                            <textarea autocomplete="off" name="abortionCommand" class="form-control default-textarea" ng-model="vm.executor.abortionCommand" required></textarea>
+                        </div>
+                        <p ng-show="executorForm.abortionCommand.$invalid && !executorForm.abortionCommand.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.computationalModel.type !== 'HTTP'">
+                        <div class="form-group form-group-default">
+                            <label>Job name (for Clusters)</label>
+                            <input autocomplete="off" type="text" name="jobName" class="form-control" ng-model="vm.executor.jobName">
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.computationalModel.type === 'HTTP'">
+                        <div class="form-group form-group-default required">
+                            <label>HTTP Verb</label>
+                            <select class="form-control" ng-model="vm.executor.httpVerb" ng-options="httpVerb.value as httpVerb.name for httpVerb in vm.httpVerbs">
+                                <option disabled selected value="">Select verb</option>
+                            </select>
+                        </div>
+                        <p ng-show="executorForm.httpVerb.$invalid && !executorForm.httpVerb.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.computationalModel.type === 'HTTP'">
+                        <div class="form-group form-group-default">
+                            <label>HTTP Body</label>
+                            <textarea autocomplete="off" name="httpBody" class="form-control default-textarea" ng-model="vm.executor.httpBody"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.computationalModel.type === 'HTTP'">
+                        <div class="form-group form-group-default">
+                            <label>HTTP Headers</label>
+                            <textarea autocomplete="off" name="httpBody" class="form-control default-textarea" ng-model="vm.executor.httpHeaders"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doSaveExecutor()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="executorForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

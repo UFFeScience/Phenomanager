@@ -92,10 +92,10 @@ ALTER TABLE public.conceptual_param OWNER TO postgres;
 
 --
 -- TOC entry 183 (class 1259 OID 29272)
--- Name: execution_environment; Type: TABLE; Schema: public; Owner: postgres
+-- Name: environment; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.execution_environment (
+CREATE TABLE public.environment (
     id bigint NOT NULL,
     active boolean NOT NULL,
     delete_date timestamp without time zone,
@@ -117,7 +117,7 @@ CREATE TABLE public.execution_environment (
 );
 
 
-ALTER TABLE public.execution_environment OWNER TO postgres;
+ALTER TABLE public.environment OWNER TO postgres;
 
 --
 -- TOC entry 184 (class 1259 OID 29280)
@@ -141,10 +141,10 @@ ALTER TABLE public.experiment OWNER TO postgres;
 
 --
 -- TOC entry 185 (class 1259 OID 29288)
--- Name: extractor_metadata; Type: TABLE; Schema: public; Owner: postgres
+-- Name: extractor_execution; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.extractor_metadata (
+CREATE TABLE public.extractor_execution (
     id bigint NOT NULL,
     active boolean NOT NULL,
     delete_date timestamp without time zone,
@@ -152,13 +152,13 @@ CREATE TABLE public.extractor_metadata (
     slug character varying(32) NOT NULL,
     update_date timestamp without time zone NOT NULL,
     execution_metadata_file_id character varying(255),
-    execution_status character varying(255),
-    id_model_metadata_extractor bigint NOT NULL,
-    id_model_result_metadata bigint NOT NULL
+    status character varying(255),
+    id_extractor bigint NOT NULL,
+    id_execution bigint NOT NULL
 );
 
 
-ALTER TABLE public.extractor_metadata OWNER TO postgres;
+ALTER TABLE public.extractor_execution OWNER TO postgres;
 
 --
 -- TOC entry 186 (class 1259 OID 29296)
@@ -223,22 +223,22 @@ ALTER TABLE public.instance_param OWNER TO postgres;
 
 --
 -- TOC entry 189 (class 1259 OID 29317)
--- Name: model_executor; Type: TABLE; Schema: public; Owner: postgres
+-- Name: executor; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.model_executor (
+CREATE TABLE public.executor (
     id bigint NOT NULL,
     active boolean NOT NULL,
     delete_date timestamp without time zone,
     creation_date timestamp without time zone NOT NULL,
     slug character varying(32) NOT NULL,
     update_date timestamp without time zone NOT NULL,
-    abort_command text NOT NULL,
+    abortion_command text NOT NULL,
     execution_command text NOT NULL,
     execution_url text,
-    executor_file_content_type character varying(255),
-    executor_file_id character varying(255),
-    executor_file_name character varying(255),
+    file_content_type character varying(255),
+    file_id character varying(255),
+    file_name character varying(255),
     http_body text,
     http_headers text,
     http_verb character varying(255),
@@ -250,14 +250,14 @@ CREATE TABLE public.model_executor (
 );
 
 
-ALTER TABLE public.model_executor OWNER TO postgres;
+ALTER TABLE public.executor OWNER TO postgres;
 
 --
 -- TOC entry 190 (class 1259 OID 29325)
--- Name: model_metadata_extractor; Type: TABLE; Schema: public; Owner: postgres
+-- Name: extractor; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.model_metadata_extractor (
+CREATE TABLE public.extractor (
     id bigint NOT NULL,
     active boolean NOT NULL,
     delete_date timestamp without time zone,
@@ -265,46 +265,46 @@ CREATE TABLE public.model_metadata_extractor (
     slug character varying(32) NOT NULL,
     update_date timestamp without time zone NOT NULL,
     execution_command text NOT NULL,
-    abort_command text NOT NULL,
-    extractor_file_content_type character varying(255),
-    extractor_file_id character varying(255),
-    extractor_file_name character varying(255),
+    abortion_command text NOT NULL,
+    file_content_type character varying(255),
+    file_id character varying(255),
+    file_name character varying(255),
     tag character varying(80) NOT NULL,
     id_computational_model bigint NOT NULL
 );
 
 
-ALTER TABLE public.model_metadata_extractor OWNER TO postgres;
+ALTER TABLE public.extractor OWNER TO postgres;
 
 --
 -- TOC entry 191 (class 1259 OID 29333)
--- Name: model_result_metadata; Type: TABLE; Schema: public; Owner: postgres
+-- Name: execution; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.model_result_metadata (
+CREATE TABLE public.execution (
     id bigint NOT NULL,
     active boolean NOT NULL,
     delete_date timestamp without time zone,
     creation_date timestamp without time zone NOT NULL,
     slug character varying(32) NOT NULL,
     update_date timestamp without time zone NOT NULL,
-    abort_metadata_file_id character varying(255),
-    execution_finish_date timestamp without time zone,
+    abortion_metadata_file_id character varying(255),
+    finish_date timestamp without time zone,
     execution_metadata_file_id character varying(255),
-    execution_output text,
-    execution_start_date timestamp without time zone,
-    execution_status character varying(255),
-    executor_execution_status character varying(255),
-    has_abort_requested boolean,
+    output text,
+    start_date timestamp without time zone,
+    status character varying(255),
+    executor_status character varying(255),
+    has_abortion_requested boolean,
     upload_metadata boolean NOT NULL,
     id_computational_model bigint NOT NULL,
-    id_execution_environment bigint NOT NULL,
-    id_model_executor bigint,
+    id_environment bigint NOT NULL,
+    id_executor bigint,
     id_user_account_agent bigint
 );
 
 
-ALTER TABLE public.model_result_metadata OWNER TO postgres;
+ALTER TABLE public.execution OWNER TO postgres;
 
 --
 -- TOC entry 192 (class 1259 OID 29341)
@@ -469,10 +469,10 @@ ALTER TABLE public.validation_item OWNER TO postgres;
 
 --
 -- TOC entry 200 (class 1259 OID 29393)
--- Name: virtual_machine_config; Type: TABLE; Schema: public; Owner: postgres
+-- Name: virtual_machine; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.virtual_machine_config (
+CREATE TABLE public.virtual_machine (
     id bigint NOT NULL,
     active boolean NOT NULL,
     delete_date timestamp without time zone,
@@ -486,11 +486,11 @@ CREATE TABLE public.virtual_machine_config (
     platform character varying(150),
     ram integer,
     type character varying(150),
-    id_execution_environment bigint NOT NULL
+    id_environment bigint NOT NULL
 );
 
 
-ALTER TABLE public.virtual_machine_config OWNER TO postgres;
+ALTER TABLE public.virtual_machine OWNER TO postgres;
 
 --
 -- TOC entry 2296 (class 0 OID 29256)
@@ -519,11 +519,11 @@ ALTER TABLE ONLY public.conceptual_param
 
 --
 -- TOC entry 2112 (class 2606 OID 29279)
--- Name: execution_environment_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: environment_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.execution_environment
-    ADD CONSTRAINT execution_environment_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.environment
+    ADD CONSTRAINT environment_pkey PRIMARY KEY (id);
 
 
 --
@@ -537,11 +537,11 @@ ALTER TABLE ONLY public.experiment
 
 --
 -- TOC entry 2116 (class 2606 OID 29295)
--- Name: extractor_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: extractor_execution_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.extractor_metadata
-    ADD CONSTRAINT extractor_metadata_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.extractor_execution
+    ADD CONSTRAINT extractor_execution_pkey PRIMARY KEY (id);
 
 
 --
@@ -573,29 +573,29 @@ ALTER TABLE ONLY public.instance_param
 
 --
 -- TOC entry 2124 (class 2606 OID 29324)
--- Name: model_executor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: executor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.model_executor
-    ADD CONSTRAINT model_executor_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.executor
+    ADD CONSTRAINT executor_pkey PRIMARY KEY (id);
 
 
 --
 -- TOC entry 2126 (class 2606 OID 29332)
--- Name: model_metadata_extractor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: extractor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.model_metadata_extractor
-    ADD CONSTRAINT model_metadata_extractor_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.extractor
+    ADD CONSTRAINT extractor_pkey PRIMARY KEY (id);
 
 
 --
 -- TOC entry 2128 (class 2606 OID 29340)
--- Name: model_result_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: execution_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.model_result_metadata
-    ADD CONSTRAINT model_result_metadata_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.execution
+    ADD CONSTRAINT execution_pkey PRIMARY KEY (id);
 
 
 --
@@ -690,11 +690,11 @@ ALTER TABLE ONLY public.validation_item
 
 --
 -- TOC entry 2150 (class 2606 OID 29397)
--- Name: virtual_machine_config_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: virtual_machine_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.virtual_machine_config
-    ADD CONSTRAINT virtual_machine_config_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.virtual_machine
+    ADD CONSTRAINT virtual_machine_pkey PRIMARY KEY (id);
 
 
 --
@@ -711,7 +711,7 @@ ALTER TABLE ONLY public.permission
 -- Name: fk35gpd1axm31x1vwcetjedyau6; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.model_result_metadata
+ALTER TABLE ONLY public.execution
     ADD CONSTRAINT fk35gpd1axm31x1vwcetjedyau6 FOREIGN KEY (id_user_account_agent) REFERENCES public.user_account(id);
 
 
@@ -765,8 +765,8 @@ ALTER TABLE ONLY public.conceptual_param
 -- Name: fk8fhm6fuajjy2heor63oyaqvmp; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.model_result_metadata
-    ADD CONSTRAINT fk8fhm6fuajjy2heor63oyaqvmp FOREIGN KEY (id_execution_environment) REFERENCES public.execution_environment(id);
+ALTER TABLE ONLY public.execution
+    ADD CONSTRAINT fk8fhm6fuajjy2heor63oyaqvmp FOREIGN KEY (id_environment) REFERENCES public.environment(id);
 
 
 --
@@ -801,8 +801,8 @@ ALTER TABLE ONLY public.permission
 -- Name: fk9v2ieq21ceq62efmodsxko6h6; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.extractor_metadata
-    ADD CONSTRAINT fk9v2ieq21ceq62efmodsxko6h6 FOREIGN KEY (id_model_metadata_extractor) REFERENCES public.model_metadata_extractor(id);
+ALTER TABLE ONLY public.extractor_execution
+    ADD CONSTRAINT fk9v2ieq21ceq62efmodsxko6h6 FOREIGN KEY (id_extractor) REFERENCES public.extractor(id);
 
 
 --
@@ -828,7 +828,7 @@ ALTER TABLE ONLY public.team_user_account
 -- Name: fkcxq6pup0gy5ebfmnxpwn9htnb; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.execution_environment
+ALTER TABLE ONLY public.environment
     ADD CONSTRAINT fkcxq6pup0gy5ebfmnxpwn9htnb FOREIGN KEY (id_computational_model) REFERENCES public.computational_model(id);
 
 
@@ -846,7 +846,7 @@ ALTER TABLE ONLY public.permission
 -- Name: fkga74kl9oppdfjpcdfoi0h58e4; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.model_executor
+ALTER TABLE ONLY public.executor
     ADD CONSTRAINT fkga74kl9oppdfjpcdfoi0h58e4 FOREIGN KEY (id_computational_model) REFERENCES public.computational_model(id);
 
 
@@ -864,8 +864,8 @@ ALTER TABLE ONLY public.permission
 -- Name: fkhbltw3pfcc6w13nxkywvv2fc1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.virtual_machine_config
-    ADD CONSTRAINT fkhbltw3pfcc6w13nxkywvv2fc1 FOREIGN KEY (id_execution_environment) REFERENCES public.execution_environment(id);
+ALTER TABLE ONLY public.virtual_machine
+    ADD CONSTRAINT fkhbltw3pfcc6w13nxkywvv2fc1 FOREIGN KEY (id_environment) REFERENCES public.environment(id);
 
 
 --
@@ -891,8 +891,8 @@ ALTER TABLE ONLY public.instance_param
 -- Name: fkljpkyrs9a1mgk5ixaoa8a2o6e; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.extractor_metadata
-    ADD CONSTRAINT fkljpkyrs9a1mgk5ixaoa8a2o6e FOREIGN KEY (id_model_result_metadata) REFERENCES public.model_result_metadata(id);
+ALTER TABLE ONLY public.extractor_execution
+    ADD CONSTRAINT fkljpkyrs9a1mgk5ixaoa8a2o6e FOREIGN KEY (id_execution) REFERENCES public.execution(id);
 
 
 --
@@ -936,7 +936,7 @@ ALTER TABLE ONLY public.phenomenon
 -- Name: fkr03fue7yx31jefch6n0m0x2gd; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.model_metadata_extractor
+ALTER TABLE ONLY public.extractor
     ADD CONSTRAINT fkr03fue7yx31jefch6n0m0x2gd FOREIGN KEY (id_computational_model) REFERENCES public.computational_model(id);
 
 
@@ -945,7 +945,7 @@ ALTER TABLE ONLY public.model_metadata_extractor
 -- Name: fkru709mtlcceeikbjry3y9iqjs; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.model_result_metadata
+ALTER TABLE ONLY public.execution
     ADD CONSTRAINT fkru709mtlcceeikbjry3y9iqjs FOREIGN KEY (id_computational_model) REFERENCES public.computational_model(id);
 
 
@@ -954,8 +954,8 @@ ALTER TABLE ONLY public.model_result_metadata
 -- Name: fkt9rupe8wcmv89bffqh1mfp0op; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.model_result_metadata
-    ADD CONSTRAINT fkt9rupe8wcmv89bffqh1mfp0op FOREIGN KEY (id_model_executor) REFERENCES public.model_executor(id);
+ALTER TABLE ONLY public.execution
+    ADD CONSTRAINT fkt9rupe8wcmv89bffqh1mfp0op FOREIGN KEY (id_executor) REFERENCES public.executor(id);
 
 
 --

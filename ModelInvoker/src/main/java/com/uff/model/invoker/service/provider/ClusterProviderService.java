@@ -8,6 +8,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.uff.model.invoker.Constants;
+import com.uff.model.invoker.Constants.PROVIDER;
 import com.uff.model.invoker.domain.JobStatus;
 import com.uff.model.invoker.util.wrapper.LogSaverWrapper;
 
@@ -16,13 +18,6 @@ import ch.ethz.ssh2.Connection;
 @Component
 public class ClusterProviderService {
 	
-	private static final String STATUS_REASON_COLUMN = "ST";
-	private static final String SCRATCH_DIRECTORY = "/scratch";
-	private static final String SCRATCH_SCRIPT_COMMAND = "sbatch ";
-	private static final String SCRATCH_CHECK_STATUS_COMMAND = "squeue -n ";
-	private static final String SCRATCH_STOP_COMMAND = "scancel -n ";
-	public static final String SCRATCH_SCRIPT_SUFIX = ".srm";
-
 	@Autowired
 	private SshProviderService sshProvider;
 	
@@ -35,16 +30,16 @@ public class ClusterProviderService {
 	}
 	
 	public byte[] submitJob(Connection connection, String scratchScriptFileName, LogSaverWrapper logSaver) throws IOException, InterruptedException {
-        return executeCommand(connection, SCRATCH_SCRIPT_COMMAND + scratchScriptFileName, logSaver);
+        return executeCommand(connection, PROVIDER.CLUSTER.SCRATCH_SCRIPT_COMMAND + scratchScriptFileName, logSaver);
 	}
 	
 	public byte[] stopJob(Connection connection, String jobName) throws IOException, InterruptedException {
-        return executeCommand(connection, SCRATCH_STOP_COMMAND + jobName, null);
+        return executeCommand(connection, PROVIDER.CLUSTER.SCRATCH_STOP_COMMAND + jobName, null);
 	}
 	
 	public JobStatus checkJobStatus(Connection connection, String jobName) throws IOException, InterruptedException {
-		Map<String, String> jobData = parseJobData(executeCommand(connection, SCRATCH_CHECK_STATUS_COMMAND + jobName, null));
-        return JobStatus.getJobStatusFromString(jobData.get(STATUS_REASON_COLUMN));
+		Map<String, String> jobData = parseJobData(executeCommand(connection, PROVIDER.CLUSTER.SCRATCH_CHECK_STATUS_COMMAND + jobName, null));
+        return JobStatus.getJobStatusFromString(jobData.get(PROVIDER.CLUSTER.STATUS_REASON_COLUMN));
 	}
 	
 	private Map<String, String> parseJobData(byte[] jobStatusOutputBytes) {
@@ -76,10 +71,10 @@ public class ClusterProviderService {
     }
 	
 	public void sendScriptByScp(Connection connection, String fileName, String username, String clusterProjectName) throws IOException {
-		StringBuilder scratchPath = new StringBuilder(SCRATCH_DIRECTORY);
-		scratchPath.append("/");
+		StringBuilder scratchPath = new StringBuilder(PROVIDER.CLUSTER.SCRATCH_DIRECTORY);
+		scratchPath.append(Constants.PATH_SEPARATOR);
 		scratchPath.append(clusterProjectName);
-		scratchPath.append("/");
+		scratchPath.append(Constants.PATH_SEPARATOR);
 		scratchPath.append(username);
 		
 		sshProvider.sendDataByScp(connection, fileName, scratchPath.toString());

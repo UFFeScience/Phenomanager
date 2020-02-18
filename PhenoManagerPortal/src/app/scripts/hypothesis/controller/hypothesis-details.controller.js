@@ -81,7 +81,7 @@
             for (var i = 0; i < vm.hypothesis.permissions.length; i++) {
                 if ((vm.hypothesis.permissions[i].role === 'ADMIN' ||
                      vm.hypothesis.permissions[i].role === 'WRITE') &&
-                    (vm.loggedUserSlug === vm.hypothesis.permissions[i].user.slug || 
+                    ((vm.hypothesis.permissions[i].user && vm.loggedUserSlug === vm.hypothesis.permissions[i].user.slug) || 
                      vm.teamContainsUser(vm.hypothesis.permissions[i].team, vm.loggedUserSlug))) {
                     
                     vm.hasWriteAuthorization = true;
@@ -111,7 +111,7 @@
         }
 
         vm.teamContainsUser = function(team, userSlug) {
-            if (!team) {
+            if (!team || !team.teamUsers) {
                 return false;
             }
 

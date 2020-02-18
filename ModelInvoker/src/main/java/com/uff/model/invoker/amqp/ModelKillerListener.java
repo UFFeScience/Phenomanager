@@ -11,8 +11,8 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
 import com.rabbitmq.client.Channel;
-import com.uff.model.invoker.config.RabbitMqConfig;
-import com.uff.model.invoker.domain.dto.amqp.ModelExecutionMessageDto;
+import com.uff.model.invoker.Constants.RABBIT_MQ;
+import com.uff.model.invoker.domain.dto.amqp.ExecutionMessageDto;
 import com.uff.model.invoker.service.ComputationalModelService;
 
 @Service
@@ -23,12 +23,12 @@ public class ModelKillerListener {
 	@Autowired
 	private ComputationalModelService computationalModelService;
 	
-	@RabbitListener(queues = RabbitMqConfig.MODEL_KILLER_QUEUE)
-    public void processMessage(ModelExecutionMessageDto modelExecutionMessageDto,
+	@RabbitListener(queues = RABBIT_MQ.MODEL_KILLER_QUEUE)
+    public void processMessage(ExecutionMessageDto executionMessageDto,
     		Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) Long tag) throws IOException {
 		
-		log.info("Received message for model kill [{}]", modelExecutionMessageDto);
-		computationalModelService.invokeModelTaskStop(modelExecutionMessageDto, channel, tag);
+		log.info("Received message for model kill [{}]", executionMessageDto);
+		computationalModelService.invokeModelTaskStop(executionMessageDto, channel, tag);
 	}
 	
 }

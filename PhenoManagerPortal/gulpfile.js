@@ -3,11 +3,11 @@ var gulp = require('gulp');
 
 var webserver = require('gulp-webserver'),
     serverport = 9502,
-    useref = require('gulp-useref'),
     watch = require('gulp-watch'),
     minifycss = require('gulp-clean-css'),
     gulpif = require('gulp-if'),
     uglify = require('gulp-uglify-es').default,
+    concat = require('gulp-concat'),
     imagemin = require('gulp-imagemin'),
     rimraf = require('gulp-rimraf'),
     compass = require('gulp-compass'),
@@ -17,7 +17,6 @@ var webserver = require('gulp-webserver'),
     runSequence = require('run-sequence'),
     path = require('path'),
     historyApiFallback = require('connect-history-api-fallback');;
-
 
 //Common tasks
 gulp.task('translate', function() {
@@ -51,51 +50,14 @@ gulp.task('clean', function() {
                .pipe(rimraf());
 });
 
-gulp.task('html-inject', function() {
-    return gulp.src('src/app/index.html')
-            .pipe(inject(gulp.src('src/app/plugins/**/*', { read: false }), {
-                relative: false,
-                transform: function (filePath, file) {
-                    if ('.css' === path.extname(filePath)) {
-                        return '<link href="/assets/' + filePath.replace('/src/app/', '') + '" rel="stylesheet" />'; 
-                    }
-                    if ('.js' === path.extname(filePath)) {
-                        return '<script src="/assets/' +filePath.replace('/src/app/', '') + '" type="text/javascript"></script>'
-                    }
-                    return '';
-                }
-            }
-        ))
-        .pipe(inject(gulp.src(mainBowerFiles(), { read: false }), {
-                starttag: '<!-- bower:{{ext}} -->',
-                endtag: '<!-- endbower -->',
-                relative: false,
-                transform: function (filePath, file) {
-                    if ('.css' === path.extname(filePath)) {
-                        return '<link href="/assets/' + path.basename(filePath) + '" rel="stylesheet" />'; 
-                    }
-                    if ('.js' === path.extname(filePath)) {
-                        return '<script src="/assets/' + path.basename(filePath) + '" type="text/javascript"></script>'
-                    }
-                    return '';
-                }
-            }
-        ))
-        .pipe(useref())
-        .pipe(gulpif('*.css', minifycss()))
-        .pipe(cachebust({
-            type: 'timestamp'
-        }))
-        .pipe(gulp.dest('./dist'));
-});
-
 gulp.task('copy-html', function() {
     return gulp.src('src/app/**/*.html')
         .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('build-html', function() {
-    runSequence('copy-html' , 'html-inject');
+gulp.task('copy-bower-files', function() {
+    return gulp.src(mainBowerFiles())
+        .pipe(gulp.dest('./dist/assets/vendor'));
 });
 
 gulp.task('copy-plugin-files', function() {
@@ -103,16 +65,63 @@ gulp.task('copy-plugin-files', function() {
         .pipe(gulp.dest('./dist/assets/plugins'));
 });
 
-gulp.task('copy-bower-files', function() {
-    return gulp.src(mainBowerFiles())
-        .pipe(gulp.dest('./dist/assets'));
-});
-
-gulp.task('html', function() {
-    runSequence('copy-bower-files', 'copy-plugin-files' , 'build-html');
+gulp.task('copy-app-files', function() {
+    return gulp.src('src/app/scripts/**/*.js')
+        .pipe(concat('app.js'))
+        .pipe(gulp.dest('./dist/scripts'));
 });
 
 // Build local
+gulp.task('html-inject', function() {
+    return gulp.src('src/app/index.html')
+            .pipe(inject(gulp.src('./dist/assets/plugins/**/*', { read: false }), {
+                relative: false,
+                transform: function (filePath, file) {
+                    if ('.css' === path.extname(filePath)) {
+                        return '<link href="' + filePath.replace('/dist', '') + '" rel="stylesheet" />' 
+                    }
+                    if ('.js' === path.extname(filePath)) {
+                        return '<script src="' + filePath.replace('/dist', '') + '" type="text/javascript"></script>'
+                    }
+                    return ''
+                }
+            }))
+            .pipe(inject(gulp.src(mainBowerFiles(), { read: false }), {
+                starttag: '<!-- bower:{{ext}} -->',
+                endtag: '<!-- endbower -->',
+                relative: false,
+                transform: function (filePath, file) {
+                    if ('.css' === path.extname(filePath)) {
+                        return '<link href="/assets/vendor/' + path.basename(filePath) + '" rel="stylesheet" />'
+                    }
+                    if ('.js' === path.extname(filePath)) {
+                        return '<script src="/assets/vendor/' + path.basename(filePath) + '" type="text/javascript"></script>'
+                    }
+                    return ''
+                }
+            }))
+            .pipe(inject(gulp.src('./dist/scripts/app.js', { read: false }), {
+                starttag: '<!-- inject:app:{{ext}} -->',
+                relative: false,
+                transform: function (filePath, file) {
+                    return '<script src="' + filePath.replace('/dist', '') + '" type="text/javascript"></script>'
+                }
+            }))
+            .pipe(gulpif('*.css', minifycss()))
+            .pipe(cachebust({
+                type: 'timestamp'
+            }))
+            .pipe(gulp.dest('./dist'));
+});
+
+gulp.task('build-html', function() {
+    runSequence('copy-html', 'html-inject');
+});
+
+gulp.task('html', function() {
+    runSequence('copy-bower-files', 'copy-plugin-files', 'copy-app-files', 'build-html');
+});
+
 gulp.task('build',function() {
     runSequence('clean',
         ['image', 'translate', 'fonts', 'compass'],
@@ -135,45 +144,47 @@ gulp.task('server', ['watch'], function() {
       }));
 });
 
-
 // Build Production
 gulp.task('html-inject-production', function() {
     return gulp.src('src/app/index.html')
-            .pipe(inject(gulp.src('src/app/plugins/**/*', { read: false }), {
+            .pipe(inject(gulp.src('./dist/assets/plugins/**/*', { read: false }), {
                 relative: false,
                 transform: function (filePath, file) {
                     if ('.css' === path.extname(filePath)) {
-                        return '<link href="/assets/' + filePath.replace('/src/app/', '') + '" rel="stylesheet" />'; 
+                        return '<link href="' + filePath.replace('/dist', '') + '" rel="stylesheet" />' 
                     }
                     if ('.js' === path.extname(filePath)) {
-                        return '<script src="/assets/' +filePath.replace('/src/app/', '') + '" type="text/javascript"></script>'
+                        return '<script src="' + filePath.replace('/dist', '') + '" type="text/javascript"></script>'
                     }
-                    return '';
+                    return ''
                 }
-            }
-        ))
-        .pipe(inject(gulp.src(mainBowerFiles(), { read: false }), {
+            }))
+            .pipe(inject(gulp.src(mainBowerFiles(), { read: false }), {
                 starttag: '<!-- bower:{{ext}} -->',
                 endtag: '<!-- endbower -->',
                 relative: false,
                 transform: function (filePath, file) {
                     if ('.css' === path.extname(filePath)) {
-                        return '<link href="/assets/' + path.basename(filePath) + '" rel="stylesheet" />'; 
+                        return '<link href="/assets/vendor/' + path.basename(filePath) + '" rel="stylesheet" />'
                     }
                     if ('.js' === path.extname(filePath)) {
-                        return '<script src="/assets/' + path.basename(filePath) + '" type="text/javascript"></script>'
+                        return '<script src="/assets/vendor/' + path.basename(filePath) + '" type="text/javascript"></script>'
                     }
-                    return '';
+                    return ''
                 }
-            }
-        ))
-        .pipe(useref())
-        .pipe(gulpif('*.js', uglify({ mangle: false })))
-        .pipe(gulpif('*.css', minifycss()))
-        .pipe(cachebust({
-            type: 'timestamp'
-        }))
-        .pipe(gulp.dest('./dist'));
+            }))
+            .pipe(inject(gulp.src('./dist/scripts/app.js', { read: false }), {
+                relative: false,
+                transform: function (filePath, file) {
+                    return '<script src="' + filePath.replace('/dist', '') + '" type="text/javascript"></script>'
+                }
+            }))
+            .pipe(gulpif('*.js', uglify({ mangle: false })))
+            .pipe(gulpif('*.css', minifycss()))
+            .pipe(cachebust({
+                type: 'timestamp'
+            }))
+            .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('build-html-production', function() {
@@ -181,7 +192,7 @@ gulp.task('build-html-production', function() {
 });
 
 gulp.task('html-production', function() {
-    runSequence('copy-bower-files', 'copy-plugin-files' , 'build-html-production');
+    runSequence('copy-bower-files', 'copy-plugin-files', 'copy-app-files', 'build-html-production');
 });
 
 gulp.task('build-production', function() {

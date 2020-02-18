@@ -7,6 +7,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.uff.phenomanager.domain.core.BaseApiEntity;
+
 @Entity
 @Table(name = "user_account")
 public class User extends BaseApiEntity {

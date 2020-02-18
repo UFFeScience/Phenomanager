@@ -4,6 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 
+import com.uff.model.invoker.domain.core.BaseApiEntity;
+
 @MappedSuperclass
 public class ResearchObject extends BaseApiEntity {
 	

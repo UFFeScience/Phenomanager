@@ -215,7 +215,7 @@
         }
 
         vm.teamContainsUser = function(team, userSlug) {
-            if (!team) {
+            if (!team || !team.teamUsers) {
                 return false;
             }
 

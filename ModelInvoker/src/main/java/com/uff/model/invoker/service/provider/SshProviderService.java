@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.uff.model.invoker.Constants.PROVIDER;
 import com.uff.model.invoker.util.wrapper.LogSaverWrapper;
 
 import ch.ethz.ssh2.Connection;
@@ -20,11 +21,8 @@ public class SshProviderService {
 	
 	private static final Logger log = LoggerFactory.getLogger(SshProviderService.class);
 
-	private static final Long ONE_SECOND_IN_MILLISECONDS = 1000l;
-	private static final Integer SSH_DEFAULT_PORT = 22;
-
 	public Connection openEnvironmentConnection(String hostAddress, String username, String password) throws Exception {
-		Connection connection = new Connection(hostAddress, SSH_DEFAULT_PORT);
+		Connection connection = new Connection(hostAddress, PROVIDER.SSH.DEFAULT_PORT);
 		connection.connect();
 
 		Boolean isAuthenticated = connection.authenticateWithPassword(username, password);
@@ -129,7 +127,7 @@ public class SshProviderService {
 	}
 
 	public void sleepThread(Integer secondsToSleep) throws InterruptedException {
-        Thread.sleep(secondsToSleep * ONE_SECOND_IN_MILLISECONDS);
+        Thread.sleep(secondsToSleep * PROVIDER.SSH.WAIT_TIME);
     }
 	
 	private void processCommandStdout(Session session, LogSaverWrapper logSaverWrapper) throws IOException {

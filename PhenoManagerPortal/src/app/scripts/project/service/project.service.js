@@ -5,9 +5,9 @@
         .module('pheno-manager.project')
         .service('projectService', projectService);
   
-        projectService.$inject = ['$http', 'config', 'localStorageService'];
+        projectService.$inject = ['$http', 'config'];
   
-        function projectService($http, config, localStorageService) {
+        function projectService($http, config) {
             var baseUrl = config.baseUrl;
   
             return {
@@ -53,21 +53,6 @@
 
                 getBySlug: function(slug) {
                     var url = baseUrl + '/v1/projects/' + slug;
-                    return $http.get(url);
-                },
-
-                getValidationStatistics: function() {
-                    var url = baseUrl + '/v1/dashboard/validation_item_statistics';
-                    return $http.get(url);
-                },
-
-                getCountAllRunningModels: function() {
-                    var url = baseUrl + '/v1/dashboard/running_models';
-                    return $http.get(url);
-                },
-
-                getCountAllErrorModels: function() {
-                    var url = baseUrl + '/v1/dashboard/error_models';
                     return $http.get(url);
                 },
 

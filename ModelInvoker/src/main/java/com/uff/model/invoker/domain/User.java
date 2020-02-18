@@ -6,6 +6,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
+import com.uff.model.invoker.domain.core.BaseApiEntity;
+
 @Entity
 @Table(name = "user_account")
 public class User extends BaseApiEntity {

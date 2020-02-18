@@ -13,6 +13,8 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import com.uff.model.invoker.domain.core.BaseApiEntity;
+
 @Entity
 @Table(name = "team")
 public class Team extends BaseApiEntity {

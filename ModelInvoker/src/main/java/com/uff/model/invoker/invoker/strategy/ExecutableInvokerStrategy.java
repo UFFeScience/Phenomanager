@@ -7,14 +7,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.uff.model.invoker.domain.ModelExecutor;
-import com.uff.model.invoker.domain.ModelResultMetadata;
+import com.uff.model.invoker.Constants;
+import com.uff.model.invoker.Constants.PROVIDER;
+import com.uff.model.invoker.domain.Execution;
+import com.uff.model.invoker.domain.Executor;
 import com.uff.model.invoker.domain.api.google.DriveFile;
+import com.uff.model.invoker.exception.ExecutionException;
 import com.uff.model.invoker.exception.GoogleErrorApiException;
-import com.uff.model.invoker.exception.ModelExecutionException;
 import com.uff.model.invoker.exception.NotFoundApiException;
 import com.uff.model.invoker.invoker.ModelInvoker;
-import com.uff.model.invoker.service.provider.ClusterProviderService;
 import com.uff.model.invoker.util.FileUtils;
 import com.uff.model.invoker.util.wrapper.LogSaverWrapper;
 
@@ -26,144 +27,130 @@ public class ExecutableInvokerStrategy extends ModelInvoker {
 	private static final Logger log = LoggerFactory.getLogger(ExecutableInvokerStrategy.class);
 	
 	@Override
-	public ModelResultMetadata runInSsh(ModelExecutor modelExecutor, ModelResultMetadata modelResultMetadata, Connection connection) 
+	public Execution runInSsh(Executor executor, Execution execution, Connection connection) 
 			throws IOException, InterruptedException, NotFoundApiException, GoogleErrorApiException {
 		try {
-			modelResultMetadata = runInCloud(modelExecutor, modelResultMetadata, connection);
+			execution = runInCloud(executor, execution, connection);
 		
-		} catch (ModelExecutionException e) {
+		} catch (ExecutionException e) {
 			log.error("Error while executing task in cloud environment", e);
 		}
 		
-		return modelResultMetadata;
+		return execution;
 	}
 	
 	@Override
-	public ModelResultMetadata runInCloud(ModelExecutor modelExecutor, ModelResultMetadata modelResultMetadata, Connection connection) 
-			throws ModelExecutionException, IOException, InterruptedException, NotFoundApiException, GoogleErrorApiException {
+	public Execution runInCloud(Executor executor, Execution execution, Connection connection) 
+			throws ExecutionException, IOException, InterruptedException, NotFoundApiException, GoogleErrorApiException {
 		
-		if (modelExecutor.getExecutorFileId() == null || "".equals(modelExecutor.getExecutorFileId())) {
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, "No executor configured.");
-			throw new ModelExecutionException("No executor configured");
+		if (executor.getFileId() == null || "".equals(executor.getFileId())) {
+			execution = executionService.updateSystemLog(execution, "No executor configured.");
+			throw new ExecutionException("No executor configured");
 			
 		} else {
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, String.format("Downloading modelExecutor [%s]...", modelExecutor.getTag()));
+			execution = executionService.updateSystemLog(execution, String.format("Downloading modelExecutor [%s]...", executor.getTag()));
 			
-			DriveFile executorDriveFile = handleFileDownload(modelExecutor.getExecutorFileId());
+			DriveFile executorDriveFile = handleFileDownload(executor.getFileId());
 
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata,
+			execution = executionService.updateSystemLog(execution,
 					new String[] { String.format("Finished downloading modelExecutor [%s]", 
-							modelExecutor.getTag()), 
+							executor.getTag()), 
 							String.format("Uploading modelExecutor [%s] to environment...", 
-									modelExecutor.getTag())});
+									executor.getTag())});
 			
-			sshProviderService.sendDataByScp(connection, executorDriveFile.getFullPath(), REMOTE_MOUNT_POINT);
-			modelResultMetadata = modelResultMetadataService
-					.updateSystemLog(modelResultMetadata, String.format("Finished uploading modelExecutor [%s] to environment", modelExecutor.getTag()));
+			sshProviderService.sendDataByScp(connection, executorDriveFile.getFullPath(), Constants.REMOTE_MOUNT_POINT);
+			execution = executionService.updateSystemLog(execution, String.format("Finished uploading modelExecutor [%s] to environment", executor.getTag()));
 			
 			String executionCommand = getExecutionPermissionCommand(Boolean.FALSE, executorDriveFile.getFileName(), 
-					modelExecutor.getExecutionCommand(), connection);
+					executor.getExecutionCommand(), connection);
 			
-			modelResultMetadata = modelResultMetadataService
-					.updateSystemLog(modelResultMetadata, String.format("Executing command [%s]:", executionCommand));
+			execution = executionService.updateSystemLog(execution, String.format("Executing command [%s]:", executionCommand));
 			
 			LogSaverWrapper logSaver = LogSaverWrapper.builder()
-					.modelResultMetadata(modelResultMetadata)
-					.modelResultMetadataService(modelResultMetadataService).build();
+					.execution(execution)
+					.executionService(executionService).build();
 			
 			sshProviderService.executeCommand(connection, executionCommand, logSaver);
 			
-			modelResultMetadata = logSaver.getModelResultMetadata();
-			modelResultMetadata = modelResultMetadataService
-					.updateSystemLog(modelResultMetadata, String.format("Finished executing command [%s]", modelExecutor.getExecutionCommand()));
+			execution = logSaver.getExecution();
+			execution = executionService.updateSystemLog(execution, String.format("Finished executing command [%s]", executor.getExecutionCommand()));
 			
-			if (logSaver.getLogOutput() != null && !"".equals(logSaver.getLogOutput()) && modelResultMetadata.getUploadMetadata() != null && modelResultMetadata.getUploadMetadata()) {
-				modelResultMetadata = modelResultMetadataService
-						.updateSystemLog(modelResultMetadata, "Uploading execution metadata...");
+			if (logSaver.getLogOutput() != null && !"".equals(logSaver.getLogOutput()) && execution.getUploadMetadata() != null && execution.getUploadMetadata()) {
+				execution = executionService.updateSystemLog(execution, "Uploading execution metadata...");
 				
-				DriveFile driveFile = uploadMetadata(modelResultMetadata.getSlug(), modelExecutor.getTag(), logSaver.getLogOutput().getBytes());
-				modelResultMetadata.setExecutionMetadataFileId(driveFile.getFileId());
-				modelResultMetadata = modelResultMetadataService
-						.updateSystemLog(modelResultMetadata, "Finished uploading execution metadata");
+				DriveFile driveFile = uploadMetadata(execution.getSlug(), executor.getTag(), logSaver.getLogOutput().getBytes());
+				execution.setExecutionMetadataFileId(driveFile.getFileId());
+				execution = executionService.updateSystemLog(execution, "Finished uploading execution metadata");
 			}
 			
-			return modelResultMetadata;
+			return execution;
 		}
 	}
 	
 	@Override
-	public ModelResultMetadata runInCluster(ModelExecutor modelExecutor, ModelResultMetadata modelResultMetadata, Connection connection) 
-			throws IOException, ModelExecutionException, InterruptedException, NotFoundApiException, GoogleErrorApiException {
+	public Execution runInCluster(Executor executor, Execution execution, Connection connection) 
+			throws IOException, ExecutionException, InterruptedException, NotFoundApiException, GoogleErrorApiException {
 		
-		if (modelExecutor.getExecutorFileId() == null || "".equals(modelExecutor.getExecutorFileId()) || 
-				modelExecutor.getExecutionCommand() == null) {
+		if (executor.getFileId() == null || "".equals(executor.getFileId()) || 
+				executor.getExecutionCommand() == null) {
 			
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, "No executor configured.");
-			throw new ModelExecutionException("No executor configured");
+			execution = executionService.updateSystemLog(execution, "No executor configured.");
+			throw new ExecutionException("No executor configured");
 			
 		} else {
-			modelResultMetadata = modelResultMetadataService
-					.updateSystemLog(modelResultMetadata, String.format("Downloading modelExecutor [%s]...", modelExecutor.getTag()));
+			execution = executionService.updateSystemLog(execution, String.format("Downloading modelExecutor [%s]...", executor.getTag()));
 			
-			DriveFile executorDriveFile = handleFileDownload(modelExecutor.getExecutorFileId());
+			DriveFile executorDriveFile = handleFileDownload(executor.getFileId());
 			
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata,
+			execution = executionService.updateSystemLog(execution,
 					new String[] { String.format("Finished downloading modelExecutor [%s]", 
-							modelExecutor.getTag()), 
+							executor.getTag()), 
 							String.format("Uploading modelExecutor [%s] to environment...", 
-									modelExecutor.getTag())});
+									executor.getTag())});
 			
-			clusterProviderService.sendDataByScp(connection, executorDriveFile.getFullPath(), REMOTE_MOUNT_POINT);
+			clusterProviderService.sendDataByScp(connection, executorDriveFile.getFullPath(), Constants.REMOTE_MOUNT_POINT);
 			
-			modelResultMetadata.appendSystemLog(String.format("Finished uploading modelExecutor [%s] to environment",
-					modelExecutor.getTag()));
-			modelResultMetadata.appendSystemLog(String.format("Uploading scratch file [%s] to environment...", 
-					modelExecutor.getTag()));
+			execution.appendSystemLog(String.format("Finished uploading modelExecutor [%s] to environment", executor.getTag()));
+			execution.appendSystemLog(String.format("Uploading scratch file [%s] to environment...", executor.getTag()));
 			
-			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
+			execution = executionService.update(execution);
 			
-			String scratchFileName = "scratch-" + modelExecutor.getComputationalModel().getId() + ClusterProviderService.SCRATCH_SCRIPT_SUFIX;
+			String scratchFileName = PROVIDER.CLUSTER.SCRATCH_PREFIX + executor.getComputationalModel().getId() + PROVIDER.CLUSTER.SCRATCH_SCRIPT_SUFFIX;
 			String scratchTempFilePath = FileUtils.buildTmpPath(scratchFileName);
 			
 			FileOutputStream fileOutputStream = new FileOutputStream(scratchTempFilePath);
-			fileOutputStream.write(modelExecutor.getExecutionCommand().getBytes());
+			fileOutputStream.write(executor.getExecutionCommand().getBytes());
 			fileOutputStream.close();
 			
 			clusterProviderService.sendScriptByScp(connection, scratchFileName,
-					modelResultMetadata.getExecutionEnvironment().getUsername(), 
-					modelResultMetadata.getExecutionEnvironment().getClusterName());
+					execution.getEnvironment().getUsername(), 
+					execution.getEnvironment().getClusterName());
 
-			modelResultMetadata = modelResultMetadataService
-					.updateSystemLog(modelResultMetadata, "Finished uploading scratch file to environment");
-			
-			modelResultMetadata = modelResultMetadataService
-					.updateSystemLog(modelResultMetadata, String.format("Submiting Job [%s]:", modelExecutor.getJobName()));
+			execution = executionService.updateSystemLog(execution, "Finished uploading scratch file to environment");
+			execution = executionService.updateSystemLog(execution, String.format("Submiting Job [%s]:", executor.getJobName()));
 			
 			LogSaverWrapper logSaver = LogSaverWrapper.builder()
-					.modelResultMetadata(modelResultMetadata)
-					.modelResultMetadataService(modelResultMetadataService).build();
+					.execution(execution)
+					.executionService(executionService).build();
 			
 			String permissionScratchCommand = getExecutionPermissionCommand(Boolean.FALSE, scratchFileName, connection);
 			clusterProviderService.executeCommand(connection, permissionScratchCommand, logSaver);
 			
 			byte[] executionMetadata = clusterProviderService.submitJob(connection, scratchFileName, logSaver);
 			
-			modelResultMetadata = logSaver.getModelResultMetadata();
-			modelResultMetadata = modelResultMetadataService
-					.updateSystemLog(modelResultMetadata, String.format("Finished submiting Job [%s]:", modelExecutor.getJobName()));
+			execution = logSaver.getExecution();
+			execution = executionService.updateSystemLog(execution, String.format("Finished submiting Job [%s]:", executor.getJobName()));
 			
-			if (executionMetadata != null && executionMetadata.length > 0 && modelResultMetadata.getUploadMetadata() != null && modelResultMetadata.getUploadMetadata()) {
-				modelResultMetadata = modelResultMetadataService
-						.updateSystemLog(modelResultMetadata, "Uploading execution metadata...");
+			if (executionMetadata != null && executionMetadata.length > 0 && execution.getUploadMetadata() != null && execution.getUploadMetadata()) {
+				execution = executionService.updateSystemLog(execution, "Uploading execution metadata...");
 				
-				DriveFile driveFile = uploadMetadata(modelResultMetadata.getSlug(), modelExecutor.getTag(), executionMetadata);
-				modelResultMetadata.setExecutionMetadataFileId(driveFile.getFileId());
-				modelResultMetadata = modelResultMetadataService
-						.updateSystemLog(modelResultMetadata, "Finished uploading execution metadata");
+				DriveFile driveFile = uploadMetadata(execution.getSlug(), executor.getTag(), executionMetadata);
+				execution.setExecutionMetadataFileId(driveFile.getFileId());
+				execution = executionService.updateSystemLog(execution, "Finished uploading execution metadata");
 			}
 		}
 		
-		return modelResultMetadata;
+		return execution;
 	}
 
 }

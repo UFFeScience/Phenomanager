@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.uff.model.invoker.Constants.CRON;
 import com.uff.model.invoker.service.ComputationalModelService;
 
 @Component
@@ -17,15 +18,15 @@ public class ModelStatusUpdateCron {
 	@Autowired
 	private ComputationalModelService computationalModelService;
 	
-	@Value("${cron.enable}")
+	@Value(CRON.ENABLE)
 	private Boolean cronEnabled; 
 	
-	@Scheduled(cron = "${cron.periodicity}", zone = "${cron.zone}")
+	@Scheduled(cron = CRON.PERIODICITY, zone = CRON.ZONE)
 	public void processModelExecutionStatus() {
 		log.info("Cron enabled: [{}]", cronEnabled);
 		
 		if (cronEnabled) {
-			computationalModelService.updateModelExecutionStatus();
+			computationalModelService.updateExecutionStatus();
 		}
 	}
 	

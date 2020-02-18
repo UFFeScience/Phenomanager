@@ -5,6 +5,7 @@ public interface Constants {
 	final Integer DEFAULT_LIMIT = 20;
 	final String TMP_DIR = "java.io.tmpdir";
 	final String USER_HOME_DIR = System.getProperty("user.dir");
+	final String REMOTE_MOUNT_POINT = ".";
 	final String PATH_SEPARATOR = "/";
 	final Integer MAX_LOG_LINES = 10000;
 	final String PROFILE_PROPERTY = "${spring.profiles.active:default}";
@@ -13,6 +14,61 @@ public interface Constants {
 	final String CHECK_IP_SECOND_OPTION = "https://ipv4.icanhazip.com/";
 	final String LOCALHOST = "localhost";
 	final String SYSTEM_HOST_ADDRESS_NAME = "localhost:9501";
+	final String INVOKER_STRATEGY_SUFFIX = "%sInvokerStrategy";
+
+	public interface CRON {
+		final String ENABLE = "${cron.enable}";
+		final String PERIODICITY = "${cron.periodicity}";
+		final String ZONE = "${cron.zone}";
+	}
+	
+	public interface PROVIDER {
+		public interface CLOUD {
+			final Integer START_VM_WAIT_TIME = 30000;
+			final String IP_PROTOCOL = "tcp";
+			final String KEY_PAIR_EXTENSION = ".pem";
+			final String KEY_PREFIX = "Key-";
+			final String SECURITY_GROUP_PREFIX = "SG-";
+			final String IP_RANGE_PERMISSION = "0.0.0.0/0";
+			final String GROUP_NAME_LABEL = "group-name";
+			final String KEY_NAME_LABEL = "key-name";
+			final String TAG_FILTER_LABEL = "tag:";
+			final String CLUSTER_HEADER_PREFIX = "PM-";
+			final String RUNNING_STATE = "running";
+			final String NODE_TYPE_LABEL = "NodeType";
+			final String INSTANCE_STATE_NAME_LABEL = "instance-state-name";
+			final String CLUSTER_LABEL_NAME = "Name";
+		}
+		
+		public interface CLUSTER {
+			final String STATUS_REASON_COLUMN = "ST";
+			final String SCRATCH_DIRECTORY = "/scratch";
+			final String SCRATCH_SCRIPT_COMMAND = "sbatch ";
+			final String SCRATCH_CHECK_STATUS_COMMAND = "squeue -n ";
+			final String SCRATCH_STOP_COMMAND = "scancel -n ";
+			final String SCRATCH_SCRIPT_SUFFIX = ".srm";
+			final String SCRATCH_PREFIX = "scratch-";
+		}
+
+		public interface SSH {
+			final Long WAIT_TIME = 1000l;
+			final Integer DEFAULT_PORT = 22;
+		}
+		
+		public interface VPN {
+			final String CONFIG_FILE_PREFIX = "vpn-config-";
+			final String CONFIG_FILE_SUFFIX = ".conf";
+			final String VPN_COMMAND = "sudo openvpn ";
+			final String VPNC_COMMAND = "sudo vpnc ";
+		}
+	}
+	
+	public interface RABBIT_MQ {
+		final String MODEL_EXECUTOR_QUEUE = "modelExecutor";
+		final String MODEL_KILLER_QUEUE = "modelKiller";
+		final String CONCURRENT_CONSUMERS = "${rabbitmq.queue.concurrent.default}";
+		final String MAX_CONCURRENT_CONSUMERS = "${rabbitmq.queue.concurrent.max}";
+	}
 	
 	public interface BASH {
 		final String DETECT_OS_BASH = "echo \"$OSTYPE\"";

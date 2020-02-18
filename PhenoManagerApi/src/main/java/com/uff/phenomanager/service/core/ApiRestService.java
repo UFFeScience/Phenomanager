@@ -11,11 +11,10 @@ import org.springframework.stereotype.Service;
 
 import com.uff.phenomanager.Constants;
 import com.uff.phenomanager.Constants.MSG_ERROR;
-import com.uff.phenomanager.config.security.TokenAuthenticationService;
-import com.uff.phenomanager.domain.BaseApiEntity;
 import com.uff.phenomanager.domain.Role;
 import com.uff.phenomanager.domain.core.ApiMetadata;
 import com.uff.phenomanager.domain.core.ApiResponse;
+import com.uff.phenomanager.domain.core.BaseApiEntity;
 import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;

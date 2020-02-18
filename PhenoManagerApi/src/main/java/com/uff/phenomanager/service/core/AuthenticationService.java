@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.uff.phenomanager.Constants.CONTROLLER.LOGIN;
 import com.uff.phenomanager.Constants.JWT_AUTH;
 import com.uff.phenomanager.Constants.MSG_ERROR;
-import com.uff.phenomanager.config.security.TokenAuthenticationService;
 import com.uff.phenomanager.domain.User;
 import com.uff.phenomanager.service.UserService;
 import com.uff.phenomanager.util.EncrypterUtils;

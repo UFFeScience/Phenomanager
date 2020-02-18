@@ -1,23 +1,23 @@
 package com.uff.model.invoker.util.wrapper;
 
-import com.uff.model.invoker.domain.ModelResultMetadata;
-import com.uff.model.invoker.service.ModelResultMetadataService;
+import com.uff.model.invoker.domain.Execution;
+import com.uff.model.invoker.service.ExecutionService;
 
 public class LogSaverWrapper {
 	
-	private ModelResultMetadata modelResultMetadata;
-	private ModelResultMetadataService modelResultMetadataService;
+	private Execution execution;
+	private ExecutionService executionService;
 	private String logOutput;
 	
 	public LogSaverWrapper(LogSaverWrapperBuilder builder) {
-		this.modelResultMetadata = builder.modelResultMetadata;
-		this.modelResultMetadataService = builder.modelResultMetadataService;
+		this.execution = builder.execution;
+		this.executionService = builder.executionService;
 		this.logOutput = builder.logOutput;
 	}
 	
 	public void saveLog(String executionLog) {
-		if (modelResultMetadata != null && modelResultMetadataService != null) {
-			modelResultMetadata = modelResultMetadataService.updateExecutorOutput(modelResultMetadata, executionLog);
+		if (execution != null && executionService != null) {
+			execution = executionService.updateExecutorOutput(execution, executionLog);
 		}
 	}
 	
@@ -35,20 +35,20 @@ public class LogSaverWrapper {
 		saveLog(executionLog);
 	}
 	
-	public ModelResultMetadata getModelResultMetadata() {
-		return modelResultMetadata;
+	public Execution getExecution() {
+		return execution;
 	}
 
-	public void setModelResultMetadata(ModelResultMetadata modelResultMetadata) {
-		this.modelResultMetadata = modelResultMetadata;
+	public void setExecution(Execution execution) {
+		this.execution = execution;
 	}
 
-	public ModelResultMetadataService getModelResultMetadataService() {
-		return modelResultMetadataService;
+	public ExecutionService getExecutionService() {
+		return executionService;
 	}
 
-	public void setModelResultMetadataService(ModelResultMetadataService modelResultMetadataService) {
-		this.modelResultMetadataService = modelResultMetadataService;
+	public void setExecutionService(ExecutionService executionService) {
+		this.executionService = executionService;
 	}
 	
 	public String getLogOutput() {
@@ -65,17 +65,17 @@ public class LogSaverWrapper {
 	
 	public static class LogSaverWrapperBuilder {
 		
-		private ModelResultMetadata modelResultMetadata;
-		private ModelResultMetadataService modelResultMetadataService;
+		private Execution execution;
+		private ExecutionService executionService;
 		private String logOutput;
 		
-		public LogSaverWrapperBuilder modelResultMetadata(ModelResultMetadata modelResultMetadata) {
-			this.modelResultMetadata = modelResultMetadata;
+		public LogSaverWrapperBuilder execution(Execution execution) {
+			this.execution = execution;
 			return this;
 		}
 		
-		public LogSaverWrapperBuilder modelResultMetadataService(ModelResultMetadataService modelResultMetadataService) {
-			this.modelResultMetadataService = modelResultMetadataService;
+		public LogSaverWrapperBuilder executionService(ExecutionService executionService) {
+			this.executionService = executionService;
 			return this;
 		}
 		

@@ -1,23 +1,19 @@
 package com.uff.phenomanager.service.core;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.uff.phenomanager.Constants;
-import com.uff.phenomanager.domain.BaseApiEntity;
-import com.uff.phenomanager.domain.ComputationalModel;
-import com.uff.phenomanager.domain.Experiment;
-import com.uff.phenomanager.domain.Hypothesis;
 import com.uff.phenomanager.domain.Permission;
 import com.uff.phenomanager.domain.PermissionRole;
-import com.uff.phenomanager.domain.Phenomenon;
-import com.uff.phenomanager.domain.Project;
 import com.uff.phenomanager.domain.Role;
 import com.uff.phenomanager.domain.User;
 import com.uff.phenomanager.domain.core.ApiMetadata;
 import com.uff.phenomanager.domain.core.ApiResponse;
+import com.uff.phenomanager.domain.core.BaseApiEntity;
 import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.BadRequestApiException;
@@ -26,6 +22,7 @@ import com.uff.phenomanager.repository.core.ApiFilterPermissionRepository;
 import com.uff.phenomanager.repository.core.BaseRepository;
 import com.uff.phenomanager.service.PermissionService;
 import com.uff.phenomanager.service.UserService;
+import com.uff.phenomanager.util.ReflectionUtils;
 import com.uff.phenomanager.util.TokenUtils;
 
 @Service
@@ -93,24 +90,12 @@ public abstract class ApiPermissionRestService<ENTITY extends BaseApiEntity, REP
 			.role(PermissionRole.ADMIN)
 			.build();
 		
-		if (savedEntity instanceof Project) {
-			entityPermission.setProject((Project) savedEntity);
-		
-		} else if (savedEntity instanceof Phenomenon) {
-			entityPermission.setPhenomenon((Phenomenon) savedEntity);
+		try {
+			ReflectionUtils.setEntityFieldByClass(entityPermission, savedEntity, getEntityClass());
 			
-		} else if (savedEntity instanceof Hypothesis) {
-			entityPermission.setHypothesis((Hypothesis) savedEntity);
-			
-		} else if (savedEntity instanceof Experiment) {
-			entityPermission.setExperiment((Experiment) savedEntity);
-			
-		} else if (savedEntity instanceof ComputationalModel) {
-			entityPermission.setComputationalModel((ComputationalModel) savedEntity);
-			
-		} else {
+		} catch (Exception e) {
 			throw new BadRequestApiException(String.format(
-					Constants.MSG_ERROR.INVALID_ENTITY_PERMISSION_ERROR, savedEntity.getClass().getSimpleName()));
+					Constants.MSG_ERROR.INVALID_ENTITY_PERMISSION_ERROR, savedEntity.getClass().getSimpleName()), e);
 		}
 		
 		permissionService.save(entityPermission);

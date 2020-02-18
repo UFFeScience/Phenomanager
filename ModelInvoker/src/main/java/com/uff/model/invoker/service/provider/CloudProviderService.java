@@ -41,29 +41,20 @@ import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.StartInstancesRequest;
 import com.amazonaws.services.ec2.model.Tag;
+import com.uff.model.invoker.Constants.PROVIDER;
 import com.uff.model.invoker.domain.AmazonMachine;
-import com.uff.model.invoker.domain.ExecutionEnvironment;
+import com.uff.model.invoker.domain.Environment;
 import com.uff.model.invoker.domain.NodeType;
-import com.uff.model.invoker.domain.VirtualMachineConfig;
+import com.uff.model.invoker.domain.VirtualMachine;
 
 @Component
 public class CloudProviderService {
 	
 	private static final Logger log = LoggerFactory.getLogger(CloudProviderService.class);
 
-	private static final String IP_RANGE_PERMISSION = "0.0.0.0/0";
-	private static final String GROUP_NAME_LABEL = "group-name";
-	private static final String KEY_NAME_LABEL = "key-name";
-	private static final String TAG_FILTER_LABEL = "tag:";
-	private static final String CLUSTER_HEADER_PREFIX = "PM-";
-	private static final String RUNNING_STATE = "running";
-	private static final String NODE_TYPE_LABEL = "NodeType";
-	private static final String INSTANCE_STATE_NAME_LABEL = "instance-state-name";
-	private static final String CLUSTER_LABEL_NAME = "Name";
-	
-	public AmazonEC2Client authenticateProvider(ExecutionEnvironment executionEnvironment) {
-		AWSCredentials credentials = new BasicAWSCredentials(executionEnvironment.getAccessKey(), 
-				executionEnvironment.getSecretKey());
+	public AmazonEC2Client authenticateProvider(Environment environment) {
+		AWSCredentials credentials = new BasicAWSCredentials(environment.getAccessKey(), 
+				environment.getSecretKey());
 	    
 		return new AmazonEC2Client(credentials);
 	}
@@ -83,24 +74,24 @@ public class CloudProviderService {
         return null;
     }
 	
-	public void createCluster(AmazonEC2Client amazonClient, ExecutionEnvironment executionEnvironment, String absolutePath) throws Exception {
-        Boolean hasAliveInstance = hasAliveInstanceFromCluster(amazonClient, executionEnvironment.getClusterName());
-        Boolean hasSecurityGroup = hasAliveSecurityGroupFromCluster(amazonClient, executionEnvironment.getClusterName());
-        Boolean hasKeyPairGroup = hasAliveKeyPairFromCluster(amazonClient, executionEnvironment.getClusterName());
+	public void createCluster(AmazonEC2Client amazonClient, Environment environment, String absolutePath) throws Exception {
+        Boolean hasAliveInstance = hasAliveInstanceFromCluster(amazonClient, environment.getClusterName());
+        Boolean hasSecurityGroup = hasAliveSecurityGroupFromCluster(amazonClient, environment.getClusterName());
+        Boolean hasKeyPairGroup = hasAliveKeyPairFromCluster(amazonClient, environment.getClusterName());
 
         if (!hasAliveInstance && !hasSecurityGroup && !hasKeyPairGroup) {
-        	executionEnvironment.getVirtualMachines().stream().findFirst().get().setAmountInstantiated(1);
+        	environment.getVirtualMachines().stream().findFirst().get().setAmountInstantiated(1);
             
             log.info("PhenoManager is communicating with Amazon");
 
-            createSecurityGroup(amazonClient, executionEnvironment.getClusterName());
-            createKeyPair(amazonClient, executionEnvironment.getClusterName());
+            createSecurityGroup(amazonClient, environment.getClusterName());
+            createKeyPair(amazonClient, environment.getClusterName());
 
             log.info("Creating pool of virtual machines");
 
-            List<AmazonMachine> machines = startVirtualMachines(new ArrayList<>(executionEnvironment.getVirtualMachines()), 
-            		executionEnvironment.getClusterName(), 
-            		executionEnvironment.getImage(), 
+            List<AmazonMachine> machines = startVirtualMachines(new ArrayList<>(environment.getVirtualMachines()), 
+            		environment.getClusterName(), 
+            		environment.getImage(), 
             		amazonClient);
 
             for (AmazonMachine mac : machines) {
@@ -122,38 +113,38 @@ public class CloudProviderService {
 
         log.info("Creating http message rules");
         IpPermission permission = new IpPermission();
-        permission.setIpProtocol("tcp");
+        permission.setIpProtocol(PROVIDER.CLOUD.IP_PROTOCOL);
         permission.setFromPort(80);
         permission.setToPort(80);
         List<String> ipRanges = new ArrayList<String>();
-        ipRanges.add(IP_RANGE_PERMISSION);
+        ipRanges.add(PROVIDER.CLOUD.IP_RANGE_PERMISSION);
         permission.setIpRanges(ipRanges);
 
         log.info("Creating ssh message rules");
         IpPermission permission1 = new IpPermission();
-        permission1.setIpProtocol("tcp");
+        permission1.setIpProtocol(PROVIDER.CLOUD.IP_PROTOCOL);
         permission1.setFromPort(22);
         permission1.setToPort(22);
         List<String> ipRanges1 = new ArrayList<String>();
-        ipRanges1.add(IP_RANGE_PERMISSION);
+        ipRanges1.add(PROVIDER.CLOUD.IP_RANGE_PERMISSION);
         permission1.setIpRanges(ipRanges1);
 
         log.info("Creating https message rules");
         IpPermission permission2 = new IpPermission();
-        permission2.setIpProtocol("tcp");
+        permission2.setIpProtocol(PROVIDER.CLOUD.IP_PROTOCOL);
         permission2.setFromPort(443);
         permission2.setToPort(443);
         List<String> ipRanges2 = new ArrayList<String>();
-        ipRanges2.add(IP_RANGE_PERMISSION);
+        ipRanges2.add(PROVIDER.CLOUD.IP_RANGE_PERMISSION);
         permission2.setIpRanges(ipRanges2);
 
         log.info("Creating tcp message rules");
         IpPermission permission3 = new IpPermission();
-        permission3.setIpProtocol("tcp");
+        permission3.setIpProtocol(PROVIDER.CLOUD.IP_PROTOCOL);
         permission3.setFromPort(0);
         permission3.setToPort(65535);
         List<String> ipRanges3 = new ArrayList<String>();
-        ipRanges3.add(IP_RANGE_PERMISSION);
+        ipRanges3.add(PROVIDER.CLOUD.IP_RANGE_PERMISSION);
         permission3.setIpRanges(ipRanges3);
 
         log.info("Adding all permission rules");
@@ -183,12 +174,12 @@ public class CloudProviderService {
     }
 	
 	private DescribeInstancesResult getAliveInstancesFromCluster(AmazonEC2Client amazonClient, String clusterName) {
-		List<String> runningInstanceStates = new ArrayList<String>(Arrays.asList(RUNNING_STATE));
+		List<String> runningInstanceStates = new ArrayList<String>(Arrays.asList(PROVIDER.CLOUD.RUNNING_STATE));
         List<Filter> filters = new ArrayList<Filter>();
-        createFilter(filters, INSTANCE_STATE_NAME_LABEL, runningInstanceStates);
+        createFilter(filters, PROVIDER.CLOUD.INSTANCE_STATE_NAME_LABEL, runningInstanceStates);
         
         ArrayList<Tag> tags = new ArrayList<Tag>();
-        tags.add(new Tag(CLUSTER_LABEL_NAME, getVirtualMachinesName(clusterName)));
+        tags.add(new Tag(PROVIDER.CLOUD.CLUSTER_LABEL_NAME, getVirtualMachinesName(clusterName)));
         
         DescribeInstancesRequest iRequest = getDescribeInstancesRequest(tags, filters);
         return amazonClient.describeInstances(iRequest);
@@ -208,13 +199,13 @@ public class CloudProviderService {
 	
 	private Filter getFilterFromTag(String tag, String value) {
         Filter filter = new Filter();
-        filter.setName(TAG_FILTER_LABEL + tag);
+        filter.setName(PROVIDER.CLOUD.TAG_FILTER_LABEL + tag);
         filter.setValues(Collections.singletonList(value));
         return filter;
 	}
 	
 	private String getVirtualMachinesName(String clusterName) {
-		String clusterHeaderName = CLUSTER_HEADER_PREFIX;
+		String clusterHeaderName = PROVIDER.CLOUD.CLUSTER_HEADER_PREFIX;
         return clusterHeaderName + clusterName;
     }
 	
@@ -236,14 +227,14 @@ public class CloudProviderService {
 
         List<String> values = new ArrayList<String>();
         values.add(getSecurityGroupName(clusterName));
-        createFilter(filter, GROUP_NAME_LABEL, values);
+        createFilter(filter, PROVIDER.CLOUD.GROUP_NAME_LABEL, values);
         iRequest.setFilters(filter);
         
         return amazonClient.describeSecurityGroups(iRequest);
     }
 	
 	private String getSecurityGroupName(String clusterName) {
-		String securityGroupHeaderName = CLUSTER_HEADER_PREFIX + "SG-";
+		String securityGroupHeaderName = PROVIDER.CLOUD.CLUSTER_HEADER_PREFIX + PROVIDER.CLOUD.SECURITY_GROUP_PREFIX;
         return securityGroupHeaderName + clusterName;
     }
 	
@@ -258,18 +249,18 @@ public class CloudProviderService {
 
         List<String> values = new ArrayList<String>();
         values.add(getKeyPairName(clusterName));
-        createFilter(filter, KEY_NAME_LABEL, values);
+        createFilter(filter, PROVIDER.CLOUD.KEY_NAME_LABEL, values);
         iRequest.setFilters(filter);
         
         return amazonClient.describeKeyPairs(iRequest);
     }
 	
 	private String getKeyPairName(String clusterName) {
-		String keyHeaderName = CLUSTER_HEADER_PREFIX + "Key-";
+		String keyHeaderName = PROVIDER.CLOUD.CLUSTER_HEADER_PREFIX + PROVIDER.CLOUD.KEY_PREFIX;
         return keyHeaderName + clusterName;
     }
 	
-	private List<AmazonMachine> startVirtualMachines(List<VirtualMachineConfig> virtualMachineConfigs, 
+	private List<AmazonMachine> startVirtualMachines(List<VirtualMachine> virtualMachines, 
             String clusterName, String image, AmazonEC2Client amazonClient) throws InterruptedException {
         
 		List<AmazonMachine> amazonMachines = new ArrayList<AmazonMachine>();
@@ -285,19 +276,19 @@ public class CloudProviderService {
         Integer rank = 0;
         Integer i, k = 0;
         Integer controlType = 0;
-        VirtualMachineConfig instanceResults;
+        VirtualMachine instanceResults;
 
         List<RunInstancesResult> resultInstances = createMachineInstanceRequest(
-        		virtualMachineConfigs, clusterName, image, amazonClient);
+        		virtualMachines, clusterName, image, amazonClient);
 
         log.info("PhenoManager is waiting virtual machines to start...");
-        sleep(30000);
+        sleep(PROVIDER.CLOUD.START_VM_WAIT_TIME);
         log.info("All virtual machines are instantiated");
 
         Boolean hasControlInstances = hasControlInstanceFromCluster(amazonClient, clusterName);
         Boolean hasCoreInstances = hasCoreInstanceFromCluster(amazonClient, clusterName);
         Boolean first = true;
-        Tag nameTag = new Tag(CLUSTER_LABEL_NAME, getVirtualMachinesName(clusterName));
+        Tag nameTag = new Tag(PROVIDER.CLOUD.CLUSTER_LABEL_NAME, getVirtualMachinesName(clusterName));
         
         for (RunInstancesResult runInstanceResult : resultInstances) {
             first = createTags(amazonClient, nameTag, runInstanceResult, resources, instanceIds, hasControlInstances,
@@ -312,11 +303,11 @@ public class CloudProviderService {
                
                 if (reservation.getReservationId().equals(reservationId)) {
                     k = reservation.getInstances().size();
-                    instanceResults = virtualMachineConfigs.get(controlType);
+                    instanceResults = virtualMachines.get(controlType);
                     
                     while (instanceResults.getAmountInstantiated() < 1) {
                         controlType++;
-                        instanceResults = virtualMachineConfigs.get(controlType);
+                        instanceResults = virtualMachines.get(controlType);
                     }
                     
                     for (i = 0; i < k; i++) {
@@ -367,15 +358,15 @@ public class CloudProviderService {
 		    tags.add(nameTag);
 		    
 		    if (!hasControlInstances && first) {
-		        nodeTypeTag = new Tag(NODE_TYPE_LABEL, NodeType.CONTROL.toString());
+		        nodeTypeTag = new Tag(PROVIDER.CLOUD.NODE_TYPE_LABEL, NodeType.CONTROL.toString());
 		        first = false;
 		    
 		    } else if (!hasCoreInstances && first) {
-		        nodeTypeTag = new Tag(NODE_TYPE_LABEL, NodeType.SUPERNODE.toString());
+		        nodeTypeTag = new Tag(PROVIDER.CLOUD.NODE_TYPE_LABEL, NodeType.SUPERNODE.toString());
 		        first = false;
 		    
 		    } else {
-		        nodeTypeTag = new Tag(NODE_TYPE_LABEL, NodeType.NODE.toString());
+		        nodeTypeTag = new Tag(PROVIDER.CLOUD.NODE_TYPE_LABEL, NodeType.NODE.toString());
 		    }
 		    
 		    tags.add(nodeTypeTag);
@@ -386,14 +377,14 @@ public class CloudProviderService {
 		return first;
 	}
 
-	private List<RunInstancesResult> createMachineInstanceRequest(List<VirtualMachineConfig> virtualMachineConfigs, String clusterName,
+	private List<RunInstancesResult> createMachineInstanceRequest(List<VirtualMachine> virtualMachines, String clusterName,
 			String image, AmazonEC2Client amazonClient) {
 		
 		List<RunInstancesResult> instanceResults = new ArrayList<>();
 		RunInstancesRequest runInstanceRequest;
         RunInstancesResult instanceResult = null;
         
-        for (VirtualMachineConfig virtualMachine : virtualMachineConfigs) {
+        for (VirtualMachine virtualMachine : virtualMachines) {
         	if (virtualMachine.getAmountInstantiated() > 0) {
                 runInstanceRequest = new RunInstancesRequest(image, virtualMachine.getAmountInstantiated(), virtualMachine.getAmountInstantiated());
                 runInstanceRequest.setInstanceType(virtualMachine.getType());
@@ -431,13 +422,13 @@ public class CloudProviderService {
     }
 	
 	private DescribeInstancesResult getDescribeNodesFromCluster(AmazonEC2Client amazonClient, String clusterName) {
-		List<String> runningInstanceStates = new ArrayList<String>(Arrays.asList(RUNNING_STATE));
+		List<String> runningInstanceStates = new ArrayList<String>(Arrays.asList(PROVIDER.CLOUD.RUNNING_STATE));
         List<Filter> filters = new ArrayList<Filter>();
-        createFilter(filters, INSTANCE_STATE_NAME_LABEL, runningInstanceStates);
+        createFilter(filters, PROVIDER.CLOUD.INSTANCE_STATE_NAME_LABEL, runningInstanceStates);
         
         ArrayList<Tag> tags = new ArrayList<Tag>();
-        tags.add(new Tag(CLUSTER_LABEL_NAME, getVirtualMachinesName(clusterName)));
-        tags.add(new Tag(NODE_TYPE_LABEL, NodeType.NODE.toString()));
+        tags.add(new Tag(PROVIDER.CLOUD.CLUSTER_LABEL_NAME, getVirtualMachinesName(clusterName)));
+        tags.add(new Tag(PROVIDER.CLOUD.NODE_TYPE_LABEL, NodeType.NODE.toString()));
         
         DescribeInstancesRequest iRequest = getDescribeInstancesRequest(tags, filters);
         
@@ -459,14 +450,14 @@ public class CloudProviderService {
     }
 	
 	private DescribeInstancesResult getDescribeSuperNodesFromCluster(AmazonEC2Client amazonClient, String clusterName) {
-		List<String> runningInstanceStates = new ArrayList<String>(Arrays.asList(RUNNING_STATE));
+		List<String> runningInstanceStates = new ArrayList<String>(Arrays.asList(PROVIDER.CLOUD.RUNNING_STATE));
         ArrayList<Tag> tags = new ArrayList<Tag>();
         
         List<Filter> filters = new ArrayList<Filter>();
-        createFilter(filters, INSTANCE_STATE_NAME_LABEL, runningInstanceStates);
+        createFilter(filters, PROVIDER.CLOUD.INSTANCE_STATE_NAME_LABEL, runningInstanceStates);
         
-        tags.add(new Tag(CLUSTER_LABEL_NAME, getVirtualMachinesName(clusterName)));
-        tags.add(new Tag(NODE_TYPE_LABEL, NodeType.SUPERNODE.toString()));
+        tags.add(new Tag(PROVIDER.CLOUD.CLUSTER_LABEL_NAME, getVirtualMachinesName(clusterName)));
+        tags.add(new Tag(PROVIDER.CLOUD.NODE_TYPE_LABEL, NodeType.SUPERNODE.toString()));
         
         DescribeInstancesRequest iRequest = getDescribeInstancesRequest(tags, filters);
         
@@ -474,13 +465,13 @@ public class CloudProviderService {
     }
 	
 	private DescribeInstancesResult getDescribeControlFromCluster(AmazonEC2Client amazonClient, String clusterName) {
-		List<String> runningInstanceStates = new ArrayList<String>(Arrays.asList(RUNNING_STATE));
+		List<String> runningInstanceStates = new ArrayList<String>(Arrays.asList(PROVIDER.CLOUD.RUNNING_STATE));
         List<Filter> filters = new ArrayList<Filter>();
-        createFilter(filters, INSTANCE_STATE_NAME_LABEL, runningInstanceStates);
+        createFilter(filters, PROVIDER.CLOUD.INSTANCE_STATE_NAME_LABEL, runningInstanceStates);
         
         ArrayList<Tag> tags = new ArrayList<Tag>();
-        tags.add(new Tag(CLUSTER_LABEL_NAME, getVirtualMachinesName(clusterName)));
-        tags.add(new Tag(NODE_TYPE_LABEL, NodeType.CONTROL.toString()));
+        tags.add(new Tag(PROVIDER.CLOUD.CLUSTER_LABEL_NAME, getVirtualMachinesName(clusterName)));
+        tags.add(new Tag(PROVIDER.CLOUD.NODE_TYPE_LABEL, NodeType.CONTROL.toString()));
         
         DescribeInstancesRequest iRequest = getDescribeInstancesRequest(tags, filters);
         
@@ -488,7 +479,7 @@ public class CloudProviderService {
     }
 	
 	private List<String> getSecurityGroupList(String clusterName) {
-		String securityGroupHeaderName = CLUSTER_HEADER_PREFIX + "SG-";
+		String securityGroupHeaderName = PROVIDER.CLOUD.CLUSTER_HEADER_PREFIX + PROVIDER.CLOUD.SECURITY_GROUP_PREFIX;
         List<String> securityGroups = new ArrayList<String>();
         securityGroups.add(securityGroupHeaderName + clusterName);
         return securityGroups;
@@ -512,7 +503,7 @@ public class CloudProviderService {
         KeyPair keyPair = keyresult.getKeyPair();
         log.info("The PhenoManager key created: [{}]" + keyPair.getKeyName());
 
-        File distFile = new File(keyName + ".pem");
+        File distFile = new File(keyName + PROVIDER.CLOUD.KEY_PAIR_EXTENSION);
         BufferedReader bufferedReader = new BufferedReader(new StringReader(keyPair.getKeyMaterial()));
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(distFile));
         

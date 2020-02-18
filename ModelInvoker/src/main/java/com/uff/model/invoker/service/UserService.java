@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.uff.model.invoker.domain.User;
 import com.uff.model.invoker.repository.UserRepository;
+import com.uff.model.invoker.service.core.ApiRestService;
 
 @Service
 public class UserService extends ApiRestService<User, UserRepository> {

@@ -56,8 +56,8 @@
                     return $http.get(url);
                 },
 
-                getAllModelResultMetadatas: function(offset, limit, computationalModelSlug, filter) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_result_metadatas';
+                getAllExecutions: function(offset, limit, computationalModelSlug, filter) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executions';
 
                     if (filter) {
                         url += '?filter=[' + filter + ']';
@@ -74,13 +74,13 @@
                     return $http.get(url, config);
                 },
 
-                getModelResultMetadataBySlug: function(slug, computationalModelSlug) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_result_metadatas/' + slug;
+                getExecutionBySlug: function(slug, computationalModelSlug) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executions/' + slug;
                     return $http.get(url);
                 },
 
-                getAllModelExecutors: function(offset, limit, computationalModelSlug, filter) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_executors';
+                getAllExecutors: function(offset, limit, computationalModelSlug, filter) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executors';
 
                     if (filter) {
                         url += '?filter=[' + filter + ']';
@@ -97,24 +97,24 @@
                     return $http.get(url, config);
                 },
 
-                insertModelExecutor: function(data, computationalModelSlug) {
+                insertExecutor: function(data, computationalModelSlug) {
                     return $http.post(
-                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_executors',
+                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executors',
                         JSON.stringify(data)
                     );
                 },
 
-                updateModelExecutor: function(data, computationalModelSlug) {
+                updateExecutor: function(data, computationalModelSlug) {
                     return $http.put(
-                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_executors/' + data.slug,
+                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executors/' + data.slug,
                         JSON.stringify(data)
                     );
                 },
 
-                uploadModelExecutorExecutor: function(data, computationalModelSlug) {
+                uploadExecutorFile: function(data, computationalModelSlug) {
                     return $http({
                         method: 'POST',
-                        url: baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_executors/' + data.get('slug') + '/executor',
+                        url: baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executors/' + data.get('slug') + '/executor_file',
                         transformRequest: angular.identity,
                         headers: {
                             'Content-Type': 'form-upload'
@@ -123,41 +123,41 @@
                     });
                 },
 
-                deleteModelExecutor: function(slug, computationalModelSlug) {
+                deleteExecutor: function(slug, computationalModelSlug) {
                     return $http.delete(
-                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_executors/' + slug,
+                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executors/' + slug,
                         config
                     );
                 },
 
-                getModelExecutorBySlug: function(slug, computationalModelSlug) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_executors/' + slug;
+                getExecutorBySlug: function(slug, computationalModelSlug) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executors/' + slug;
                     return $http.get(url);
                 },
 
-                getModelExecutorExecutor: function(slug, computationalModelSlug) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_executors/' + slug + '/executor';
+                getExecutorFile: function(slug, computationalModelSlug) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executors/' + slug + '/executor_file';
                     return $http.get(url, { responseType: 'blob' });
                 },
 
-                insertModelMetadataExtractor: function(data, computationalModelSlug) {
+                insertExtractor: function(data, computationalModelSlug) {
                     return $http.post(
-                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_metadata_extractors',
+                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractors',
                         JSON.stringify(data)
                     );
                 },
 
-                updateModelMetadataExtractor: function(data, computationalModelSlug) {
+                updateExtractor: function(data, computationalModelSlug) {
                     return $http.put(
-                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_metadata_extractors/' + data.slug,
+                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractors/' + data.slug,
                         JSON.stringify(data)
                     );
                 },
 
-                uploadModelMetadataExtractorExtractor: function(data, computationalModelSlug) {
+                uploadExtractorFile: function(data, computationalModelSlug) {
                     return $http({
                         method: 'POST',
-                        url: baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_metadata_extractors/' + data.get('slug') + '/extractor',
+                        url: baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractors/' + data.get('slug') + '/extractor_file',
                         transformRequest: angular.identity,
                         headers: {
                             'Content-Type': 'form-upload'
@@ -166,25 +166,25 @@
                     });
                 },
 
-                deleteModelMetadataExtractor: function(slug, computationalModelSlug) {
+                deleteExtractor: function(slug, computationalModelSlug) {
                     return $http.delete(
-                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_metadata_extractors/' + slug,
+                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractors/' + slug,
                         config
                     );
                 },
 
-                getModelMetadataExtractorBySlug: function(slug, computationalModelSlug) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_metadata_extractors/' + slug;
+                getExtractorBySlug: function(slug, computationalModelSlug) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractors/' + slug;
                     return $http.get(url);
                 },
 
-                getModelMetadataExtractorExtractor: function(slug, computationalModelSlug) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_metadata_extractors/' + slug + '/extractor';
+                getExtractorFile: function(slug, computationalModelSlug) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractors/' + slug + '/extractor_file';
                     return $http.get(url, { responseType: 'blob' });
                 },
 
-                getAllModelMetadataExtractors: function(offset, limit, computationalModelSlug, filter) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_metadata_extractors';
+                getAllExtractors: function(offset, limit, computationalModelSlug, filter) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractors';
 
                     if (filter) {
                         url += '?filter=[' + filter + ']';
@@ -262,8 +262,8 @@
                     return $http.get(url, config);
                 },
 
-                getAllExecutionEnvironments: function(offset, limit, computationalModelSlug, filter) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/execution_environments';
+                getAllEnvironments: function(offset, limit, computationalModelSlug, filter) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/environments';
 
                     if (filter) {
                         url += '?filter=[' + filter + ']';
@@ -280,29 +280,29 @@
                     return $http.get(url, config);
                 },
 
-                insertExecutionEnvironment: function(data, computationalModelSlug) {
+                insertEnvironment: function(data, computationalModelSlug) {
                     return $http.post(
-                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/execution_environments',
+                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/environments',
                         JSON.stringify(data)
                     );
                 },
 
-                updateExecutionEnvironment: function(data, computationalModelSlug) {
+                updateEnvironment: function(data, computationalModelSlug) {
                     return $http.put(
-                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/execution_environments/' + data.slug,
+                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/environments/' + data.slug,
                         JSON.stringify(data)
                     );
                 },
 
-                deleteExecutionEnvironment: function(slug, computationalModelSlug) {
+                deleteEnvironment: function(slug, computationalModelSlug) {
                     return $http.delete(
-                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/execution_environments/' + slug,
+                        baseUrl + '/v1/computational_models/' + computationalModelSlug + '/environments/' + slug,
                         config
                     );
                 },
 
-                getExecutionEnvironmentBySlug: function(slug, computationalModelSlug) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/execution_environments/' + slug;
+                getEnvironmentBySlug: function(slug, computationalModelSlug) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/environments/' + slug;
                     return $http.get(url);
                 },
 
@@ -313,28 +313,28 @@
                     );
                 },
 
-                getExtractorOutput: function(slug, computationalModelSlug) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractor_metadatas/' + slug + '/execution_metadata';
+                getExtractorMetadata: function(slug, computationalModelSlug) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractor_executions/' + slug + '/execution_metadata';
                     return $http.get(url, { responseType: 'blob' });
                 },
 
-                getExecutionOutput: function(slug, computationalModelSlug) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_result_metadatas/' + slug + '/execution_metadata';
+                getExecutionMetadata: function(slug, computationalModelSlug) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executions/' + slug + '/execution_metadata';
                     return $http.get(url, { responseType: 'blob' });
                 },
 
-                getAbortOutput: function(slug, computationalModelSlug) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_result_metadatas/' + slug + '/abort_metadata';
+                getAbortionMetadata: function(slug, computationalModelSlug) {
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executions/' + slug + '/abortion_metadata';
                     return $http.get(url, { responseType: 'blob' });
                 },
 
                 getResearchObject: function(slug, computationalModelSlug) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/model_result_metadatas/' + slug + '/research_object';
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/executions/' + slug + '/research_object';
                     return $http.get(url);
                 },
 
                 downloadExtractorOutput: function(slug, computationalModelSlug) {
-                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractor_metadatas/' + slug + '/execution_metadata';
+                    var url = baseUrl + '/v1/computational_models/' + computationalModelSlug + '/extractor_executions/' + slug + '/execution_metadata';
                     return $http.get(url, { responseType: 'blob' });
                 }
             }

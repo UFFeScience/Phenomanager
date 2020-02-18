@@ -111,7 +111,7 @@
         }
 
         vm.teamContainsUser = function(team, userSlug) {
-            if (!team) {
+            if (!team || !team.teamUsers) {
                 return false;
             }
 
@@ -207,28 +207,28 @@
             }
         }
 
-        vm.openModelResultMetadataOutput = function(modelResultMetadataSlug) {
+        vm.openExecutionOutput = function(executionSlug) {
             vm.updateLogOutput = true;
-            vm.getModelResultExecution(modelResultMetadataSlug);           
+            vm.getExecution(executionSlug);           
         }
 
-        vm.getModelResultExecution = function(modelResultMetadataSlug) {
+        vm.getExecution = function(executionSlug) {
             computationalModelService
-                .getModelResultMetadataBySlug(modelResultMetadataSlug, vm.computationalModel.slug)
+                .getExecutionBySlug(executionSlug, vm.computationalModel.slug)
                 .then(function(resp) {
-                    vm.modelResultMetadata = resp.data;
+                    vm.execution = resp.data;
 
-                    vm.modelResultMetadata.parsedInsertDate = new Date(resp.data.insertDate);
-                    vm.modelResultMetadata.parsedExecutionFinishDate = new Date(resp.data.executionFinishDate);
-                    vm.modelResultMetadata.parsedExecutionStartDate = new Date(resp.data.executionStartDate);
+                    vm.execution.parsedInsertDate = new Date(resp.data.insertDate);
+                    vm.execution.parsedFinishDate = new Date(resp.data.finishDate);
+                    vm.execution.parsedStartDate = new Date(resp.data.startDate);
 
-                    if (vm.modelResultMetadata.executionStatus !== 'RUNNING') {
+                    if (vm.execution.status !== 'RUNNING') {
                         vm.updateLogOutput = false;
                     
                     } else if (vm.updateLogOutput) {
                         $timeout(function() {
                             if ($location.$$path && $location.$$path.includes('/computational-models/')) {
-                                vm.getModelResultExecution(modelResultMetadataSlug);
+                                vm.getExecution(executionSlug);
                             }
                         }, 2000);
                     }
@@ -240,41 +240,41 @@
                 });
         }
 
-        vm.changeModelResultMetadataPage = function() {
-            vm.loadingModelResultMetadata = true;
+        vm.changeExecutionPage = function() {
+            vm.loadingExecution = true;
 
             computationalModelService
-                .getAllModelResultMetadatas(vm.modelResultMetadataCurrentPage - 1, vm.limit, vm.computationalModel.slug)
+                .getAllExecutions(vm.executionCurrentPage - 1, vm.limit, vm.computationalModel.slug)
                 .then(function(resp) {
                     var hasRunningModel = false;
                     var hasRunningExtractor = false;
 
                     for (var i = 0; i < resp.data.records.length; i++) {
                         resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
-                        resp.data.records[i].parsedExecutionFinishDate = new Date(resp.data.records[i].executionFinishDate);
-                        resp.data.records[i].parsedExecutionStartDate = new Date(resp.data.records[i].executionStartDate);
+                        resp.data.records[i].parsedFinishDate = new Date(resp.data.records[i].finishDate);
+                        resp.data.records[i].parsedStartDate = new Date(resp.data.records[i].startDate);
                     
-                        if (resp.data.records[i].executionStatus === 'RUNNING' || resp.data.records[i].executionStatus === 'SCHEDULED') {
+                        if (resp.data.records[i].status === 'RUNNING' || resp.data.records[i].status === 'SCHEDULED') {
                             hasRunningModel = true;
                         }
 
-                        for (var j = 0; j < resp.data.records[i].extractorMetadatas.length; j++) {
-                            if (resp.data.records[i].extractorMetadatas[j].executionStatus === 'RUNNING' || 
-                                    resp.data.records[i].extractorMetadatas[j].executionStatus === 'SCHEDULED') {
+                        for (var j = 0; j < resp.data.records[i].extractorExecutions.length; j++) {
+                            if (resp.data.records[i].extractorExecutions[j].status === 'RUNNING' || 
+                                    resp.data.records[i].extractorExecutions[j].status === 'SCHEDULED') {
                                 hasRunningExtractor = true;
                             }
                         }
                     }
 
-                    vm.modelResultMetadatas = resp.data.records;
-                    vm.totalModelResultMetadataCount = resp.data.metadata.totalCount;
-                    vm.loadingModelResultMetadata = false;
+                    vm.executions = resp.data.records;
+                    vm.totalExecutionCount = resp.data.metadata.totalCount;
+                    vm.loadingExecution = false;
 
                     if (hasRunningModel || hasRunningExtractor || resp.data.records.length === 0) {
                         $timeout(function() {
                             if ($location.$$path && $location.$$path.includes('/computational-models/')) {
-                                if (vm.tab === 'modelResults') {
-                                    vm.refreshModelResults();
+                                if (vm.tab === 'executions') {
+                                    vm.refreshExecutions();
                                 } 
                             }
                         }, 2000);
@@ -282,43 +282,43 @@
                 })
                 .catch(function(resp) {
                     console.log(resp);
-                    vm.loadingModelResultMetadata = false;
-                    toastr.error('Error while loading model result metadatas.', 'Unexpected error!');
+                    vm.loadingExecution = false;
+                    toastr.error('Error while loading executions.', 'Unexpected error!');
                 });
         }
 
-        vm.refreshModelResults = function() {
+        vm.refreshExecutions = function() {
             computationalModelService
-                .getAllModelResultMetadatas(vm.modelResultMetadataCurrentPage - 1, vm.limit, vm.computationalModel.slug)
+                .getAllExecutions(vm.executionCurrentPage - 1, vm.limit, vm.computationalModel.slug)
                 .then(function(resp) {
                     var hasRunningModel = false;
                     var hasRunningExtractor = false;
                     
                     for (var i = 0; i < resp.data.records.length; i++) {
                         resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
-                        resp.data.records[i].parsedExecutionFinishDate = new Date(resp.data.records[i].executionFinishDate);
-                        resp.data.records[i].parsedExecutionStartDate = new Date(resp.data.records[i].executionStartDate);
+                        resp.data.records[i].parsedFinishDate = new Date(resp.data.records[i].finishDate);
+                        resp.data.records[i].parsedStartDate = new Date(resp.data.records[i].startDate);
                     
-                        if (resp.data.records[i].executionStatus === 'RUNNING' || resp.data.records[i].executionStatus === 'SCHEDULED') {
+                        if (resp.data.records[i].status === 'RUNNING' || resp.data.records[i].status === 'SCHEDULED') {
                             hasRunningModel = true;
                         }
 
-                        for (var j = 0; j < resp.data.records[i].extractorMetadatas.length; j++) {
-                            if (resp.data.records[i].extractorMetadatas[j].executionStatus === 'RUNNING' || 
-                                    resp.data.records[i].extractorMetadatas[j].executionStatus === 'SCHEDULED') {
+                        for (var j = 0; j < resp.data.records[i].extractorExecutions.length; j++) {
+                            if (resp.data.records[i].extractorExecutions[j].status === 'RUNNING' || 
+                                    resp.data.records[i].extractorExecutions[j].status === 'SCHEDULED') {
                                 hasRunningExtractor = true;
                             }
                         }
                     }
 
-                    vm.modelResultMetadatas = resp.data.records;
-                    vm.totalModelResultMetadataCount = resp.data.metadata.totalCount;
+                    vm.executions = resp.data.records;
+                    vm.totalExecutionCount = resp.data.metadata.totalCount;
                
                     if (hasRunningModel || hasRunningExtractor || resp.data.records.length === 0) {
                         $timeout(function() {
                             if ($location.$$path && $location.$$path.includes('/computational-models/')) {
-                                if (vm.tab === 'modelResults') {
-                                    vm.refreshModelResults();
+                                if (vm.tab === 'executions') {
+                                    vm.refreshExecutions();
                                 } 
                             }
                         }, 2000);
@@ -326,7 +326,7 @@
                 })
                 .catch(function(resp) {
                     console.log(resp);
-                    vm.loadingModelResultMetadata = false;
+                    vm.loadingExecution = false;
                     toastr.error('Error while refreshing model result metadatas.', 'Unexpected error!');
                 });
         }
@@ -546,27 +546,27 @@
                     return;
                 
                 } else {
-                    vm.executor = file;
+                    vm.executorFile = file;
                     vm.loadingUpload = false;
                     $scope.$apply();
                 }
             }
         };
 
-        vm.doUploadModelExecutorExecutor = function() {
+        vm.doUploadExecutorFile = function() {
             $rootScope.loadingAsync++;
             vm.loadingUpload = true;
 
             var formData = new FormData();
-            formData.append('slug', vm.modelExecutor.slug);
-            formData.append('executor', vm.executor);
+            formData.append('slug', vm.executor.slug);
+            formData.append('executorFile', vm.executorFile);
 
             computationalModelService
-                .uploadModelExecutorExecutor(formData, vm.computationalModel.slug)
+                .uploadExecutorFile(formData, vm.computationalModel.slug)
                 .then(function(resp) {
                     vm.loadingUpload = false;
                     
-                    vm.changeModelExecutorPage();
+                    vm.changeExecutorPage();
 
                     toastr.success('Action performed with success.', 'Success!');
                     $rootScope.loadingAsync--;
@@ -580,11 +580,11 @@
             
         };
 
-        vm.downloadModelExecutorExecuctor = function(modelExecutorSlug) {
+        vm.downloadExecuctorFile = function(executorSlug) {
             $rootScope.loadingAsync++;
 
             computationalModelService
-                .getModelExecutorExecutor(modelExecutorSlug, vm.computationalModel.slug)
+                .getExecutorFile(executorSlug, vm.computationalModel.slug)
                     .then(function(resp) {
                         if (resp.status === 200) {
                             var disposition = resp.headers('Content-Disposition');
@@ -614,11 +614,11 @@
                     });
         }
 
-        vm.downloadExecutorOutput = function(modelResultMetadataSlug) {
+        vm.downloadExecutorMetadata = function(executionSlug) {
             $rootScope.loadingAsync++;
 
             computationalModelService
-                .getExecutionOutput(modelResultMetadataSlug, vm.computationalModel.slug)
+                .getExecutionMetadata(executionSlug, vm.computationalModel.slug)
                     .then(function(resp) {
                         if (resp.status === 200) {
                             var disposition = resp.headers('Content-Disposition');
@@ -633,7 +633,7 @@
                             }
 
                             if (!fileName) {
-                                fileName = 'execution-output.txt';
+                                fileName = 'execution-metadata.txt';
                             }
 
                             var data = new Blob([resp.data], { type: contentType });
@@ -648,11 +648,11 @@
                     });
         }
 
-        vm.downloadAbortOutput = function(modelResultMetadataSlug) {
+        vm.downloadAbortionMetadata = function(executionSlug) {
             $rootScope.loadingAsync++;
 
             computationalModelService
-                .getAbortOutput(modelResultMetadataSlug, vm.computationalModel.slug)
+                .getAbortionMetadata(executionSlug, vm.computationalModel.slug)
                     .then(function(resp) {
                         if (resp.status === 200) {
                             var disposition = resp.headers('Content-Disposition');
@@ -667,7 +667,7 @@
                             }
 
                             if (!fileName) {
-                                fileName = 'abort-output.txt';
+                                fileName = 'abortion-metadata.txt';
                             }
 
                             var data = new Blob([resp.data], { type: contentType });
@@ -682,11 +682,11 @@
                     });
         }
 
-        vm.downloadExtractorOutput = function(extractorMetadataSlug) {
+        vm.downloadExtractorMetadata = function(extractorExecutionSlug) {
             $rootScope.loadingAsync++;
 
             computationalModelService
-                .getExtractorOutput(extractorMetadataSlug, vm.computationalModel.slug)
+                .getExtractorMetadata(extractorExecutionSlug, vm.computationalModel.slug)
                     .then(function(resp) {
                         if (resp.status === 200) {
                             var disposition = resp.headers('Content-Disposition');
@@ -701,7 +701,7 @@
                             }
 
                             if (!fileName) {
-                                fileName = 'extraction-output';
+                                fileName = 'extraction-metadata';
                             }
 
                             var data = new Blob([resp.data], { type: contentType });
@@ -716,11 +716,11 @@
                     });
         }
 
-        vm.generateResearchObject = function(modelResultMetadataSlug) {
+        vm.generateResearchObject = function(executionSlug) {
             $rootScope.loadingAsync++;
 
             computationalModelService
-                .getResearchObject(modelResultMetadataSlug, vm.computationalModel.slug)
+                .getResearchObject(executionSlug, vm.computationalModel.slug)
                 .then(function(resp) {
                     vm.instanceParam = resp.data;
                     var data = new Blob([JSON.stringify(resp.data, null, '\t')], { type: 'application/json' });
@@ -734,13 +734,13 @@
                 });
         }
 
-        vm.doDeleteModelExecutor = function(modelExecutorSlug) {
+        vm.doDeleteExecutor = function(executorSlug) {
             $rootScope.loadingAsync++;
 
             computationalModelService
-                .deleteModelExecutor(modelExecutorSlug, vm.computationalModel.slug)
+                .deleteExecutor(executorSlug, vm.computationalModel.slug)
                 .then(function(resp) {
-                    vm.changeModelExecutorPage();
+                    vm.changeExecutorPage();
                     toastr.success('Action performed with success.', 'Success!');
                     $rootScope.loadingAsync--;
                 })
@@ -751,19 +751,19 @@
                 });
         }
 
-        vm.deleteModelExecutor = function(modelExecutorSlug) {
-            vm.modelExecutorSlug = modelExecutorSlug;
-            vm.executor = null;
+        vm.deleteExecutor = function(executorSlug) {
+            vm.executorSlug = executorSlug;
+            vm.executorFile = null;
         }
 
-        vm.editModelExecutor = function(modelExecutorSlug) {
-            vm.modelExecutorSaveTitle = 'Update executor';
-            vm.updateModelExecutor = true;
+        vm.editExecutor = function(executorSlug) {
+            vm.executorSaveTitle = 'Update executor';
+            vm.updateExecutor = true;
 
             computationalModelService
-                .getModelExecutorBySlug(modelExecutorSlug, vm.computationalModel.slug)
+                .getExecutorBySlug(executorSlug, vm.computationalModel.slug)
                 .then(function(resp) {
-                    vm.modelExecutor = resp.data;
+                    vm.executor = resp.data;
                 })
                 .catch(function(resp) {
                     console.log(resp);
@@ -771,29 +771,29 @@
                 });
         }
 
-        vm.insertModelExecutor = function() {
-            vm.modelExecutor = {};
-            vm.updateModelExecutor = false;
-            vm.modelExecutorSaveTitle = 'Create executor';
+        vm.insertExecutor = function() {
+            vm.executor = {};
+            vm.updateExecutor = false;
+            vm.executorSaveTitle = 'Create executor';
         }
 
-        vm.doSaveModelExecutor = function() {
-            vm.modelExecutor.computationalModel = {
+        vm.doSaveExecutor = function() {
+            vm.executor.computationalModel = {
                 slug: vm.computationalModel.slug
             };
             
-            if (!vm.updateModelExecutor) {
+            if (!vm.updateExecutor) {
                 computationalModelService
-                    .insertModelExecutor(vm.modelExecutor, vm.computationalModel.slug)
+                    .insertExecutor(vm.executor, vm.computationalModel.slug)
                     .then(function(resp) {
-                        vm.modelExecutor = resp.data;
+                        vm.executor = resp.data;
 
-                        if (!vm.executor) {
-                            vm.changeModelExecutorPage();
+                        if (!vm.executorFile) {
+                            vm.changeExecutorPage();
                             toastr.success('Action performed with success.', 'Success!');
 
                         } else {
-                            vm.doUploadModelExecutorExecutor();
+                            vm.doUploadExecutorFile();
                         }
                     })
                     .catch(function(resp) {
@@ -802,14 +802,14 @@
                     });
             } else {
                 computationalModelService
-                    .updateModelExecutor(vm.modelExecutor, vm.computationalModel.slug)
+                    .updateExecutor(vm.executor, vm.computationalModel.slug)
                     .then(function(resp) {
                         
-                        if (!vm.executor) {
-                            vm.changeModelExecutorPage();
+                        if (!vm.executorFile) {
+                            vm.changeExecutorPage();
                             toastr.success('Action performed with success.', 'Success!');
                         } else {
-                            vm.doUploadModelExecutorExecutor();
+                            vm.doUploadExecutorFile();
                         }
                     })
                     .catch(function(resp) {
@@ -819,25 +819,25 @@
             }
         }
 
-        vm.doAbortModelExecutor = function(modelResultMetadataSlug, uploadMetadata) {
+        vm.doAbortExecutor = function(executionSlug, uploadMetadata) {
             var requestBody = {
-                modelResultMetadataSlug: modelResultMetadataSlug,
+                executionSlug: executionSlug,
                 executionCommand: 'STOP',
                 uploadMetadata: uploadMetadata,
                 computationalModelVersion: vm.computationalModel.currentVersion,
                 computationalModelSlug: vm.computationalModel.slug
             };
 
-            for (var i = 0; i < vm.modelResultMetadatas.length; i++) {
-                if (vm.modelResultMetadatas[i].slug === modelResultMetadataSlug) {
-                    vm.modelResultMetadatas[i].hasAbortRequested = true;
+            for (var i = 0; i < vm.executions.length; i++) {
+                if (vm.executions[i].slug === executionSlug) {
+                    vm.executions[i].hasAbortionRequested = true;
                 }
             }
 
             computationalModelService
                 .runModel(requestBody)
                 .then(function(resp) {
-                    vm.changeModelResultMetadataPage();
+                    vm.changeExecutionPage();
                 })
                 .catch(function(resp) {
                     console.log(resp);
@@ -845,30 +845,30 @@
                 });
         }
 
-        vm.runModelExecutor = function(modelExecutorSlug) {
+        vm.runExecutor = function(executorSlug) {
             vm.executionData = {
                 uploadMetadata: false
             };
-            vm.modelExecutorSlug = modelExecutorSlug;
+            vm.executorSlug = executorSlug;
         }
 
-        vm.abortModelResultMetadata = function(modelResultMetadataSlug) {
+        vm.abortExecution = function(executionSlug) {
             vm.executionData = {
                 uploadMetadata: false
             };
-            vm.modelResultMetadataSlug = modelResultMetadataSlug;
+            vm.executionSlug = executionSlug;
         }
 
-        vm.runModelMetadataExtractor = function(modelMetadataExtractorSlug) {
+        vm.runExtractor = function(extractorSlug) {
             vm.executionData = {
                 uploadMetadata: false
             };
-            vm.modelMetadataExtractorSlug = modelMetadataExtractorSlug;
+            vm.extractorSlug = extractorSlug;
         }
 
-        vm.doRunModelExecutor = function(modelExecutorSlug, environmentForExecution, executionExtractors, uploadMetadata) {
+        vm.doRunExecutor = function(executorSlug, environmentForExecution, executionExtractors, uploadMetadata) {
             var requestBody = {
-                modelExecutorSlug: modelExecutorSlug,
+                executorSlug: executorSlug,
                 executionCommand: 'START',
                 uploadMetadata: uploadMetadata,
                 computationalModelVersion: vm.computationalModel.currentVersion,
@@ -876,7 +876,7 @@
             };  
 
             if (environmentForExecution && environmentForExecution.slug) {
-                requestBody.executionEnvironmentSlug = environmentForExecution.slug;
+                requestBody.environmentSlug = environmentForExecution.slug;
             }
 
             if (executionExtractors && executionExtractors.length > 0) {
@@ -884,18 +884,18 @@
                 for (var i = 0; i < executionExtractors.length; i++) {
                     extractorSlugs.push(executionExtractors[i].slug);
                 }
-                requestBody.executionExtractors = extractorSlugs;
+                requestBody.executionExtractorSlugs = extractorSlugs;
             }
 
             computationalModelService
                 .runModel(requestBody)
                 .then(function(resp) {
-                    vm.changeModelExecutorPage();
+                    vm.changeExecutorPage();
 
                     $timeout(function() {
                         if ($location.$$path && $location.$$path.includes('/computational-models/')) {
-                            if (vm.tab === 'modelResults') {
-                                vm.refreshModelResults();
+                            if (vm.tab === 'executions') {
+                                vm.refreshExecutions();
                             }
                         }
                     }, 2000);
@@ -906,32 +906,32 @@
                 });
         }
 
-        vm.changeModelExecutorPage = function() {
-            vm.loadingModelExecutor = true;
+        vm.changeExecutorPage = function() {
+            vm.loadingExecutor = true;
             var filter = null;
 
-            if (vm.filterModelExecutors) {
-                filter = 'tag=like=' + vm.filterModelExecutors;
+            if (vm.filterExecutors) {
+                filter = 'tag=like=' + vm.filterExecutors;
             }
 
             computationalModelService
-                .getAllModelExecutors(vm.modelExecutorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
+                .getAllExecutors(vm.executorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
                 .then(function(resp) {
                     for (var i = 0; i < resp.data.records.length; i++) {
                         resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
                     }
-                    vm.modelExecutors = resp.data.records;
-                    vm.totalModelExecutorCount = resp.data.metadata.totalCount;
-                    vm.loadingModelExecutor = false;
+                    vm.executors = resp.data.records;
+                    vm.totalExecutorCount = resp.data.metadata.totalCount;
+                    vm.loadingExecutor = false;
                 })
                 .catch(function(resp) {
                     console.log(resp);
-                    vm.loadingModelExecutor = false;
-                    toastr.error('Error while loading model executors.', 'Unexpected error!');
+                    vm.loadingExecutor = false;
+                    toastr.error('Error while loading executors.', 'Unexpected error!');
                 });
         }
 
-        $scope.setExtractor = function(fileInput) {
+        $scope.setExtractorFile = function(fileInput) {
             var files = fileInput.files;
             
             vm.errorUploadSize = false;
@@ -947,26 +947,26 @@
                     return;
                 
                 } else {
-                    vm.extractor = file;
+                    vm.extractorFile = file;
                     vm.loadingUpload = false;
                     $scope.$apply();
                 }
             }
         }
 
-        vm.doUploadModelMetadataExtractor = function() {
+        vm.doUploadExtractorFile = function() {
             $rootScope.loadingAsync++;
             vm.loadingUpload = true;
 
             var formData = new FormData();
-            formData.append('slug', vm.modelMetadataExtractor.slug);
-            formData.append('extractor', vm.extractor);
+            formData.append('slug', vm.extractor.slug);
+            formData.append('extractorFile', vm.extractorFile);
 
             computationalModelService
-                .uploadModelMetadataExtractorExtractor(formData, vm.computationalModel.slug)
+                .uploadExtractorFile(formData, vm.computationalModel.slug)
                 .then(function(resp) {
                     vm.loadingUpload = false;
-                    vm.changeModelMetadataExtractorPage();
+                    vm.changeExtractorPage();
                     toastr.success('Action performed with success.', 'Success!');
                     $rootScope.loadingAsync--;
                 })
@@ -979,9 +979,9 @@
             
         }
 
-        vm.doRunModelMetadataExtractor = function(modelMetadataExtractorSlug, environmentForExecution, uploadMetadata) {
+        vm.doRunExtractor = function(extractorSlug, environmentForExecution, uploadMetadata) {
             var requestBody = {
-                modelMetadataExtractorSlug: modelMetadataExtractorSlug,
+                extractorSlug: extractorSlug,
                 executionCommand: 'START',
                 uploadMetadata: uploadMetadata,
                 computationalModelVersion: vm.computationalModel.currentVersion,
@@ -989,13 +989,13 @@
             };
 
             if (environmentForExecution && environmentForExecution.slug) {
-                requestBody.executionEnvironmentSlug = environmentForExecution.slug;
+                requestBody.environmentSlug = environmentForExecution.slug;
             }
 
             computationalModelService
                 .runModel(requestBody)
                 .then(function(resp) {
-                    vm.changeModelMetadataExtractorPage();
+                    vm.changeExtractorPage();
                 })
                 .catch(function(resp) {
                     console.log(resp);
@@ -1003,11 +1003,11 @@
                 });
         }
 
-        vm.downloadModelMetadataExtractorExtractor = function(modelMetadataExtractorSlug) {
+        vm.downloadExtractorFile = function(extractorSlug) {
             $rootScope.loadingAsync++;
 
             computationalModelService
-                .getModelMetadataExtractorExtractor(modelMetadataExtractorSlug, vm.computationalModel.slug)
+                .getExtractorFile(extractorSlug, vm.computationalModel.slug)
                     .then(function(resp) {
                         if (resp.status === 200) {
                             var disposition = resp.headers('Content-Disposition');
@@ -1037,13 +1037,13 @@
                     });
         }
 
-        vm.doDeleteModelMetadataExtractor = function(modelMetadataExtractorSlug) {
+        vm.doDeleteExtractor = function(extractorSlug) {
             $rootScope.loadingAsync++;
 
             computationalModelService
-                .deleteModelMetadataExtractor(modelMetadataExtractorSlug, vm.computationalModel.slug)
+                .deleteExtractor(extractorSlug, vm.computationalModel.slug)
                 .then(function(resp) {
-                    vm.changeModelMetadataExtractorPage();
+                    vm.changeExtractorPage();
                     toastr.success('Action performed with success.', 'Success!');
                     $rootScope.loadingAsync--;
                 })
@@ -1054,19 +1054,19 @@
                 });
         }
 
-        vm.deleteModelMetadataExtractor = function(modelMetadataExtractorSlug) {
-            vm.modelMetadataExtractorSlug = modelMetadataExtractorSlug;
+        vm.deleteExtractor = function(extractorSlug) {
+            vm.extractorSlug = extractorSlug;
             vm.extractor = null;
         }
 
-        vm.editModelMetadataExtractor = function(modelMetadataExtractorSlug) {
-            vm.modelMetadataExtractorSaveTitle = 'Update metadata extractor';
-            vm.updateModelMetadataExtractor = true;
+        vm.editExtractor = function(extractorSlug) {
+            vm.extractorSaveTitle = 'Update extractor';
+            vm.updateExtractor = true;
 
             computationalModelService
-                .getModelMetadataExtractorBySlug(modelMetadataExtractorSlug, vm.computationalModel.slug)
+                .getExtractorBySlug(extractorSlug, vm.computationalModel.slug)
                 .then(function(resp) {
-                    vm.modelMetadataExtractor = resp.data;
+                    vm.extractor = resp.data;
                 })
                 .catch(function(resp) {
                     console.log(resp);
@@ -1074,28 +1074,28 @@
                 });
         }
 
-        vm.insertModelMetadataExtractor = function() {
-            vm.modelMetadataExtractor = {};
-            vm.updateModelMetadataExtractor = false;
-            vm.modelMetadataExtractorSaveTitle = 'Create metadata extractor';
+        vm.insertExtractor = function() {
+            vm.extractor = {};
+            vm.updateExtractor = false;
+            vm.extractorSaveTitle = 'Create extractor';
         }
 
-        vm.doSaveModelMetadataExtractor = function() {
-            vm.modelMetadataExtractor.computationalModel = {
+        vm.doSaveExtractor = function() {
+            vm.extractor.computationalModel = {
                 slug: vm.computationalModel.slug
             };
             
-            if (!vm.updateModelMetadataExtractor) {
+            if (!vm.updateExtractor) {
                 computationalModelService
-                    .insertModelMetadataExtractor(vm.modelMetadataExtractor, vm.computationalModel.slug)
+                    .insertExtractor(vm.extractor, vm.computationalModel.slug)
                     .then(function(resp) {
-                        vm.modelMetadataExtractor = resp.data;    
+                        vm.extractor = resp.data;    
 
-                        if (!vm.extractor) {
-                            vm.changeModelMetadataExtractorPage();
+                        if (!vm.extractorFile) {
+                            vm.changeExtractorPage();
                             toastr.success('Action performed with success.', 'Success!');
                         } else {
-                            vm.doUploadModelMetadataExtractor();
+                            vm.doUploadExtractorFile();
                         }
                     })
                     .catch(function(resp) {
@@ -1104,14 +1104,14 @@
                     });
             } else {
                 computationalModelService
-                    .updateModelMetadataExtractor(vm.modelMetadataExtractor, vm.computationalModel.slug)
+                    .updateExtractor(vm.extractor, vm.computationalModel.slug)
                     .then(function(resp) {
                         
                         if (!vm.extractor) {
-                            vm.changeModelMetadataExtractorPage();
+                            vm.changeExtractorPage();
                             toastr.success('Action performed with success.', 'Success!');
                         } else {
-                            vm.doUploadModelMetadataExtractor();
+                            vm.doUploadExtractorFile();
                         }
                     })
                     .catch(function(resp) {
@@ -1121,16 +1121,16 @@
             }
         }
 
-        vm.doActivateModelMetadataExtractor = function() {
-            vm.modelMetadataExtractor.active = true;
-            vm.modelMetadataExtractor.computationalModel = {
+        vm.doActivateExtractor = function() {
+            vm.extractor.active = true;
+            vm.extractor.computationalModel = {
                 slug: vm.computationalModel.slug
             };
             
             computationalModelService
-                .updateModelMetadataExtractor(vm.modelMetadataExtractor, vm.computationalModel.slug)
+                .updateExtractor(vm.extractor, vm.computationalModel.slug)
                 .then(function(resp) {
-                    vm.changeModelMetadataExtractorPage();
+                    vm.changeExtractorPage();
                     toastr.success('Success!', 'Action performed with success.');
                 })
                 .catch(function(resp) {
@@ -1139,16 +1139,16 @@
                 });
         }
 
-        vm.doDeactivateModelMetadataExtractor = function() {
-            vm.modelMetadataExtractor.active = false;
-            vm.modelMetadataExtractor.computationalModel = {
+        vm.doDeactivateExtractor = function() {
+            vm.extractor.active = false;
+            vm.extractor.computationalModel = {
                 slug: vm.computationalModel.slug
             };
             
             computationalModelService
-                .updateModelMetadataExtractor(vm.modelMetadataExtractor, vm.computationalModel.slug)
+                .updateExtractor(vm.extractor, vm.computationalModel.slug)
                 .then(function(resp) {
-                    vm.changeModelMetadataExtractorPage();
+                    vm.changeExtractorPage();
                     toastr.success('Success!', 'Action performed with success.');
                 })
                 .catch(function(resp) {
@@ -1157,28 +1157,28 @@
                 });
         }
 
-        vm.changeModelMetadataExtractorPage = function() {
-            vm.loadingModelMetadataExtractor = true;
+        vm.changeExtractorPage = function() {
+            vm.loadingExtractor = true;
             var filter = null;
 
-            if (vm.filterModelMetadataExtractors) {
-                filter = 'tag=like=' + vm.filterModelMetadataExtractors;
+            if (vm.filterExtractors) {
+                filter = 'tag=like=' + vm.filterExtractors;
             }
 
             computationalModelService
-                .getAllModelMetadataExtractors(vm.modelMetadataExtractorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
+                .getAllExtractors(vm.extractorCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
                 .then(function(resp) {
                     for (var i = 0; i < resp.data.records.length; i++) {
                         resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
                     }
-                    vm.modelMetadataExtractors = resp.data.records;
-                    vm.totalModelMetadataExtractorCount = resp.data.metadata.totalCount;
-                    vm.loadingModelMetadataExtractor = false;
+                    vm.extractors = resp.data.records;
+                    vm.totalExtractorCount = resp.data.metadata.totalCount;
+                    vm.loadingExtractor = false;
                 })
                 .catch(function(resp) {
                     console.log(resp);
-                    vm.loadingModelMetadataExtractor = false;
-                    toastr.error('Error while loading model metadata extractors.', 'Unexpected error!');
+                    vm.loadingExtractor = false;
+                    toastr.error('Error while loading extractors.', 'Unexpected error!');
                 });
         }
 
@@ -1214,11 +1214,11 @@
                 });
         }
 
-        vm.doDeleteExecutionEnvironment = function(executionEnvironmentSlug) {
+        vm.doDeleteEnvironment = function(environmentSlug) {
             computationalModelService
-                .deleteExecutionEnvironment(executionEnvironmentSlug, vm.computationalModel.slug)
+                .deleteEnvironment(environmentSlug, vm.computationalModel.slug)
                 .then(function(resp) {
-                    vm.changeExecutionEnvironmentPage();
+                    vm.changeEnvironmentPage();
                     toastr.success('Action performed with success.', 'Success!');
                 })
                 .catch(function(resp) {
@@ -1227,15 +1227,15 @@
                 });
         }
 
-        vm.deleteExecutionEnvironment = function(executionEnvironmentSlug) {
-            vm.executionEnvironmentSlug = executionEnvironmentSlug;
+        vm.deleteEnvironment = function(environmentSlug) {
+            vm.environmentSlug = environmentSlug;
         }
 
-        vm.editExecutionEnvironment = function(executionEnvironmentSlug) {
-            vm.executionEnvironmentSaveTitle = 'Update execution environment';
-            vm.updateExecutionEnvironment = true;
+        vm.editEnvironment = function(environmentSlug) {
+            vm.environmentSaveTitle = 'Update execution environment';
+            vm.updateEnvironment = true;
 
-            vm.showNewVirtualMachineConfig = false;
+            vm.showNewVirtualMachine = false;
             vm.type = undefined;
             vm.financialCost = undefined;
             vm.diskSpace = undefined;
@@ -1245,12 +1245,12 @@
             vm.numberOfCores = undefined;
             
             computationalModelService
-                .getExecutionEnvironmentBySlug(executionEnvironmentSlug, vm.computationalModel.slug)
+                .getEnvironmentBySlug(environmentSlug, vm.computationalModel.slug)
                 .then(function(resp) {
-                    vm.executionEnvironment = resp.data;
+                    vm.environment = resp.data;
 
-                    if (!vm.executionEnvironment.vpnType) {
-                        vm.executionEnvironment.vpnType = 'NONE';
+                    if (!vm.environment.vpnType) {
+                        vm.environment.vpnType = 'NONE';
                     }
                 })
                 .catch(function(resp) {
@@ -1259,16 +1259,16 @@
                 });
         }
 
-        vm.insertExecutionEnvironment = function() {
-            vm.executionEnvironment = {
+        vm.insertEnvironment = function() {
+            vm.environment = {
                 virtualMachines: [],
                 vpnType : 'NONE'
             };
             
-            vm.updateExecutionEnvironment = false;
-            vm.executionEnvironmentSaveTitle = 'Create execution environment';
+            vm.updateEnvironment = false;
+            vm.environmentSaveTitle = 'Create execution environment';
             
-            vm.showNewVirtualMachineConfig = false;
+            vm.showNewVirtualMachine = false;
             vm.type = undefined;
             vm.financialCost = undefined;
             vm.diskSpace = undefined;
@@ -1278,21 +1278,21 @@
             vm.numberOfCores = undefined;
         }
 
-        vm.doSaveExecutionEnvironment = function() {
-            vm.executionEnvironment.computationalModel = {
+        vm.doSaveEnvironment = function() {
+            vm.environment.computationalModel = {
                 slug: vm.computationalModel.slug
             };
 
-            if (vm.executionEnvironment.vpnType === 'NONE') {
-                delete vm.executionEnvironment.vpnType;
-                delete vm.executionEnvironment.vpnConfiguration;
+            if (vm.environment.vpnType === 'NONE') {
+                delete vm.environment.vpnType;
+                delete vm.environment.vpnConfiguration;
             }
             
-            if (!vm.updateExecutionEnvironment) {
+            if (!vm.updateEnvironment) {
                 computationalModelService
-                    .insertExecutionEnvironment(vm.executionEnvironment, vm.computationalModel.slug)
+                    .insertEnvironment(vm.environment, vm.computationalModel.slug)
                     .then(function(resp) {
-                        vm.changeExecutionEnvironmentPage();
+                        vm.changeEnvironmentPage();
                         toastr.success('Action performed with success.', 'Success!');
                     })
                     .catch(function(resp) {
@@ -1301,9 +1301,9 @@
                     });
             } else {
                 computationalModelService
-                    .updateExecutionEnvironment(vm.executionEnvironment, vm.computationalModel.slug)
+                    .updateEnvironment(vm.environment, vm.computationalModel.slug)
                     .then(function(resp) {
-                        vm.changeExecutionEnvironmentPage();
+                        vm.changeEnvironmentPage();
                         toastr.success('Success!', 'Action performed with success.');
                     })
                     .catch(function(resp) {
@@ -1313,11 +1313,11 @@
             }
         }
 
-        vm.addVirtualMachineConfig = function(type, financialCost, diskSpace, ram, gflops, platform, numberOfCores) {
+        vm.addVirtualMachine = function(type, financialCost, diskSpace, ram, gflops, platform, numberOfCores) {
             if (type && financialCost && diskSpace && ram && gflops && platform && numberOfCores) {
 
-                vm.executionEnvironment.virtualMachines = vm.executionEnvironment.virtualMachines || [];
-                vm.executionEnvironment.virtualMachines.push({
+                vm.environment.virtualMachines = vm.environment.virtualMachines || [];
+                vm.environment.virtualMachines.push({
                     type: type,
                     financialCost: financialCost,
                     diskSpace: diskSpace,
@@ -1327,7 +1327,7 @@
                     numberOfCores: numberOfCores
                 });
 
-                vm.showNewVirtualMachineConfig = false;
+                vm.showNewVirtualMachine = false;
 
                 vm.type = undefined;
                 vm.financialCost = undefined;
@@ -1339,37 +1339,37 @@
             } 
         }
 
-        vm.toggleNewVirtualMachineConfig = function(toggle) {
-            vm.showNewVirtualMachineConfig = toggle;
+        vm.toggleNewVirtualMachine = function(toggle) {
+            vm.showNewVirtualMachine = toggle;
         }
 
-        vm.removeVirtualMachineConfig = function(i) {
-            if (vm.executionEnvironment.virtualMachines) {
-                vm.executionEnvironment.virtualMachines.splice(i, 1);
+        vm.removeVirtualMachine = function(i) {
+            if (vm.environment.virtualMachines) {
+                vm.environment.virtualMachines.splice(i, 1);
             }
         }
 
-        vm.changeExecutionEnvironmentPage = function() {
-            vm.loadingExecutionEnvironment = true;
+        vm.changeEnvironmentPage = function() {
+            vm.loadingEnvironment = true;
             var filter = null;
 
-            if (vm.filterExecutionEnvironment) {
-                filter = 'tag=like=' + vm.filterExecutionEnvironment;
+            if (vm.filterEnvironment) {
+                filter = 'tag=like=' + vm.filterEnvironment;
             }
 
             computationalModelService
-                .getAllExecutionEnvironments(vm.executionEnvironmentCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
+                .getAllEnvironments(vm.environmentCurrentPage - 1, vm.limit, vm.computationalModel.slug, filter)
                 .then(function(resp) {
                     for (var i = 0; i < resp.data.records.length; i++) {
                         resp.data.records[i].parsedInsertDate = new Date(resp.data.records[i].insertDate);
                     }
-                    vm.executionEnvironments = resp.data.records;
-                    vm.totalExecutionEnvironmentCount = resp.data.metadata.totalCount;
-                    vm.loadingExecutionEnvironment = false;
+                    vm.environments = resp.data.records;
+                    vm.totalEnvironmentCount = resp.data.metadata.totalCount;
+                    vm.loadingEnvironment = false;
                 })
                 .catch(function(resp) {
                     console.log(resp);
-                    vm.loadingExecutionEnvironment = false;
+                    vm.loadingEnvironment = false;
                     toastr.error('Error while loading execution environments.', 'Unexpected error!');
                 });
         }
@@ -1385,7 +1385,7 @@
                     vm.checkWriteAccess();
                     vm.loadingComputationalModel = false;
 
-                    vm.changeModelResultMetadataPage();
+                    vm.changeExecutionPage();
                 })
                 .catch(function(resp) {
                     console.log(resp);
@@ -1397,12 +1397,12 @@
         init();
         
         function init() {
-            $('body').off('hidden.bs.modal', '#output-detail-model-result-metadata')
-            .on('hidden.bs.modal', '#output-detail-model-result-metadata', function() {
+            $('body').off('hidden.bs.modal', '#output-detail-execution')
+            .on('hidden.bs.modal', '#output-detail-execution', function() {
                 vm.updateLogOutput = false;
             });
 
-            vm.tab = 'modelResults';
+            vm.tab = 'executions';
             vm.computationalModelSaveTitle = 'Update computational model';
             vm.updateComputationalModel = true;
 
@@ -1412,29 +1412,29 @@
         
             vm.limit = 20;
 
-            vm.totalModelResultMetadataCount = 0;
-            vm.modelResultMetadataCurrentPage = 1;
-            vm.modelResultMetadatas = [];
-            vm.modelResultMetadata = {};
-            vm.updateModelResultMetadata = false;
+            vm.totalExecutionCount = 0;
+            vm.executionCurrentPage = 1;
+            vm.executions = [];
+            vm.execution = {};
+            vm.updateExecution = false;
 
-            vm.totalModelExecutorCount = 0;
-            vm.modelExecutorCurrentPage = 1;
-            vm.modelExecutors = [];
-            vm.modelExecutor = {};
-            vm.updateModelExecutor = false;
+            vm.totalExecutorCount = 0;
+            vm.executorCurrentPage = 1;
+            vm.executors = [];
+            vm.executor = {};
+            vm.updateExecutor = false;
 
-            vm.totalModelMetadataExtractorCount = 0;
-            vm.modelMetadataextractorCurrentPage = 1;
-            vm.modelMetadataExtractors = [];
-            vm.modelMetadataExtractors = {};
-            vm.updateModelMetadataExtractor = false;
+            vm.totalExtractorCount = 0;
+            vm.extractorCurrentPage = 1;
+            vm.extractors = [];
+            vm.extractor = {};
+            vm.updateExtractor = false;
 
-            vm.totalExecutionEnvironmentCount = 0;
-            vm.executionEnvironmentCurrentPage = 1;
-            vm.executionEnvironments = [];
-            vm.executionEnvironment = {};
-            vm.updateExecutionEnvironment = false;
+            vm.totalEnvironmentCount = 0;
+            vm.environmentCurrentPage = 1;
+            vm.environments = [];
+            vm.environment = {};
+            vm.updateEnvironment = false;
 
             vm.totalInstanceParamCount = 0;
             vm.instanceParamCurrentPage = 1;

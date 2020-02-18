@@ -9,6 +9,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.uff.phenomanager.Constants.MSG_ERROR;
 import com.uff.phenomanager.exception.UnauthorizedApiException;
+import com.uff.phenomanager.service.core.TokenAuthenticationService;
 
 public class AuthorizationInterceptor implements HandlerInterceptor {
 

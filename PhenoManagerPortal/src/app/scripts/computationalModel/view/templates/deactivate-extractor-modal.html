@@ -1,0 +1,19 @@
+<div class="modal stick-up fade" tabindex="-1" id="deactivate-extractor" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">Deactivate extractor</h4>
+            </div>
+            <div class="modal-body">
+                <div class="col-lg-12 row form-group">
+                    <p>If you confirm, this extractor won't run along the executor.</p>
+                    <p>Do you wish to deactivate extractor?</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="submit" ng-click="vm.doDeactivateExtractor(vm.extractorSlug)" data-dismiss="modal" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>

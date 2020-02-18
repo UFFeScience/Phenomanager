@@ -7,6 +7,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.uff.phenomanager.Constants.JWT_AUTH;
+import com.uff.phenomanager.service.core.TokenAuthenticationService;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)

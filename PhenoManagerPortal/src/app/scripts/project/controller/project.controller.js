@@ -62,7 +62,7 @@
 
             for (var i = 0; i < project.permissions.length; i++) {
                 if (project.permissions[i].role === 'ADMIN' &&
-                    (vm.loggedUserSlug === project.permissions[i].user.slug || 
+                    (project.permissions[i].user && vm.loggedUserSlug === project.permissions[i].user.slug || 
                      vm.teamContainsUser(project.permissions[i].team, vm.loggedUserSlug))) {
                     hasWriteAuthorization = true;
                     break;
@@ -92,14 +92,14 @@
         }
 
         vm.teamContainsUser = function(team, userSlug) {
-            if (!team) {
+            if (!team || !team.teamUsers) {
                 return false;
             }
 
             var containsUser = false;
 
-            for (var j = 0; j < team.groupUsers.length; j++) {
-                if (team.groupUsers[j].slug === userSlug) {
+            for (var j = 0; j < team.teamUsers.length; j++) {
+                if (team.teamUsers[j].slug === userSlug) {
                     containsUser = true;
                     break;
                 }

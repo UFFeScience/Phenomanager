@@ -18,9 +18,9 @@ public enum HypothesisState {
 		return hypothesisStatusName;
 	}
 
-	public static HypothesisState getExecutionStatusFromString(String hypothesisStatusName) {
+	public static HypothesisState getHypothesisStateFromString(String hypothesisStateName) {
 		for (HypothesisState status : HypothesisState.values()) {
-			if (status.name().equals(hypothesisStatusName) || status.getHypothesisStatusName().equals(hypothesisStatusName)) {
+			if (status.name().equals(hypothesisStateName) || status.getHypothesisStatusName().equals(hypothesisStateName)) {
 				return status;
 			}
 		}

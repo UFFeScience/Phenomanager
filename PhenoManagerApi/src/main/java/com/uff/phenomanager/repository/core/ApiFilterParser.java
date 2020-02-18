@@ -13,6 +13,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
 
+import org.springframework.stereotype.Repository;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.uff.phenomanager.Constants;
@@ -26,6 +28,7 @@ import com.uff.phenomanager.exception.BadRequestApiException;
 import com.uff.phenomanager.util.ReflectionUtils;
 import com.uff.phenomanager.util.StringParserUtils;
 
+@Repository
 @SuppressWarnings({ "unchecked", "rawtypes" } )
 public class ApiFilterParser<ENTITY> {
 	

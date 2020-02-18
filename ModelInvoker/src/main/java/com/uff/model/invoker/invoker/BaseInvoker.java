@@ -14,19 +14,19 @@ import org.springframework.stereotype.Service;
 import com.uff.model.invoker.Constants.BASH;
 import com.uff.model.invoker.Constants.UPLOAD;
 import com.uff.model.invoker.domain.ExecutionStatus;
-import com.uff.model.invoker.domain.ExtractorMetadata;
-import com.uff.model.invoker.domain.ModelExecutor;
-import com.uff.model.invoker.domain.ModelResultMetadata;
+import com.uff.model.invoker.domain.ExtractorExecution;
+import com.uff.model.invoker.domain.Executor;
+import com.uff.model.invoker.domain.Execution;
 import com.uff.model.invoker.domain.api.google.DriveFile;
 import com.uff.model.invoker.exception.AbortedExecutionException;
 import com.uff.model.invoker.exception.GoogleErrorApiException;
-import com.uff.model.invoker.exception.ModelExecutionException;
+import com.uff.model.invoker.exception.ExecutionException;
 import com.uff.model.invoker.exception.NotFoundApiException;
-import com.uff.model.invoker.service.ExecutionEnvironmentService;
-import com.uff.model.invoker.service.ExtractorMetadataService;
-import com.uff.model.invoker.service.ModelExecutorService;
-import com.uff.model.invoker.service.ModelMetadataExtractorService;
-import com.uff.model.invoker.service.ModelResultMetadataService;
+import com.uff.model.invoker.service.EnvironmentService;
+import com.uff.model.invoker.service.ExtractorExecutionService;
+import com.uff.model.invoker.service.ExecutorService;
+import com.uff.model.invoker.service.ExtractorService;
+import com.uff.model.invoker.service.ExecutionService;
 import com.uff.model.invoker.service.api.google.GoogleDriveService;
 import com.uff.model.invoker.service.provider.CloudProviderService;
 import com.uff.model.invoker.service.provider.ClusterProviderService;
@@ -45,19 +45,19 @@ public abstract class BaseInvoker {
 	private static final Logger log = LoggerFactory.getLogger(BaseInvoker.class);
 	
 	@Autowired
-	protected ExecutionEnvironmentService executionEnvironmentService;
+	protected EnvironmentService environmentService;
 	
 	@Autowired
-	protected ExtractorMetadataService extractorMetadataService;
+	protected ExtractorExecutionService extractorExecutionService;
 	
 	@Autowired
-	protected ModelMetadataExtractorService modelMetadataExtractorService;
+	protected ExtractorService extractorService;
 	
 	@Autowired
-	protected ModelResultMetadataService modelResultMetadataService;
+	protected ExecutionService executionService;
 	
 	@Autowired
-	protected ModelExecutorService modelExecutorService;
+	protected ExecutorService executorService;
 	
 	@Autowired
 	protected ClusterProviderService clusterProviderService;
@@ -75,14 +75,14 @@ public abstract class BaseInvoker {
 	@Autowired
 	protected GoogleDriveService googleDriveService;
 	
-	public abstract ModelResultMetadata runInSsh(ModelExecutor modelExecutor, ModelResultMetadata modelResultMetadata, Connection connection) 
+	public abstract Execution runInSsh(Executor executor, Execution execution, Connection connection) 
 					throws IOException, InterruptedException, NotFoundApiException, GoogleErrorApiException, AbortedExecutionException;
 	
-	public abstract ModelResultMetadata runInCluster(ModelExecutor modelExecutor, ModelResultMetadata modelResultMetadata, Connection connection) 
-					throws IOException, ModelExecutionException, InterruptedException, NotFoundApiException, GoogleErrorApiException, AbortedExecutionException;
+	public abstract Execution runInCluster(Executor executor, Execution execution, Connection connection) 
+					throws IOException, ExecutionException, InterruptedException, NotFoundApiException, GoogleErrorApiException, AbortedExecutionException;
 	
-	public abstract ModelResultMetadata runInCloud(ModelExecutor modelExecutor, ModelResultMetadata modelResultMetadata, Connection connection) 
-					throws ModelExecutionException, IOException, InterruptedException, NotFoundApiException, GoogleErrorApiException, AbortedExecutionException;
+	public abstract Execution runInCloud(Executor executor, Execution execution, Connection connection) 
+					throws ExecutionException, IOException, InterruptedException, NotFoundApiException, GoogleErrorApiException, AbortedExecutionException;
 	
 	protected DriveFile handleFileDownload(String fileId) throws IOException, NotFoundApiException {
 		DriveFile driveFile = googleDriveService.getFileBytesContent(fileId);
@@ -103,41 +103,41 @@ public abstract class BaseInvoker {
 		return getExecutionPermissionCommand(isWorkflow, fileName, null, connection);
 	}
 	
-	public ModelResultMetadata checkExecutionExtractionStatus(ModelResultMetadata modelResultMetadata) {
-		if (modelResultMetadata.getExtractorMetadatas() != null && !modelResultMetadata.getExtractorMetadatas().isEmpty()) {
+	public Execution checkExtractionExecutionStatus(Execution execution) {
+		if (execution.getExtractorExecutions() != null && !execution.getExtractorExecutions().isEmpty()) {
 			Boolean hasFailedExtraction = Boolean.FALSE;
 			
-			for (ExtractorMetadata extractorMetadata : modelResultMetadata.getExtractorMetadatas()) {
-				if (ExecutionStatus.FAILURE.equals(extractorMetadata.getExecutionStatus())) {
+			for (ExtractorExecution extractorExecution : execution.getExtractorExecutions()) {
+				if (ExecutionStatus.FAILURE.equals(extractorExecution.getStatus())) {
 					hasFailedExtraction = Boolean.TRUE;
 					break;
 				}
 			}
 			
 			if (hasFailedExtraction) {
-				modelResultMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
+				execution.setStatus(ExecutionStatus.FAILURE);
 			} else {
-				modelResultMetadata.setExecutionStatus(ExecutionStatus.FINISHED);
+				execution.setStatus(ExecutionStatus.FINISHED);
 			}
 		}
 		
-		return modelResultMetadata;
+		return execution;
 	}
 	
-	public ModelResultMetadata handlePendingExtraction(ModelResultMetadata modelResultMetadata) {
-		modelResultMetadata = modelResultMetadataService.findBySlug(modelResultMetadata.getSlug());
+	public Execution handlePendingExtraction(Execution execution) {
+		execution = executionService.findBySlug(execution.getSlug());
 
-		if (modelResultMetadata.getExtractorMetadatas() != null && !modelResultMetadata.getExtractorMetadatas().isEmpty()) {
-			for (ExtractorMetadata extractorMetadata : modelResultMetadata.getExtractorMetadatas()) {
-				if (ExecutionStatus.SCHEDULED.equals(extractorMetadata.getExecutionStatus()) || 
-						ExecutionStatus.RUNNING.equals(extractorMetadata.getExecutionStatus())) {
-					extractorMetadata.setExecutionStatus(ExecutionStatus.ABORTED);
+		if (execution.getExtractorExecutions() != null && !execution.getExtractorExecutions().isEmpty()) {
+			for (ExtractorExecution extractorExecution : execution.getExtractorExecutions()) {
+				if (ExecutionStatus.SCHEDULED.equals(extractorExecution.getStatus()) || 
+						ExecutionStatus.RUNNING.equals(extractorExecution.getStatus())) {
+					extractorExecution.setStatus(ExecutionStatus.ABORTED);
 				}
-				extractorMetadata = extractorMetadataService.update(extractorMetadata);
+				extractorExecution = extractorExecutionService.update(extractorExecution);
 			}
 		}
 		
-		return modelResultMetadata;
+		return execution;
 	}
 	
 	protected String getExecutionPermissionCommand(Boolean isWorkflow, String fileName, String executionCommand, Connection connection) {

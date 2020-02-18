@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
 
-import com.uff.phenomanager.domain.BaseApiEntity;
+import com.uff.phenomanager.domain.core.BaseApiEntity;
 
 @NoRepositoryBean
 public interface BaseRepository<ENTITY extends BaseApiEntity> extends JpaRepository<ENTITY, Long> {

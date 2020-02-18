@@ -23,7 +23,7 @@ import com.uff.phenomanager.Constants.JWT_AUTH;
 import com.uff.phenomanager.domain.ComputationalModel;
 import com.uff.phenomanager.domain.core.ApiResponse;
 import com.uff.phenomanager.domain.core.filter.RequestFilter;
-import com.uff.phenomanager.domain.dto.amqp.ModelExecutionMessageDto;
+import com.uff.phenomanager.domain.dto.amqp.ExecutionMessageDto;
 import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;
 import com.uff.phenomanager.service.ComputationalModelService;
@@ -42,12 +42,12 @@ public class ComputationalModelController {
 	@PreAuthorize("@computationalModelService.allowPermissionWriteAccess(#authorization, #slug)")
     public ResponseEntity<Object> run(@RequestHeader(JWT_AUTH.AUTHORIZATION) String authorization,
     		@PathVariable(CONTROLLER.SLUG) String slug,
-    		@RequestBody ModelExecutionMessageDto modelExecutionMessageDto) throws ApiException {
+    		@RequestBody ExecutionMessageDto executionMessageDto) throws ApiException {
     	
-		log.info("Processing Invoke ComputationalModel of slug: [{}], and modelExecutionMessageDto: [{}]", 
-				slug, modelExecutionMessageDto);
+		log.info("Processing Invoke ComputationalModel of slug: [{}], and executionMessageDto: [{}]", 
+				slug, executionMessageDto);
 		
-    	computationalModelService.run(slug, authorization, modelExecutionMessageDto);
+    	computationalModelService.run(slug, authorization, executionMessageDto);
     	return new ResponseEntity<>(HttpStatus.OK);
     }
 	

@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.uff.phenomanager.Constants.MSG_ERROR;
-import com.uff.phenomanager.domain.BaseApiEntity;
+import com.uff.phenomanager.domain.core.BaseApiEntity;
 import com.uff.phenomanager.domain.core.filter.AggregateFunction;
 import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.BadRequestApiException;
@@ -40,10 +40,13 @@ import com.uff.phenomanager.util.ReflectionUtils;
 
 @Repository
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class ApiFilterRepository<ENTITY extends BaseApiEntity> extends ApiFilterParser<ENTITY> {
+public class ApiFilterRepository<ENTITY extends BaseApiEntity> {
 	
 	@Autowired
 	private EntityManager entityManager;
+	
+	@Autowired
+	protected ApiFilterParser<ENTITY> apiFilterParser;
 	
 	public Long countAll(Class<ENTITY> entityClass, RequestFilter requestFilter) 
 			throws NotFoundApiException, BadRequestApiException, InternalErrorApiException {
@@ -56,7 +59,7 @@ public class ApiFilterRepository<ENTITY extends BaseApiEntity> extends ApiFilter
 
 		query.select(criteriaBuilder.count(root));
 		
-		List<Predicate> restrictions = getRestrictions(entityClass, requestFilter, criteriaBuilder, root); 
+		List<Predicate> restrictions = apiFilterParser.getRestrictions(entityClass, requestFilter, criteriaBuilder, root); 
 		if (!restrictions.isEmpty()) {
 			query.where(restrictions.toArray(new Predicate[]{}));
 		}
@@ -88,19 +91,19 @@ public class ApiFilterRepository<ENTITY extends BaseApiEntity> extends ApiFilter
 		CriteriaQuery<Object> query = criteriaBuilder.createQuery(Object.class);
 		Root<?> root = query.from(entityClass);
 
-		List<Selection<? extends Object>> projection =  getProjectionFields(requestFilter, root, entityClass);
+		List<Selection<? extends Object>> projection = apiFilterParser.getProjectionFields(requestFilter, root, entityClass);
 		if (!projection.isEmpty() && (projection.size() == 1 || !containsMultiValuedProjection(projection))) {
 			query.multiselect(projection.toArray(new Selection[]{}));
 		} else {
 			query.select(root);
 		}
 		
-		List<Predicate> restrictions = getRestrictions(entityClass, requestFilter, criteriaBuilder, root); 
+		List<Predicate> restrictions = apiFilterParser.getRestrictions(entityClass, requestFilter, criteriaBuilder, root); 
 		if (!restrictions.isEmpty()) {
 			query.where(restrictions.toArray(new Predicate[]{}));
 		}
 		
-		List<Order> orders = getOrders(requestFilter, criteriaBuilder, root, entityClass);
+		List<Order> orders = apiFilterParser.getOrders(requestFilter, criteriaBuilder, root, entityClass);
 		if (!orders.isEmpty()) {
 			query.orderBy(orders);
 		}
@@ -131,7 +134,7 @@ public class ApiFilterRepository<ENTITY extends BaseApiEntity> extends ApiFilter
 		CriteriaQuery<Object> query = criteriaBuilder.createQuery(Object.class);
 		Root<?> root = query.from(entityClass);
 
-		List<Selection<? extends Object>> aggregationFields = buildAggregateSelection(root, criteriaBuilder, entityClass, requestFilter);
+		List<Selection<? extends Object>> aggregationFields = apiFilterParser.buildAggregateSelection(root, criteriaBuilder, entityClass, requestFilter);
 		
 		if (aggregationFields.isEmpty()) {
 			throw new BadRequestApiException(String.format(MSG_ERROR.INVALID_AGGREGATION_ERROR, requestFilter));
@@ -139,17 +142,17 @@ public class ApiFilterRepository<ENTITY extends BaseApiEntity> extends ApiFilter
 		
 		query.multiselect(aggregationFields.toArray(new Selection[]{}));
 		
-		List<Predicate> restrictions = getRestrictions(entityClass, requestFilter, criteriaBuilder, root); 
+		List<Predicate> restrictions = apiFilterParser.getRestrictions(entityClass, requestFilter, criteriaBuilder, root); 
 		if (!restrictions.isEmpty()) {
 			query.where(restrictions.toArray(new Predicate[]{}));
 		}
 		
-		List<Order> orders = getOrders(requestFilter, criteriaBuilder, root, entityClass);
+		List<Order> orders = apiFilterParser.getOrders(requestFilter, criteriaBuilder, root, entityClass);
 		if (!orders.isEmpty()) {
 			query.orderBy(orders);
 		}
 		
-		List<Selection<? extends Object>> groupBy =  getGroupByFields(requestFilter, root, entityClass);
+		List<Selection<? extends Object>> groupBy = apiFilterParser.getGroupByFields(requestFilter, root, entityClass);
 		query.groupBy(groupBy.toArray(new Expression[]{}));
 		
 		try {

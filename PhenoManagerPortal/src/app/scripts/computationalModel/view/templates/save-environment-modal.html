@@ -1,0 +1,182 @@
+<div class="modal stick-up fade" tabindex="-1" id="save-environment" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">{{ vm.environmentSaveTitle }}</h4>
+            </div>
+            <form name="environmentForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Type</label>
+                            <select class="form-control" ng-model="vm.environment.type" required ng-options="type.value as type.name for type in vm.environmentTypes">
+                                <option disabled selected value="">Select permission</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default required">
+                            <label>Tag</label>
+                            <input autocomplete="off" type="text" name="tag" class="form-control" ng-model="vm.environment.tag" required>
+                        </div>
+                        <p ng-show="environmentForm.tag.$invalid && !environmentForm.tag.$pristine" class="error help-block">Required field</p>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default">
+                            <label>Host Address</label>
+                            <input autocomplete="off" type="text" name="hostAddress" class="form-control" ng-model="vm.environment.hostAddress">
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default">
+                            <label>Username</label>
+                            <input autocomplete="off" type="text" name="username" class="form-control" ng-model="vm.environment.username">
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="form-group form-group-default">
+                            <label>Password</label>
+                            <input autocomplete="off" type="password" name="password" class="form-control" ng-model="vm.environment.password">
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.environment.type === 'CLUSTER'">
+                        <div class="form-group form-group-default">
+                            <label>Cluster project name</label>
+                            <input autocomplete="off" type="text" name="clusterName" class="form-control" ng-model="vm.environment.clusterName">
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.environment.type === 'CLOUD'">
+                        <div class="form-group form-group-default">
+                            <label>Cluster name</label>
+                            <input autocomplete="off" type="text" name="clusterName" class="form-control" ng-model="vm.environment.clusterName">
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.environment.type === 'CLOUD'">
+                        <div class="form-group form-group-default">
+                            <label>Secret Key</label>
+                            <input autocomplete="off" type="text" name="secretKey" class="form-control" ng-model="vm.environment.secretKey">
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.environment.type === 'CLOUD'">
+                        <div class="form-group form-group-default">
+                            <label>Access Key</label>
+                            <input autocomplete="off" type="text" name="accessKey" class="form-control" ng-model="vm.environment.accessKey">
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.environment.type === 'CLOUD'">
+                        <div class="form-group form-group-default">
+                            <label>Image</label>
+                            <textarea autocomplete="off" name="image" class="form-control default-textarea" ng-model="vm.environment.image"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <div class="radio radio-primary">
+
+                            <input type="radio" name="vpn" id="vpn" value="VPN" ng-model="vm.environment.vpnType">
+                            <label for="vpn">VPN</label>
+
+                            <input type="radio" name="vpnc" id="vpnc" value="VPNC" ng-model="vm.environment.vpnType">
+                            <label for="vpnc">Cisco VPN</label>
+
+                            <input type="radio" name="none" id="none" value="NONE" ng-model="vm.environment.vpnType">
+                            <label for="none">None</label>
+
+                        </div>
+                    </div>
+
+                    <div ng-if="vm.environment.vpnType !== 'NONE'" class="row form-group">
+                        <div class="form-group form-group-default">
+                            <label>VPN configuration</label>
+                            <textarea autocomplete="off" name="vpnConfiguration" class="form-control default-textarea" ng-model="vm.environment.vpnConfiguration"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row form-group" ng-if="vm.environment.type === 'CLOUD'">
+                        <label class="col-lg-12">Virutal Machines</label>
+
+                        <div ng-repeat="(i, virtualMachine) in vm.environment.virtualMachines" class="list-data">
+                            <div class="input-group">
+                                <span class="form-control inline-table v-align-middle">
+                                    <span class="inline m-r-5" ng-if="virtualMachine.type">{{ virtualMachine.type }} \ </span>
+                                    <span class="inline m-r-5" ng-if="!virtualMachine.type">-- \ </span>
+
+                                    <span class="inline m-r-5" ng-if="virtualMachine.financialCost"> {{ virtualMachine.financialCost }} \ </span>
+                                    <span class="inline m-r-5" ng-if="!virtualMachine.financialCost"> -- \ </span>
+
+                                    <span class="inline m-r-5" ng-if="virtualMachine.diskSpace"> {{ virtualMachine.diskSpace }} \ </span>
+                                    <span class="inline m-r-5" ng-if="!virtualMachine.diskSpace"> -- \ </span>
+
+                                    <span class="inline m-r-5" ng-if="virtualMachine.ram"> {{ virtualMachine.ram }} \ </span>
+                                    <span class="inline m-r-5" ng-if="!virtualMachine.ram">-- \ </span>
+
+                                    <span class="inline m-r-5" ng-if="virtualMachine.gflops"> {{ virtualMachine.gflops }} \ </span>
+                                    <span class="inline m-r-5" ng-if="!virtualMachine.gflops"> -- \ </span>
+
+                                    <span class="inline m-r-5" ng-if="virtualMachine.platform"> {{ virtualMachine.platform }} \ </span>
+                                    <span class="inline m-r-5" ng-if="!virtualMachine.platform"> -- \ </span>
+
+                                    <span class="inline m-r-5" ng-if="virtualMachine.numberOfCores"> {{ virtualMachine.numberOfCores }}</span>
+                                    <span class="inline m-r-5" ng-if="!virtualMachine.numberOfCores"> --</span>
+                                </span>
+                                <span ng-click="removeVirtualMachine(i)" class="input-group-addon danger pointer inherit v-align-middle">
+                                    <i class="fa fa-trash"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-control list-block">
+                            <div ng-if="!vm.showNewVirtualMachine" class="add-list-icon">
+                                <button style="width: 10px; padding: 0; margin: 0; min-width: 25px;" class="btn btn-primary-dark btn-cons" ng-click="vm.toggleNewVirtualMachine(true)">
+                                    <i class="fa fa-plus"></i>
+                                </button>
+                            </div>
+
+                            <div ng-if="vm.showNewVirtualMachine">
+                                <input autocomplete="off" type="text" placeholder="Type" name="type" class="form-control col-lg-12" ng-model="vm.type">
+                                
+                                <input input-mask mask="99999999.99" money="true" autocomplete="off" type="text" placeholder="Financial cost" name="financialCost" class="form-control col-lg-12" ng-model="vm.financialCost">
+
+                                <input input-mask mask="99999999.99" autocomplete="off" type="text" placeholder="Disk space" name="diskSpace" class="form-control col-lg-12" ng-model="vm.diskSpace">
+
+                                <input input-mask mask="999999999" autocomplete="off" type="text" placeholder="RAM" name="ram" class="form-control col-lg-12" ng-model="vm.ram">
+
+                                <input input-mask mask="99999999.99" clear-on-blur="false" add-default-placeholder="false" autocomplete="off" type="text" placeholder="Gflops" name="gflops" class="form-control col-lg-12" ng-model="vm.gflops">
+
+                                <input autocomplete="off" type="text" placeholder="Platform" name="platform" class="form-control col-lg-12" ng-model="vm.platform">
+
+                                <input input-mask mask="99999999" autocomplete="off" type="text" placeholder="Number of cores" name="numberOfCores" class="form-control col-lg-12" ng-model="vm.numberOfCores">
+
+                                <button style="width: 10px; padding: 0; margin: 0 0 0 5px; min-width: 25px;" class="btn btn-primary-dark btn-cons pull-right" 
+                                        ng-click="vm.addVirtualMachine(vm.type, vm.financialCost, vm.diskSpace, vm.ram, vm.gflops, vm.platform, vm.numberOfCores);
+                                        vm.type = '';  vm.financialCost = ''; vm.diskSpace = ''; vm.ram = ''; vm.gflops = ''; vm.platform = ''; vm.numberOfCores = '';">
+                                    <i class="fa fa-check"></i>
+                                </button>
+                                
+                                <button style="width: 10px; padding: 0; margin: 0; min-width: 25px;" class="btn btn-danger btn-cons pull-right" ng-click="vm.toggleNewVirtualMachine(false)">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doSaveEnvironment()" data-dismiss="modal" class="btn btn-primary-dark" 
+                        ng-disabled="environmentForm.$invalid">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

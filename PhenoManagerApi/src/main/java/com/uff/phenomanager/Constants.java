@@ -173,35 +173,35 @@ public interface Constants {
 			final String VALUE_FILE_NAME_PATH = SLUG_PATH + PATH_SEPARATOR + VALUE_FILE_NAME;
 		}
 		
-		public interface EXECUTION_ENVIRONMENT {
-			final String NAME = "execution_environments";
+		public interface ENVIRONMENT {
+			final String NAME = "environments";
 			final String COMPUTATIONAL_MODEL_SLUG = "computationalModelSlug";
 			final String PATH_COMPUTATIONAL_MODEL_SLUG = "{" + COMPUTATIONAL_MODEL_SLUG + "}";
 			final String PATH = COMPUTATIONAL_MODEL.PATH + PATH_SEPARATOR + PATH_COMPUTATIONAL_MODEL_SLUG + PATH_SEPARATOR + NAME;
 		}
 		
-		public interface MODEL_EXECUTOR {
-			final String NAME = "model_executors";
-			final String COMPUTATIONAL_MODEL_SLUG = "computationalModelSlug";
-			final String PATH_COMPUTATIONAL_MODEL_SLUG = "{" + COMPUTATIONAL_MODEL_SLUG + "}";
-			final String PATH = COMPUTATIONAL_MODEL.PATH + PATH_SEPARATOR + PATH_COMPUTATIONAL_MODEL_SLUG + PATH_SEPARATOR + NAME;
-			
-			final String EXECUTOR_NAME = "executor";
-			final String EXECUTOR_NAME_PATH = SLUG_PATH + PATH_SEPARATOR + EXECUTOR_NAME;
-		}
-		
-		public interface MODEL_METADATA_EXTRACTOR {
-			final String NAME = "model_metadata_extractors";
+		public interface EXECUTOR {
+			final String NAME = "executors";
 			final String COMPUTATIONAL_MODEL_SLUG = "computationalModelSlug";
 			final String PATH_COMPUTATIONAL_MODEL_SLUG = "{" + COMPUTATIONAL_MODEL_SLUG + "}";
 			final String PATH = COMPUTATIONAL_MODEL.PATH + PATH_SEPARATOR + PATH_COMPUTATIONAL_MODEL_SLUG + PATH_SEPARATOR + NAME;
 			
-			final String EXTRACTOR_NAME = "extractor";
-			final String EXTRACTOR_NAME_PATH = SLUG_PATH + PATH_SEPARATOR + EXTRACTOR_NAME;
+			final String EXECUTOR_FILE_NAME = "executor_file";
+			final String EXECUTOR_FILE_NAME_PATH = SLUG_PATH + PATH_SEPARATOR + EXECUTOR_FILE_NAME;
 		}
 		
-		public interface EXTRACTOR_METADATA {
-			final String NAME = "extractor_metadatas";
+		public interface EXTRACTOR {
+			final String NAME = "extractors";
+			final String COMPUTATIONAL_MODEL_SLUG = "computationalModelSlug";
+			final String PATH_COMPUTATIONAL_MODEL_SLUG = "{" + COMPUTATIONAL_MODEL_SLUG + "}";
+			final String PATH = COMPUTATIONAL_MODEL.PATH + PATH_SEPARATOR + PATH_COMPUTATIONAL_MODEL_SLUG + PATH_SEPARATOR + NAME;
+			
+			final String EXTRACTOR_FILE_NAME = "extractor_file";
+			final String EXTRACTOR_FILE_NAME_PATH = SLUG_PATH + PATH_SEPARATOR + EXTRACTOR_FILE_NAME;
+		}
+		
+		public interface EXTRACTOR_EXECUTION {
+			final String NAME = "extractor_executions";
 			final String COMPUTATIONAL_MODEL_SLUG = "computationalModelSlug";
 			final String PATH_COMPUTATIONAL_MODEL_SLUG = "{" + COMPUTATIONAL_MODEL_SLUG + "}";
 			final String PATH = COMPUTATIONAL_MODEL.PATH + PATH_SEPARATOR + PATH_COMPUTATIONAL_MODEL_SLUG + PATH_SEPARATOR + NAME;
@@ -210,8 +210,8 @@ public interface Constants {
 			final String EXECUTION_METADATA_NAME_PATH = SLUG_PATH + PATH_SEPARATOR + EXECUTION_METADATA_NAME;
 		}
 		
-		public interface MODEL_RESULT_METADATA {
-			final String NAME = "model_result_metadatas";
+		public interface EXECUTION {
+			final String NAME = "executions";
 			final String COMPUTATIONAL_MODEL_SLUG = "computationalModelSlug";
 			final String PATH_COMPUTATIONAL_MODEL_SLUG = "{" + COMPUTATIONAL_MODEL_SLUG + "}";
 			final String PATH = COMPUTATIONAL_MODEL.PATH + PATH_SEPARATOR + PATH_COMPUTATIONAL_MODEL_SLUG + PATH_SEPARATOR + NAME;
@@ -222,8 +222,8 @@ public interface Constants {
 			final String EXECUTION_METADATA_NAME = "execution_metadata";
 			final String EXECUTION_METADATA_NAME_PATH = SLUG_PATH + PATH_SEPARATOR + EXECUTION_METADATA_NAME;
 			
-			final String ABORT_METADATA_NAME = "abort_metadata";
-			final String ABORT_METADATA_NAME_PATH = SLUG_PATH + PATH_SEPARATOR + ABORT_METADATA_NAME;
+			final String ABORTION_METADATA_NAME = "abortion_metadata";
+			final String ABORTION_METADATA_NAME_PATH = SLUG_PATH + PATH_SEPARATOR + ABORTION_METADATA_NAME;
 		}
 	}
 	
@@ -260,9 +260,8 @@ public interface Constants {
 	}
 	
 	public interface RABBIT_MQ {
-		final String MODEL_EXECUTION_QUEUE = "modelExecution";
+		final String MODEL_EXECUTOR_QUEUE = "modelExecutor";
 		final String MODEL_KILLER_QUEUE = "modelKiller";
-		final String NOTIFICATION_QUEUE = "notification";
 	}
 	
 	public interface MSG_ERROR {

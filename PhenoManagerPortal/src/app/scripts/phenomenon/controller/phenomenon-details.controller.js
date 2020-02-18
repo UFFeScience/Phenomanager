@@ -81,7 +81,7 @@
             for (var i = 0; i < vm.phenomenon.permissions.length; i++) {
                 if ((vm.phenomenon.permissions[i].role === 'ADMIN' ||
                      vm.phenomenon.permissions[i].role === 'WRITE') &&
-                    (vm.loggedUserSlug === vm.phenomenon.permissions[i].user.slug || 
+                    ((vm.phenomenon.permissions[i].user && vm.loggedUserSlug === vm.phenomenon.permissions[i].user.slug) || 
                      vm.teamContainsUser(vm.phenomenon.permissions[i].team, vm.loggedUserSlug))) {
                     
                     vm.hasWriteAuthorization = true;
@@ -111,7 +111,7 @@
         }
 
         vm.teamContainsUser = function(team, userSlug) {
-            if (!team) {
+            if (!team || !team.teamUsers) {
                 return false;
             }
 

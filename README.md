@@ -39,8 +39,8 @@ There is also a possibility to setup VPN conection for these environemnts:
 
 The API is completely generic and accepts filters, sorting, aggregation functions, grouping and field projection.
 Another important point is that the API will only respond *success* if the correct credentials are passed in the *header* of the request.
-Every request (except for the login endpoint and some other specific endpoints) must contain the `Authorization` header with the value` Bearer {AUTENTICATION_TOKEN} `.
-An authentication token can be obtained by making a request to `/ login` endpoint twith the correct credentials.
+Every request (except for the login endpoint and some other specific endpoints) must contain the `Authorization` header with the value `Bearer {AUTENTICATION_TOKEN}`.
+An authentication token can be obtained by making a request to `/login` endpoint twith the correct credentials.
 Here is an example of the most complete filter operation possible:
 
 `localhost:9500/v1/computational_models?count=[name,currentVersion]&sort=[creationDate=asc]&groupBy=[creationDate]&filter=[currentVersion>1.0]`
@@ -74,37 +74,37 @@ Logical operators in the url:
 ### Projection
 The projections follow the following syntax in the url, and the return json will only count with these specified fields:
 
-`projection=[field1,field2,field3...]`
+`projection = [field1, field2, field3...]`
 
 ### Sort
-The orderings follow the following syntax in the url (where `sortOrder` can be` asc` or `desc`):
+The orderings follow the following syntax in the url (where `sortOrder` can be `asc` or `desc`):
 
-`sort = [field1 = sortOrder, field2 = sortOrder ...]`
+`sort = [field1 = sortOrder, field2 = sortOrder...]`
 
 ### GroupBy
 GroupBy follows the following syntax in the url (*groupBy* does not accept the *projections* parameter and respects the limitations of the DBMS in these specified cases):
 
-`groupBy = [field1, field2, field3 ...]`
+`groupBy = [field1, field2, field3...]`
 
 ### Sum
 It performs Sum function in the specified fields, and follows the following syntax in the url:
 
-`sum = [field1, field2, field3 ...]`
+`sum = [field1, field2, field3...]`
 
 ### Avg
 It performs function of Avg in the specified fields, and follows the following syntax in url:
 
-`avg = [field1, field2, field3 ...]`
+`avg = [field1, field2, field3...]`
 
 ### Count
 It performs Count function in the specified fields, and follows the following syntax in the url:
 
-`count = [field1, field2, field3 ...]`
+`count = [field1, field2, field3...]`
 
 ### Count Distinct
 It performs Count Distinct function in the specified fields, and follows the following syntax in the url:
 
-`count_distinct = [field1, field2, field3 ...]`
+`count_distinct = [field1, field2, field3...]`
 
 ### Extra Parameters
 - offset (DEFAULT_OFFSET = 0)
@@ -114,7 +114,7 @@ It performs Count Distinct function in the specified fields, and follows the fol
 
 Service responsible for processing message broker *RabbitMq* messages. These messages dictate whether a computational model will initiate an execution or abort an execution of a *model executor/data extractor*.
 The tasks may be manageble throught the platform (the executor, extractors and the environment in which the *task/workflow/command* will execute).
-There is also a *cron" task that verifies the status of models executing in Clusters.
+There is also a *cron* task that verifies the status of models executing in Clusters.
 
 # PhenoManagerPortal
 

@@ -11,6 +11,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.uff.phenomanager.domain.core.BaseApiEntity;
 
 @Entity
 @Table(name = "instance_param")

@@ -5,9 +5,9 @@
         .module('pheno-manager.dashboard')
         .controller('DashboardController', DashboardController);
 
-        DashboardController.$inject = ['$scope', '$location', 'toastr', 'projectService', 'computationalModelService', 'hypothesisService', 'localStorageService', '$state', '$filter', '$timeout'];
+        DashboardController.$inject = ['$scope', '$location', 'toastr', 'projectService', 'dashboardService', 'computationalModelService', 'hypothesisService', 'localStorageService', '$state', '$filter', '$timeout'];
 
-    function DashboardController($scope, $location, toastr, projectService, computationalModelService, hypothesisService, localStorageService, $state, $filter, $timeout) {
+    function DashboardController($scope, $location, toastr, projectService, dashboardService, computationalModelService, hypothesisService, localStorageService, $state, $filter, $timeout) {
         var vm = this;
 
         init();
@@ -85,7 +85,7 @@
         }
 
         function getCardsStatistics() {
-            projectService
+            dashboardService
                 .getValidationStatistics()
                 .then(function(resp) {
                     vm.successValidation = resp.data.itemsValidated;
@@ -97,7 +97,7 @@
                     toastr.error('Error while searching for validation statistics.', 'Unexpected error!');
                 });
 
-            projectService
+            dashboardService
                 .getCountAllRunningModels()
                 .then(function(resp) {
                     vm.totalRunning = resp.data.totalRunningModels;
@@ -108,7 +108,7 @@
                     toastr.error('Error while searching for running models count.', 'Unexpected error!');
                 });
 
-            projectService
+            dashboardService
                 .getCountAllErrorModels()
                 .then(function(resp) {
                     vm.totalError = resp.data.totalErrorModels;

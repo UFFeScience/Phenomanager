@@ -7,21 +7,25 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import com.uff.model.invoker.Constants.RABBIT_MQ;
+
 @Configuration
 @EnableRabbit
 @EnableScheduling
 public class RabbitMqConfig implements RabbitListenerConfigurer {
 	
-	public static final String MODEL_EXECUTION_QUEUE = "modelExecution";
-	public static final String MODEL_KILLER_QUEUE = "modelKiller";
-	private static final Integer CONCURRENT_CONSUMERS = 3;
-	private static final Integer MAX_CONCURRENT_CONSUMERS = 10;
+	@Value(RABBIT_MQ.CONCURRENT_CONSUMERS)
+	private Integer concurrentConsumers;
+	
+	@Value(RABBIT_MQ.MAX_CONCURRENT_CONSUMERS)
+	private Integer maxConcurrentConsumers;
 
 	@Bean
 	public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
@@ -34,8 +38,8 @@ public class RabbitMqConfig implements RabbitListenerConfigurer {
 	public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(final ConnectionFactory connectionFactory) {
 		SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
 		factory.setConnectionFactory(connectionFactory);
-		factory.setConcurrentConsumers(CONCURRENT_CONSUMERS);
-		factory.setMaxConcurrentConsumers(MAX_CONCURRENT_CONSUMERS);
+		factory.setConcurrentConsumers(concurrentConsumers);
+		factory.setMaxConcurrentConsumers(maxConcurrentConsumers);
 		return factory;
 	}
 

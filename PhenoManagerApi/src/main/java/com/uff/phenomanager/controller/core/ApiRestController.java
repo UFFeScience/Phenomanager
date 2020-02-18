@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.uff.phenomanager.Constants.CONTROLLER;
-import com.uff.phenomanager.domain.BaseApiEntity;
 import com.uff.phenomanager.domain.core.ApiResponse;
+import com.uff.phenomanager.domain.core.BaseApiEntity;
 import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;

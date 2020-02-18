@@ -3,6 +3,8 @@ package com.uff.phenomanager.domain;
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 
+import com.uff.phenomanager.domain.core.BaseApiEntity;
+
 @MappedSuperclass
 public class ResearchObject extends BaseApiEntity {
 	

@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.uff.phenomanager.Constants;
-import com.uff.phenomanager.domain.dto.amqp.ModelExecutionMessageDto;
+import com.uff.phenomanager.domain.dto.amqp.ExecutionMessageDto;
 
 @Service
 public class ModelKillerSender {
@@ -31,9 +31,9 @@ public class ModelKillerSender {
 	}
 
 	@Async
-	public void sendMessage(ModelExecutionMessageDto modelExecutionMessageDTO) {
-		log.info("Sending message [{}] for killing model", modelExecutionMessageDTO);
-		this.rabbitTemplate.convertAndSend(Constants.RABBIT_MQ.MODEL_KILLER_QUEUE, modelExecutionMessageDTO);
+	public void sendMessage(ExecutionMessageDto executionMessageDTO) {
+		log.info("Sending message [{}] for killing model", executionMessageDTO);
+		this.rabbitTemplate.convertAndSend(Constants.RABBIT_MQ.MODEL_KILLER_QUEUE, executionMessageDTO);
 	}
 	
 }

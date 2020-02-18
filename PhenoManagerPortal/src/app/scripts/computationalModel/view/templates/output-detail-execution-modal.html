@@ -1,0 +1,74 @@
+<div class="modal stick-up fade" tabindex="-1" id="output-detail-execution" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title full-width m-b-15">
+                    <div class="full-width inline">
+                        <span class="pull-left">Execution output</span>
+
+                        <span ng-if="vm.execution.status === 'SCHEDULED'" class="text-primary pull-right">
+                            <b>Scheduled <i class="fa fa-clock-o"></i></b>
+                        </span>
+
+                        <span ng-if="vm.execution.status === 'RUNNING'" class="text-complete pull-right">
+                            <b>Running <i class="fa fa-refresh fa-spin"></i></b>
+                        </span>
+
+                        <span ng-if="vm.execution.status === 'FINISHED'" class="text-success pull-right">
+                            <b>Finished <i class="fa fa-check-circle-o"></i></b>
+                        </span>
+
+                        <span ng-if="vm.execution.status === 'FAILURE'" class="text-danger pull-right">
+                            <b>Failure <i class="fa fa-warning"></i></b>
+                        </span>
+                        
+                        <span ng-if="vm.execution.status === 'ABORTED'" class="text-warning pull-right">
+                            <b>Aborted <i class="fa fa-check-circle-o"></i></b>
+                        </span>
+
+                        <span ng-if="vm.execution.status === 'IDLE'" class="hint-text pull-right">
+                            <b>idle</b>
+                        </span>
+                    </div>
+                    <div class="full-width inline fs-13">
+                        <span class="pull-left text-left">
+                            <span class="text-left" ng-if="!vm.execution.startDate">
+                                Start Date: -- <br />
+                            </span>
+                            <span class="text-left" ng-if="vm.execution.startDate">
+                                Start Date: {{ vm.execution.parsedStartDate | date : 'dd/MM/y - HH:mm:ss' }} <br />
+                            </span>
+                            <span class="text-left" ng-if="!vm.execution.finishDate">
+                                Finish Date: <i>Still Running</i>
+                            </span>
+                            <span class="text-left" ng-if="vm.execution.finishDate">
+                                <span ng-if="vm.execution.status !== 'ABORTED'">Finish Date: </span> 
+                                <span ng-if="vm.execution.status === 'ABORTED'">Aborted Date: </span> 
+                                {{ vm.execution.parsedFinishDate | date : 'dd/MM/y - HH:mm:ss' }} 
+                            </span>
+                        </span>
+                    </div>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="full-width">
+                    <div class="terminal-output">
+                        <div class="log-content" ng-if="vm.execution.status === 'RUNNING' && !vm.execution.output">No execution output to display yet</div>
+                        <div class="log-content" ng-if="vm.execution.status !== 'RUNNING' && !vm.execution.output">No execution output to display</div>
+
+                        <div class="log-content" ng-if="vm.execution.output">{{ vm.execution.output }}</div>
+
+                        <div ng-if="vm.execution.status === 'RUNNING'" class="sk-spinner sk-spinner-three-bounce">
+                            <div class="sk-bounce1"></div>
+                            <div class="sk-bounce2"></div>
+                            <div class="sk-bounce3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

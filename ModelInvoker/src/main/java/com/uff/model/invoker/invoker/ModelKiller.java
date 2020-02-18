@@ -10,13 +10,13 @@ import org.springframework.stereotype.Service;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.uff.model.invoker.domain.AmazonMachine;
 import com.uff.model.invoker.domain.EnvironmentType;
-import com.uff.model.invoker.domain.ExecutionEnvironment;
+import com.uff.model.invoker.domain.Environment;
 import com.uff.model.invoker.domain.ExecutionStatus;
-import com.uff.model.invoker.domain.ExtractorMetadata;
-import com.uff.model.invoker.domain.ModelResultMetadata;
+import com.uff.model.invoker.domain.ExtractorExecution;
+import com.uff.model.invoker.domain.Execution;
 import com.uff.model.invoker.domain.api.google.DriveFile;
 import com.uff.model.invoker.exception.GoogleErrorApiException;
-import com.uff.model.invoker.exception.ModelExecutionException;
+import com.uff.model.invoker.exception.ExecutionException;
 
 import ch.ethz.ssh2.Connection;
 
@@ -25,253 +25,244 @@ public abstract class ModelKiller extends ModelExtractor {
 	
 	private static final Logger log = LoggerFactory.getLogger(ModelKiller.class);
 	
-	public void stopModelExecutor(ModelResultMetadata modelResultMetadata, ExecutionEnvironment executionEnvironment)
+	public void stopExecutor(Execution execution, Environment environment)
 			throws RuntimeException, Exception {
 		
-		if (modelResultMetadata == null) {
-			log.warn("ModelResultMetadata not found");
+		if (execution == null) {
+			log.warn("Execution not found");
 			return;
 		}
 		
-		if (executionEnvironment == null) {
-			log.warn("ExecutionEnvironment of not found");
+		if (environment == null) {
+			log.warn("Environment not found");
 			return;
 		}
 		
-		if (ExecutionStatus.ABORTED.equals(modelResultMetadata.getExecutionStatus()) ||
-				ExecutionStatus.ABORTED.equals(modelResultMetadata.getExecutorExecutionStatus())) {
-			log.warn("ModelResultMetadata of slug [{}] already aborted", modelResultMetadata.getSlug());
+		if (ExecutionStatus.ABORTED.equals(execution.getStatus()) ||
+				ExecutionStatus.ABORTED.equals(execution.getExecutorStatus())) {
+			log.warn("Execution of slug [{}] already aborted", execution.getSlug());
 			return;
 		}
 		
-		Process vpnProcess = vpnProviderService.setupVpnConfigConection(executionEnvironment.getVpnType(), 
-				modelResultMetadata.getComputationalModel().getId(), executionEnvironment.getVpnConfiguration());
+		Process vpnProcess = vpnProviderService.setupVpnConfigConection(environment.getVpnType(), 
+				execution.getComputationalModel().getId(), environment.getVpnConfiguration());
 		
-		if (EnvironmentType.SSH.equals(executionEnvironment.getype())) {
-			handleSshEnvironmentStopExecution(executionEnvironment, modelResultMetadata);
+		if (EnvironmentType.SSH.equals(environment.getype())) {
+			handleSshEnvironmentStopExecution(environment, execution);
 		
-		} else if (EnvironmentType.CLOUD.equals(executionEnvironment.getype())) {
-			handleCloudEnvironmentStopExecution(executionEnvironment, modelResultMetadata);
+		} else if (EnvironmentType.CLOUD.equals(environment.getype())) {
+			handleCloudEnvironmentStopExecution(environment, execution);
 		
-		} else if (EnvironmentType.CLUSTER.equals(executionEnvironment.getype())) {
-			handleClusterEnvironmentStopExecution(executionEnvironment, modelResultMetadata);
+		} else if (EnvironmentType.CLUSTER.equals(environment.getype())) {
+			handleClusterEnvironmentStopExecution(environment, execution);
 		} 
 		
 		vpnProviderService.closeVpnConnection(vpnProcess);
 	}
 	
-	private void handleSshEnvironmentStopExecution(ExecutionEnvironment executionEnvironment,
-			ModelResultMetadata modelResultMetadata) throws Exception {
-
+	private void handleSshEnvironmentStopExecution(Environment environment, Execution execution) throws Exception {
 		Connection connection = null;
+
 		try {
-			modelResultMetadata.setHasAbortRequested(Boolean.TRUE);
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata,
-					new String[] { "Starting abort of execution of modelExecutor [%s]...", 
-					String.format("Starting ssh connection with environment [%s]...", 
-							executionEnvironment.getTag())}, Boolean.TRUE);
+			execution.setHasAbortionRequested(Boolean.TRUE);
+			execution = executionService.updateSystemLog(execution,
+					new String[] { "Starting abort of execution of Executor [%s]...", 
+					String.format("Starting ssh connection with Environment [%s]...", 
+							environment.getTag())}, Boolean.TRUE);
 			
-			connection = sshProviderService.openEnvironmentConnection(executionEnvironment.getHostAddress(),
-					executionEnvironment.getUsername(), executionEnvironment.getPassword());
+			connection = sshProviderService.openEnvironmentConnection(environment.getHostAddress(),
+					environment.getUsername(), environment.getPassword());
 			
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
-					String.format("Finished setting up ssh connection with environment [%s]", 
-					executionEnvironment.getTag()), Boolean.TRUE);
+			execution = executionService.updateSystemLog(execution, 
+					String.format("Finished setting up ssh connection with Environment [%s]", 
+					environment.getTag()), Boolean.TRUE);
 			
-			modelResultMetadata = runStop(modelResultMetadata, connection);
-			modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.ABORTED);
+			execution = runStop(execution, connection);
+			execution.setExecutorStatus(ExecutionStatus.ABORTED);
 			
-			modelResultMetadata = killExtraction(modelResultMetadata, connection);
-            modelResultMetadata.setExecutionStatus(ExecutionStatus.ABORTED);
+			execution = killExtraction(execution, connection);
+            execution.setStatus(ExecutionStatus.ABORTED);
 			
 		} catch (Exception e) {
-			modelResultMetadata = handleKillingFailure(modelResultMetadata);
-			throw new ModelExecutionException("Error while invoking STOP command in ssh environment", e);
+			execution = handleKillingFailure(execution);
+			throw new ExecutionException("Error while invoking STOP command in ssh Environment", e);
 			
 		} finally {
 			if (connection != null) {
 				connection.close();
 			}
-			modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
-			modelResultMetadataService.update(modelResultMetadata, Boolean.TRUE);
+			execution.setFinishDate(Calendar.getInstance());
+			executionService.update(execution, Boolean.TRUE);
 		}
 	}
 	
-	private void handleCloudEnvironmentStopExecution(ExecutionEnvironment executionEnvironment, ModelResultMetadata modelResultMetadata) 
-			throws ModelExecutionException {
-		
+	private void handleCloudEnvironmentStopExecution(Environment environment, Execution execution) throws ExecutionException {
 		Connection connection = null;
 		
-		if (executionEnvironment.getVirtualMachines() == null || 
-				executionEnvironment.getVirtualMachines().isEmpty()) {
-			throw new ModelExecutionException("No Virtual Machine configurations available");
+		if (environment.getVirtualMachines() == null || 
+				environment.getVirtualMachines().isEmpty()) {
+			throw new ExecutionException("No Virtual Machine configurations available");
 		}
 			
 		try {
-			AmazonEC2Client amazonClient = cloudProviderService.authenticateProvider(executionEnvironment);
-			modelResultMetadata.setHasAbortRequested(Boolean.TRUE);
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata,
-					new String[] { "Starting abort of execution in Amazon environment...", 
-					String.format("Starting ssh connection with Amazon environment [%s]...", 
-							executionEnvironment.getTag())}, Boolean.TRUE);
+			AmazonEC2Client amazonClient = cloudProviderService.authenticateProvider(environment);
+			execution.setHasAbortionRequested(Boolean.TRUE);
+			execution = executionService.updateSystemLog(execution,
+					new String[] { "Starting abort of execution in Amazon Environment...", 
+					String.format("Starting ssh connection with Amazon Environment [%s]...", 
+							environment.getTag())}, Boolean.TRUE);
 			
 			AmazonMachine amazonMachineInstance = cloudProviderService.getControlInstancesFromCluster(
-					amazonClient, executionEnvironment.getClusterName());
+					amazonClient, environment.getClusterName());
 
 			if (amazonMachineInstance == null) {
-				modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
-						"Control instance was not found", Boolean.TRUE);
-				throw new ModelExecutionException("Control instance was not found");
+				execution = executionService.updateSystemLog(execution, "Control Instance was not found", Boolean.TRUE);
+				throw new ExecutionException("Control Instance was not found");
 			}
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
-					String.format("Starting ssh connection with environment [%s] in Amazon control node [%s]...", 
-					executionEnvironment.getTag(), amazonMachineInstance.getPublicDNS()), Boolean.TRUE);
+			execution = executionService.updateSystemLog(execution, 
+					String.format("Starting ssh connection with environment [%s] in Amazon Control Node [%s]...", 
+					environment.getTag(), amazonMachineInstance.getPublicDNS()), Boolean.TRUE);
 			
-			log.info("Executing command STOP in control node {}", amazonMachineInstance.getPublicDNS());
+			log.info("Executing command STOP in Control Node {}", amazonMachineInstance.getPublicDNS());
 
             connection = sshProviderService.openEnvironmentConnection(amazonMachineInstance.getPublicDNS(), 
-            		executionEnvironment.getUsername(), executionEnvironment.getPassword());
+            		environment.getUsername(), environment.getPassword());
          
-            modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
-            		String.format("Finished starting ssh connection with environment [%s] in Amazon control node [%s]", 
-					executionEnvironment.getTag(), amazonMachineInstance.getPublicDNS()), Boolean.TRUE);
+            execution = executionService.updateSystemLog(execution, 
+            		String.format("Finished starting ssh connection with Environment [%s] in Amazon Control Node [%s]", 
+					environment.getTag(), amazonMachineInstance.getPublicDNS()), Boolean.TRUE);
            
-            modelResultMetadata = runStop(modelResultMetadata, connection);
-            modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.ABORTED);
+            execution = runStop(execution, connection);
+            execution.setExecutorStatus(ExecutionStatus.ABORTED);
             
-            modelResultMetadata = killExtraction(modelResultMetadata, connection);
-            modelResultMetadata.setExecutionStatus(ExecutionStatus.ABORTED);
+            execution = killExtraction(execution, connection);
+            execution.setStatus(ExecutionStatus.ABORTED);
 		
 		} catch (Exception e) {
-			modelResultMetadata = handleKillingFailure(modelResultMetadata);
-			throw new ModelExecutionException("Error while invoking STOP command in cloud environment", e);
+			execution = handleKillingFailure(execution);
+			throw new ExecutionException("Error while invoking STOP command in Cloud Environment", e);
 			
 		} finally {
 			if (connection != null) {
 				connection.close();
 			}
-			modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
-			modelResultMetadataService.update(modelResultMetadata, Boolean.TRUE);
+			execution.setFinishDate(Calendar.getInstance());
+			executionService.update(execution, Boolean.TRUE);
 		}
 	}
 	
-	private void handleClusterEnvironmentStopExecution(ExecutionEnvironment executionEnvironment,
-			ModelResultMetadata modelResultMetadata) throws Exception {
-		
+	private void handleClusterEnvironmentStopExecution(Environment environment, Execution execution) throws Exception {
 		Connection connection = null;
+
 		try {
-			modelResultMetadata.setHasAbortRequested(Boolean.TRUE);
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata,
-					new String[] { "Starting abort of execution in Cluster environment...",
-							String.format("Starting ssh connection with Cluster environment [%s]...", executionEnvironment.getTag())
+			execution.setHasAbortionRequested(Boolean.TRUE);
+			execution = executionService.updateSystemLog(execution,
+					new String[] { "Starting abort of execution in Cluster Environment...",
+							String.format("Starting ssh connection with Cluster Environment [%s]...", environment.getTag())
 					}, Boolean.TRUE);
 			
-			connection = sshProviderService.openEnvironmentConnection(executionEnvironment.getHostAddress(),
-					executionEnvironment.getUsername(), executionEnvironment.getPassword());
+			connection = sshProviderService.openEnvironmentConnection(environment.getHostAddress(),
+					environment.getUsername(), environment.getPassword());
 			
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
-					String.format("Finished starting ssh connection with Cluster environment [%s]", executionEnvironment.getTag()), Boolean.TRUE);
+			execution = executionService.updateSystemLog(execution, 
+					String.format("Finished starting ssh connection with Cluster Environment [%s]", environment.getTag()), Boolean.TRUE);
 			
-			modelResultMetadata = runClusterStop(modelResultMetadata, connection);
-			modelResultMetadata = killExtraction(modelResultMetadata, connection);
+			execution = runClusterStop(execution, connection);
+			execution = killExtraction(execution, connection);
 			
 		} catch (Exception e) {
-			modelResultMetadata = handleKillingFailure(modelResultMetadata);
-			throw new ModelExecutionException("Error while invoking STOP command in cluster environment", e);
+			execution = handleKillingFailure(execution);
+			throw new ExecutionException("Error while invoking STOP command in Cluster Environment", e);
 			
 		} finally {
 			if (connection != null) {
 				connection.close();
 			}
-			modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
-			modelResultMetadataService.update(modelResultMetadata, Boolean.TRUE);
+			execution.setFinishDate(Calendar.getInstance());
+			executionService.update(execution, Boolean.TRUE);
 		}
 	}
 
-	private ModelResultMetadata handleKillingFailure(ModelResultMetadata modelResultMetadata) {
-		modelResultMetadata.setHasAbortRequested(Boolean.FALSE);
-		modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, "Error while killing execution", Boolean.TRUE);
-		return modelResultMetadata;
+	private Execution handleKillingFailure(Execution execution) {
+		execution.setHasAbortionRequested(Boolean.FALSE);
+		execution = executionService.updateSystemLog(execution, "Error while killing execution", Boolean.TRUE);
+		return execution;
 	}
 	
-	private ModelResultMetadata runStop(ModelResultMetadata modelResultMetadata, Connection connection) 
-			throws IOException, InterruptedException, GoogleErrorApiException {
-		
-		if (modelResultMetadata.getExecutorExecutionStatus().equals(ExecutionStatus.RUNNING) || 
-				modelResultMetadata.getExecutorExecutionStatus().equals(ExecutionStatus.SCHEDULED)) {
+	private Execution runStop(Execution execution, Connection connection) throws IOException, InterruptedException, GoogleErrorApiException {
+		if (execution.getExecutorStatus().equals(ExecutionStatus.RUNNING) || 
+				execution.getExecutorStatus().equals(ExecutionStatus.SCHEDULED)) {
 			
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
-					String.format("Killing execution of executor with command [%s]...", modelResultMetadata.getModelExecutor().getAbortCommand()), Boolean.TRUE);
+			execution = executionService.updateSystemLog(execution, 
+					String.format("Killing execution of Executor with command [%s]...", execution.getExecutor().getAbortionCommand()), Boolean.TRUE);
 			
-			byte[] abortMetadata = sshProviderService.executeCommand(connection, modelResultMetadata.getModelExecutor().getAbortCommand());
+			byte[] abortMetadata = sshProviderService.executeCommand(connection, execution.getExecutor().getAbortionCommand());
 			
-			if (abortMetadata != null && abortMetadata.length > 0 && modelResultMetadata.getUploadMetadata() != null && modelResultMetadata.getUploadMetadata()) {
-				DriveFile driveFile = uploadMetadata(modelResultMetadata.getSlug(), 
-						modelResultMetadata.getModelExecutor().getTag(), abortMetadata);
-				modelResultMetadata.setAbortMetadataFileId(driveFile.getFileId());
+			if (abortMetadata != null && abortMetadata.length > 0 && execution.getUploadMetadata() != null && execution.getUploadMetadata()) {
+				DriveFile driveFile = uploadMetadata(execution.getSlug(), 
+						execution.getExecutor().getTag(), abortMetadata);
+				execution.setAbortionMetadataFileId(driveFile.getFileId());
 			}
 			
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
-					String.format("Finished killing execution of modelExecutor [%s]", 
-							modelResultMetadata.getModelExecutor().getTag()), Boolean.TRUE);
+			execution = executionService.updateSystemLog(execution, 
+					String.format("Finished killing execution of Executor [%s]", 
+							execution.getExecutor().getTag()), Boolean.TRUE);
 			
-			modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.ABORTED);
-			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata, Boolean.TRUE);
+			execution.setExecutorStatus(ExecutionStatus.ABORTED);
+			execution = executionService.update(execution, Boolean.TRUE);
 		}
 		
-		return modelResultMetadata;
+		return execution;
 	}
 	
-	private ModelResultMetadata runClusterStop(ModelResultMetadata modelResultMetadata, Connection connection) 
-			throws IOException, InterruptedException, GoogleErrorApiException {
-		
-		if (modelResultMetadata.getExecutorExecutionStatus().equals(ExecutionStatus.RUNNING) || 
-				modelResultMetadata.getExecutorExecutionStatus().equals(ExecutionStatus.SCHEDULED)) {
+	private Execution runClusterStop(Execution execution, Connection connection) throws IOException, InterruptedException, GoogleErrorApiException {
+		if (execution.getExecutorStatus().equals(ExecutionStatus.RUNNING) || 
+				execution.getExecutorStatus().equals(ExecutionStatus.SCHEDULED)) {
 			
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
+			execution = executionService.updateSystemLog(execution, 
 					String.format("Killing execution job [%s] with command [%s]...", 
-							modelResultMetadata.getModelExecutor().getJobName(), modelResultMetadata.getModelExecutor().getAbortCommand()), Boolean.TRUE);
+							execution.getExecutor().getJobName(), execution.getExecutor().getAbortionCommand()), Boolean.TRUE);
 			
-			byte[] abortMetadata = clusterProviderService.stopJob(connection, modelResultMetadata.getModelExecutor().getJobName());
+			byte[] abortMetadata = clusterProviderService.stopJob(connection, execution.getExecutor().getJobName());
 			
-			if (abortMetadata != null && abortMetadata.length > 0 && modelResultMetadata.getUploadMetadata() != null && modelResultMetadata.getUploadMetadata()) {
-				DriveFile driveFile = uploadMetadata(modelResultMetadata.getSlug(), modelResultMetadata.getModelExecutor().getTag(), abortMetadata);
-				modelResultMetadata.setAbortMetadataFileId(driveFile.getFileId());
+			if (abortMetadata != null && abortMetadata.length > 0 && execution.getUploadMetadata() != null && execution.getUploadMetadata()) {
+				DriveFile driveFile = uploadMetadata(execution.getSlug(), execution.getExecutor().getTag(), abortMetadata);
+				execution.setAbortionMetadataFileId(driveFile.getFileId());
 			}
 			
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
+			execution = executionService.updateSystemLog(execution, 
 					String.format("Finished sending kill command for execution job [%s]", 
-							modelResultMetadata.getModelExecutor().getJobName()), Boolean.TRUE);
+							execution.getExecutor().getJobName()), Boolean.TRUE);
 		}
 		
-		return modelResultMetadata;
+		return execution;
 	}
 
-	private ModelResultMetadata killExtraction(ModelResultMetadata modelResultMetadata, Connection connection)
-			throws IOException, InterruptedException {
-	
-		if (modelResultMetadata.getExtractorMetadatas() != null && !modelResultMetadata.getExtractorMetadatas().isEmpty()) {
-			for (ExtractorMetadata extractorMetadata : modelResultMetadata.getExtractorMetadatas()) {
-				if (extractorMetadata.getExecutionStatus().equals(ExecutionStatus.RUNNING) || 
-						extractorMetadata.getExecutionStatus().equals(ExecutionStatus.SCHEDULED)) {
-					
-					modelResultMetadata = modelResultMetadataService
-							.updateSystemLog(modelResultMetadata, String.format("Killing extraction of extractor [%s] with command [%s]...", 
-									extractorMetadata.getModelMetadataExtractor().getTag(), 
-									extractorMetadata.getModelMetadataExtractor().getAbortCommand()), Boolean.TRUE);
-					
-					sshProviderService.executeCommand(connection, modelResultMetadata.getModelExecutor().getAbortCommand());
+	private Execution killExtraction(Execution execution, Connection connection) throws IOException, InterruptedException {
+		if (execution.getExtractorExecutions() != null && !execution.getExtractorExecutions().isEmpty()) {
 
-					modelResultMetadata = modelResultMetadataService
-							.updateSystemLog(modelResultMetadata, String.format("Finished killing extraction of extractor [%s]", 
-									extractorMetadata.getModelMetadataExtractor().getTag()), Boolean.TRUE);
+			for (ExtractorExecution extractorExecution : execution.getExtractorExecutions()) {
+		
+				if (extractorExecution.getStatus().equals(ExecutionStatus.RUNNING) || 
+						extractorExecution.getStatus().equals(ExecutionStatus.SCHEDULED)) {
+					
+					execution = executionService
+							.updateSystemLog(execution, String.format("Killing extraction of Extractor [%s] with command [%s]...", 
+									extractorExecution.getExtractor().getTag(), 
+									extractorExecution.getExtractor().getAbortionCommand()), Boolean.TRUE);
+					
+					sshProviderService.executeCommand(connection, execution.getExecutor().getAbortionCommand());
+
+					execution = executionService
+							.updateSystemLog(execution, String.format("Finished killing extraction of Extractor [%s]", 
+									extractorExecution.getExtractor().getTag()), Boolean.TRUE);
 				}
-				extractorMetadata = extractorMetadataService.update(extractorMetadata);
+				extractorExecution = extractorExecutionService.update(extractorExecution);
 			}
-			modelResultMetadata = modelResultMetadataService.update(modelResultMetadata, Boolean.TRUE);
+			execution = executionService.update(execution, Boolean.TRUE);
 		}
 		
-		return modelResultMetadata;
+		return execution;
 	}
 	
 }	

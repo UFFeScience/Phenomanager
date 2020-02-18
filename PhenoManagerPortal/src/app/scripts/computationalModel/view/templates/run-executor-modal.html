@@ -1,0 +1,62 @@
+<div class="modal stick-up fade" tabindex="-1" id="run-executor" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title m-b-15">Run executor</h4>
+            </div>
+            <form name="runExecutorForm" novalidate>
+                <div class="modal-body">
+
+                    <div class="row form-group">
+                        <div class="radio radio-primary">
+                            <div>
+                                <input type="radio" name="uploadMetadataToDriveRunExecutor" id="uploadMetadataToDriveRunExecutor" ng-value="true" ng-model="vm.executionData.uploadMetadata">
+                                <label for="uploadMetadataToDriveRunExecutor">Upload metadata to PhenoManager's Repository</label>
+                            </div>
+                            <div>
+                                <input type="radio" name="doNotUploadMetadataToDriveRunExecutor" id="doNotUploadMetadataToDriveRunExecutor" ng-value="false" ng-model="vm.executionData.uploadMetadata">
+                                <label for="doNotUploadMetadataToDriveRunExecutor">Don't upload metadata to PhenoManager's Repository</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+                        <label class="required">Environment</label>
+                        <select autocomplete-select required class="full-width" 
+                                data="vm.executionData.environmentForExecution" 
+                                api-endpoint="/v1/computational_models/{{ vm.computationalModel.slug }}/environments"
+                                dropdown-parent="#run-executor"
+                                label-select-text="tag"
+                                array-value="false"
+                                api-filters="tag">
+                        </select>
+                    </div>
+
+                    <div class="row form-group">
+                        <label>Extractors</label>
+                        <select autocomplete-select class="full-width" 
+                                multiple
+                                data="vm.executionData.executionExtractors" 
+                                api-endpoint="/v1/computational_models/{{ vm.computationalModel.slug }}/extractors"
+                                dropdown-parent="#run-executor"
+                                label-select-text="tag"
+                                array-value="true"
+                                api-filters="tag">
+                        </select>
+                    </div>
+
+                    <div class="col-lg-12 row form-group">
+                        <p>Do you wish to run executor?</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" ng-click="vm.doRunExecutor(vm.executorSlug, vm.executionData.environmentForExecution, vm.executionData.executionExtractors, vm.executionData.uploadMetadata)" data-dismiss="modal" 
+                    class="btn btn-primary-dark" ng-disabled="runExecutorForm.$invalid || !vm.executionData || !vm.executionData.environmentForExecution">
+                        Confirm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

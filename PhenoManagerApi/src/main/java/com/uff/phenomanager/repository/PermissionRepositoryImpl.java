@@ -46,8 +46,8 @@ public class PermissionRepositoryImpl implements PermissionRepositoryCustom {
 			subqueryPermissionRestrictions.add(criteriaBuilder.equal(entityPermissions.get("id"), from.get("id")));
 			
 			subqueryPermission
-			.select(entityPermissions)
-			.where(subqueryPermissionRestrictions.toArray(new Predicate[]{}));
+				.select(entityPermissions)
+				.where(subqueryPermissionRestrictions.toArray(new Predicate[]{}));
 			
 			Subquery<Permission> subqueryTeamUsers = query.subquery(Permission.class);
 			Root<?> subqueryTeamUsersRoot = subqueryTeamUsers.correlate(from);
@@ -60,8 +60,8 @@ public class PermissionRepositoryImpl implements PermissionRepositoryCustom {
 			subqueryTeamUsersRestrictions.add(criteriaBuilder.equal(entityTeamUsersPermissions.get("id"), from.get("id")));
 			
 			subqueryTeamUsers
-			.select(entityTeamUsersPermissions)
-			.where(subqueryTeamUsersRestrictions.toArray(new Predicate[]{}));
+				.select(entityTeamUsersPermissions)
+				.where(subqueryTeamUsersRestrictions.toArray(new Predicate[]{}));
 			
 			conjunctionsPermission.add(criteriaBuilder.exists(subqueryPermission));
 			conjunctionsPermission.add(criteriaBuilder.exists(subqueryTeamUsers));

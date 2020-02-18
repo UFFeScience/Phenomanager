@@ -11,13 +11,13 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.uff.model.invoker.Constants;
 import com.uff.model.invoker.domain.AmazonMachine;
 import com.uff.model.invoker.domain.EnvironmentType;
-import com.uff.model.invoker.domain.ExecutionEnvironment;
+import com.uff.model.invoker.domain.Environment;
 import com.uff.model.invoker.domain.ExecutionStatus;
-import com.uff.model.invoker.domain.ModelExecutor;
-import com.uff.model.invoker.domain.ModelResultMetadata;
+import com.uff.model.invoker.domain.Executor;
+import com.uff.model.invoker.domain.Execution;
 import com.uff.model.invoker.domain.User;
 import com.uff.model.invoker.exception.AbortedExecutionException;
-import com.uff.model.invoker.exception.ModelExecutionException;
+import com.uff.model.invoker.exception.ExecutionException;
 
 import ch.ethz.ssh2.Connection;
 
@@ -26,230 +26,222 @@ public abstract class ModelInvoker extends ModelKiller {
 	
 	private static final Logger log = LoggerFactory.getLogger(ModelInvoker.class);
 	
-	public void startModelExecutor(ModelExecutor modelExecutor, ExecutionEnvironment executionEnvironment, User userAgent,
+	public void startExecutor(Executor executor, Environment environment, User userAgent,
 			List<String> executionExtractors, Boolean uploadMetadataToDrive)
 			throws RuntimeException, Exception {
 		
-		if (modelExecutor == null) {
-			throw new ModelExecutionException("ModelExecutor not found");
+		if (executor == null) {
+			throw new ExecutionException("Executor not found");
 		}
 		
-		if (executionEnvironment == null) {
-			throw new ModelExecutionException("ExecutionEnvironment of not found");
+		if (environment == null) {
+			throw new ExecutionException("Environment not found");
 		}
 		
-		Process vpnProcess = vpnProviderService.setupVpnConfigConection(executionEnvironment.getVpnType(), 
-				modelExecutor.getComputationalModel().getId(), executionEnvironment.getVpnConfiguration());
+		Process vpnProcess = vpnProviderService.setupVpnConfigConection(environment.getVpnType(), 
+				executor.getComputationalModel().getId(), environment.getVpnConfiguration());
 		
-		if (EnvironmentType.SSH.equals(executionEnvironment.getype())) {
-			handleSshEnvironmentStartExecution(executionEnvironment, modelExecutor, userAgent, executionExtractors, uploadMetadataToDrive);
+		if (EnvironmentType.SSH.equals(environment.getype())) {
+			handleSshEnvironmentStartExecution(environment, executor, userAgent, executionExtractors, uploadMetadataToDrive);
 			
-		} else if (EnvironmentType.CLOUD.equals(executionEnvironment.getype())) {
-			handleCloudEnvironmentStartExecution(executionEnvironment, modelExecutor, userAgent, executionExtractors, uploadMetadataToDrive);
+		} else if (EnvironmentType.CLOUD.equals(environment.getype())) {
+			handleCloudEnvironmentStartExecution(environment, executor, userAgent, executionExtractors, uploadMetadataToDrive);
 			
-		} else if (EnvironmentType.CLUSTER.equals(executionEnvironment.getype())) {
-			handleClusterEnvironmentStartExecution(executionEnvironment, modelExecutor, userAgent, executionExtractors, uploadMetadataToDrive);
+		} else if (EnvironmentType.CLUSTER.equals(environment.getype())) {
+			handleClusterEnvironmentStartExecution(environment, executor, userAgent, executionExtractors, uploadMetadataToDrive);
 		} 
 		
 		vpnProviderService.closeVpnConnection(vpnProcess);
 	}
 
-	private void handleSshEnvironmentStartExecution(ExecutionEnvironment executionEnvironment,
-			ModelExecutor modelExecutor, User userAgent, List<String> executionExtractors, Boolean uploadMetadata) throws Exception {
+	private void handleSshEnvironmentStartExecution(Environment environment, Executor executor, User userAgent, 
+			List<String> executionExtractorSlugs, Boolean uploadMetadata) throws Exception {
 		
 		Connection connection = null;
-		ModelResultMetadata modelResultMetadata = setupModelResultMetadata(executionEnvironment, modelExecutor, userAgent,
-				executionExtractors, uploadMetadata);
+		Execution execution = setupExecution(environment, executor, userAgent, executionExtractorSlugs, uploadMetadata);
 		try {
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata,
-					new String[] { String.format("Starting execution of modelExecutor [%s]...", 
-							modelResultMetadata.getModelExecutor().getTag()), 
-							String.format("Starting ssh connection with environment [%s]...", 
-									executionEnvironment.getTag())});
+			execution = executionService.updateSystemLog(execution,
+					new String[] { String.format("Starting execution of Executor [%s]...", 
+							execution.getExecutor().getTag()), 
+							String.format("Starting ssh connection with Environment [%s]...", 
+									environment.getTag())});
 			
-			connection = sshProviderService.openEnvironmentConnection(executionEnvironment.getHostAddress(),
-					executionEnvironment.getUsername(), executionEnvironment.getPassword());
+			connection = sshProviderService.openEnvironmentConnection(environment.getHostAddress(),
+					environment.getUsername(), environment.getPassword());
 			
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
-					String.format("Finished setting up ssh connection with environment [%s]", executionEnvironment.getTag()));
+			execution = executionService.updateSystemLog(execution, 
+					String.format("Finished setting up ssh connection with Environment [%s]", environment.getTag()));
 			
-			if (ExecutionStatus.SCHEDULED.equals(modelResultMetadata.getExecutionStatus()) || 
-					ExecutionStatus.RUNNING.equals(modelResultMetadata.getExecutionStatus())) {
-				modelResultMetadata = runInSsh(modelResultMetadata.getModelExecutor(), modelResultMetadata, connection);
-				modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.FINISHED);
-				modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
+			if (ExecutionStatus.SCHEDULED.equals(execution.getStatus()) || 
+					ExecutionStatus.RUNNING.equals(execution.getStatus())) {
+				execution = runInSsh(execution.getExecutor(), execution, connection);
+				execution.setExecutorStatus(ExecutionStatus.FINISHED);
+				execution = executionService.update(execution);
 			}
 
-			modelResultMetadata = handleExtractorExecution(connection, executionEnvironment.getComputationalModel(), modelResultMetadata);
-			modelResultMetadata = checkExecutionExtractionStatus(modelResultMetadata);
+			execution = handleExtractorExecution(connection, environment.getComputationalModel(), execution);
+			execution = checkExtractionExecutionStatus(execution);
 		
 		} catch (AbortedExecutionException e) {
 			log.warn("Task was aborted during execution", e);
-			modelResultMetadata = handlePendingExtraction(modelResultMetadata);
+			execution = handlePendingExtraction(execution);
 			
 		} catch (Exception e) {
-			modelResultMetadata = handleInvokingFailure(modelExecutor, modelResultMetadata);
-			throw new ModelExecutionException("Error while invoking START command in ssh environment", e);
+			execution = handleInvokingFailure(executor, execution);
+			throw new ExecutionException("Error while invoking START command in ssh Environment", e);
 			
 		} finally {
 			if (connection != null) {
 				connection.close();
 			}
-			modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
-			modelResultMetadataService.update(modelResultMetadata);
+			execution.setFinishDate(Calendar.getInstance());
+			executionService.update(execution);
 		}
 	}
 
-	private void handleCloudEnvironmentStartExecution(ExecutionEnvironment executionEnvironment,
-			ModelExecutor modelExecutor, User userAgent, List<String> executionExtractors, Boolean uploadMetadata) throws ModelExecutionException {
+	private void handleCloudEnvironmentStartExecution(Environment environment, Executor executor, User userAgent, 
+			List<String> executionExtractorSlugs, Boolean uploadMetadata) throws ExecutionException {
 		
 		Connection connection = null;
-		ModelResultMetadata modelResultMetadata = setupModelResultMetadata(executionEnvironment, modelExecutor, userAgent,
-				executionExtractors, uploadMetadata);
+		Execution execution = setupExecution(environment, executor, userAgent, executionExtractorSlugs, uploadMetadata);
 		
-		if (executionEnvironment.getVirtualMachines() == null || 
-				executionEnvironment.getVirtualMachines().isEmpty()) {
-			throw new ModelExecutionException("No Virtual Machine configurations available");
+		if (environment.getVirtualMachines() == null || 
+				environment.getVirtualMachines().isEmpty()) {
+			throw new ExecutionException("No Virtual Machine configurations available");
 		}
 		
 		try {
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata,
-					new String[] { String.format("Starting execution of modelExecutor [%s] in Amazon environment...", 
-							modelResultMetadata.getModelExecutor().getTag()), 
-							String.format("Setting up Amazon environment [%s]...", 
-									executionEnvironment.getTag())});
+			execution = executionService.updateSystemLog(execution,
+					new String[] { String.format("Starting execution of Executor [%s] in Amazon Environment...", 
+							execution.getExecutor().getTag()), 
+							String.format("Setting up Amazon Environment [%s]...", 
+									environment.getTag())});
 			
-			AmazonEC2Client amazonClient = cloudProviderService.authenticateProvider(executionEnvironment);
-			cloudProviderService.createCluster(amazonClient, executionEnvironment, Constants.USER_HOME_DIR);
+			AmazonEC2Client amazonClient = cloudProviderService.authenticateProvider(environment);
+			cloudProviderService.createCluster(amazonClient, environment, Constants.USER_HOME_DIR);
 			AmazonMachine amazonMachineInstance = cloudProviderService.getControlInstancesFromCluster(
-					amazonClient, executionEnvironment.getClusterName());
+					amazonClient, environment.getClusterName());
 
 			if (amazonMachineInstance == null) {
-				modelResultMetadata = modelResultMetadataService
-						.updateSystemLog(modelResultMetadata, "Control instance was not found");
-				throw new ModelExecutionException("Control instance was not found");
+				execution = executionService.updateSystemLog(execution, "Control Instance was not found");
+				throw new ExecutionException("Control Instance was not found");
                 
 			} else {
-				modelResultMetadata = modelResultMetadataService
-						.updateSystemLog(modelResultMetadata, 
-								String.format("Starting ssh connection with environment [%s] in Amazon control node [%s]...", 
-						executionEnvironment.getTag(), amazonMachineInstance.getPublicDNS()));
+				execution = executionService.updateSystemLog(execution, 
+								String.format("Starting ssh connection with Environment [%s] in Amazon Control Node [%s]...", 
+						environment.getTag(), amazonMachineInstance.getPublicDNS()));
 				
-				log.info("Executing command START in control node [{}]", amazonMachineInstance.getPublicDNS());
+				log.info("Executing command START in Control Node [{}]", amazonMachineInstance.getPublicDNS());
 
                 connection = sshProviderService.openEnvironmentConnection(amazonMachineInstance.getPublicDNS(), 
-                		executionEnvironment.getUsername(), executionEnvironment.getPassword());
+                		environment.getUsername(), environment.getPassword());
                 
-                modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
-                				String.format("Finished starting ssh connection with environment [%s] in Amazon control node [%s]", 
-						executionEnvironment.getTag(), amazonMachineInstance.getPublicDNS()));
+                execution = executionService.updateSystemLog(execution, 
+                				String.format("Finished starting ssh connection with Environment [%s] in Amazon Control Node [%s]", 
+						environment.getTag(), amazonMachineInstance.getPublicDNS()));
                 
-                if (ExecutionStatus.SCHEDULED.equals(modelResultMetadata.getExecutionStatus()) || 
-    					ExecutionStatus.RUNNING.equals(modelResultMetadata.getExecutionStatus())) {
-                	modelResultMetadata = runInCloud(modelResultMetadata.getModelExecutor(), modelResultMetadata, connection);
-                	modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.FINISHED);
-                	modelResultMetadata = modelResultMetadataService.update(modelResultMetadata);
+                if (ExecutionStatus.SCHEDULED.equals(execution.getStatus()) || 
+    					ExecutionStatus.RUNNING.equals(execution.getStatus())) {
+                	execution = runInCloud(execution.getExecutor(), execution, connection);
+                	execution.setExecutorStatus(ExecutionStatus.FINISHED);
+                	execution = executionService.update(execution);
                 }
             
-                modelResultMetadata = handleExtractorExecution(connection, executionEnvironment.getComputationalModel(), modelResultMetadata);
-            	modelResultMetadata = checkExecutionExtractionStatus(modelResultMetadata);
+                execution = handleExtractorExecution(connection, environment.getComputationalModel(), execution);
+            	execution = checkExtractionExecutionStatus(execution);
 			}
 		
 		} catch (AbortedExecutionException e) {
 			log.warn("Task was aborted during execution", e);
-			modelResultMetadata = handlePendingExtraction(modelResultMetadata);
+			execution = handlePendingExtraction(execution);
 			
 		} catch (Exception e) {
-			modelResultMetadata = handleInvokingFailure(modelExecutor, modelResultMetadata);
-			throw new ModelExecutionException("Error while invoking START command in cloud environment", e);
+			execution = handleInvokingFailure(executor, execution);
+			throw new ExecutionException("Error while invoking START command in Cloud Environment", e);
 			
 		} finally {
 			if (connection != null) {
 				connection.close();
 			}
-			modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
-			modelResultMetadataService.update(modelResultMetadata);
+			execution.setFinishDate(Calendar.getInstance());
+			executionService.update(execution);
 		}
 	}
 	
-	private void handleClusterEnvironmentStartExecution(ExecutionEnvironment executionEnvironment,
-			ModelExecutor modelExecutor, User userAgent, List<String> executionExtractors, Boolean uploadMetadata) throws Exception {
+	private void handleClusterEnvironmentStartExecution(Environment environment, Executor executor, User userAgent, 
+			List<String> executionExtractors, Boolean uploadMetadata) throws Exception {
 
 		Connection connection = null;
-		ModelResultMetadata modelResultMetadata = setupModelResultMetadata(executionEnvironment, modelExecutor, userAgent,
-				executionExtractors, uploadMetadata);
+		Execution execution = setupExecution(environment, executor, userAgent, executionExtractors, uploadMetadata);
 		try {
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata,
-					new String[] { String.format("Starting execution of modelExecutor [%s] in Cluster environment...", 
-							modelResultMetadata.getModelExecutor().getTag()), 
-							String.format("Starting ssh connection with Cluster environment [%s]...", 
-									executionEnvironment.getTag())});
+			execution = executionService.updateSystemLog(execution,
+					new String[] { String.format("Starting execution of Executor [%s] in Cluster Environment...", 
+							execution.getExecutor().getTag()), 
+							String.format("Starting ssh connection with Cluster Environment [%s]...", 
+									environment.getTag())});
 			
-			connection = sshProviderService.openEnvironmentConnection(executionEnvironment.getHostAddress(),
-					executionEnvironment.getUsername(), executionEnvironment.getPassword());
+			connection = sshProviderService.openEnvironmentConnection(environment.getHostAddress(),
+					environment.getUsername(), environment.getPassword());
 			
-			modelResultMetadata = modelResultMetadataService.updateSystemLog(modelResultMetadata, 
-					String.format("Finished starting ssh connection with Cluster environment [%s]", executionEnvironment.getTag()));
+			execution = executionService.updateSystemLog(execution, 
+					String.format("Finished starting ssh connection with Cluster Environment [%s]", environment.getTag()));
 			
-			if (ExecutionStatus.SCHEDULED.equals(modelResultMetadata.getExecutionStatus()) || 
-					ExecutionStatus.RUNNING.equals(modelResultMetadata.getExecutionStatus())) {
-				modelResultMetadata = runInCluster(modelResultMetadata.getModelExecutor(), modelResultMetadata, connection);
+			if (ExecutionStatus.SCHEDULED.equals(execution.getStatus()) || 
+					ExecutionStatus.RUNNING.equals(execution.getStatus())) {
+				execution = runInCluster(execution.getExecutor(), execution, connection);
 			}
 			
 		} catch (AbortedExecutionException e) {
 			log.warn("Task was aborted during execution", e);
-			modelResultMetadata = handlePendingExtraction(modelResultMetadata);
+			execution = handlePendingExtraction(execution);
 			
 		} catch (Exception e) {
-			modelResultMetadata = handleInvokingFailure(modelExecutor, modelResultMetadata);
-			throw new ModelExecutionException("Error while invoking START command in cluster environment", e);
+			execution = handleInvokingFailure(executor, execution);
+			throw new ExecutionException("Error while invoking START command in Cluster Environment", e);
 			
 		} finally {
 			if (connection != null) {
 				connection.close();
 			}
-			modelResultMetadata.setExecutionFinishDate(Calendar.getInstance());
-			modelResultMetadataService.update(modelResultMetadata);
+			execution.setFinishDate(Calendar.getInstance());
+			executionService.update(execution);
 		}
 	}
 
-	private ModelResultMetadata handleInvokingFailure(ModelExecutor modelExecutor, ModelResultMetadata modelResultMetadata) {
-		modelResultMetadata = modelResultMetadataService.findBySlug(modelResultMetadata.getSlug());
+	private Execution handleInvokingFailure(Executor executor, Execution execution) {
+		execution = executionService.findBySlug(execution.getSlug());
 	
-		if (!modelResultMetadata.getExecutionStatus().equals(ExecutionStatus.ABORTED) && 
-				!modelResultMetadata.getExecutorExecutionStatus().equals(ExecutionStatus.ABORTED)) {
-			modelResultMetadata.setExecutionStatus(ExecutionStatus.FAILURE);
-			modelResultMetadata.setExecutorExecutionStatus(ExecutionStatus.FAILURE);
-			modelResultMetadata = modelResultMetadataService
-					.updateSystemLog(modelResultMetadata, String.format("Error while starting modelExecutor [%s]", 
-							modelExecutor.getTag()));
+		if (!execution.getStatus().equals(ExecutionStatus.ABORTED) && 
+				!execution.getExecutorStatus().equals(ExecutionStatus.ABORTED)) {
+			execution.setStatus(ExecutionStatus.FAILURE);
+			execution.setExecutorStatus(ExecutionStatus.FAILURE);
+			execution = executionService.updateSystemLog(execution, String.format("Error while starting Executor [%s]", executor.getTag()));
 		}
 		
-		return handlePendingExtraction(modelResultMetadata);
+		return handlePendingExtraction(execution);
 	}
 
-	private ModelResultMetadata setupModelResultMetadata(ExecutionEnvironment executionEnvironment, ModelExecutor modelExecutor, 
-			User userAgent, List<String> executionExtractors, Boolean uploadMetadata) {
+	private Execution setupExecution(Environment environment, Executor executor, 
+			User userAgent, List<String> executionExtractorSlugs, Boolean uploadMetadata) {
 		
-		ModelResultMetadata modelResultMetadata = modelResultMetadataService
-				.findByModelExecutorAndExecutionEnvironmentAndExecutionStatus(modelExecutor, executionEnvironment, ExecutionStatus.RUNNING);
+		Execution execution = executionService.findByExecutorAndEnvironmentAndStatus(executor, environment, ExecutionStatus.RUNNING);
 		
-		if (modelResultMetadata != null) {
-			return modelResultMetadata;
+		if (execution != null) {
+			return execution;
 		}
 		
-		modelResultMetadata = modelResultMetadataService.save(ModelResultMetadata.builder()
-			.computationalModel(executionEnvironment.getComputationalModel())
-			.modelExecutor(modelExecutor)
-			.executionEnvironment(executionEnvironment)
+		execution = executionService.save(Execution.builder()
+			.computationalModel(environment.getComputationalModel())
+			.executor(executor)
+			.environment(environment)
 			.userAgent(userAgent)
-			.executionStartDate(Calendar.getInstance())
-			.executorExecutionStatus(ExecutionStatus.RUNNING)
+			.startDate(Calendar.getInstance())
+			.executorStatus(ExecutionStatus.RUNNING)
 			.uploadMetadata(uploadMetadata)
 			.build());
 		
-		modelResultMetadata.setExtractorMetadatas(getExecutionExtractors(executionExtractors , modelResultMetadata));
-		return modelResultMetadataService.update(modelResultMetadata);
+		execution.setExtractorExecutions(getExecutionExtractors(executionExtractorSlugs , execution));
+		return executionService.update(execution);
 	}
 	
 }	
