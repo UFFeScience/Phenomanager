@@ -22,7 +22,7 @@
         vm.permissionAffectsLoggedUser = function(permission) {
             return (permission.user && permission.user.slug === vm.loggedUserSlug) || 
                     vm.teamContainsUser(permission.team, vm.loggedUserSlug);
-        }
+        };
 
         vm.hasReadAccess = function(entity) {
             var hasReadAuthorization = false;
@@ -40,7 +40,7 @@
             }
 
             return hasReadAuthorization;
-        }
+        };
 
         vm.hasAdminAccess = function(entity) {
             var hasAdminAuthorization = false;
@@ -59,7 +59,7 @@
             }
 
             return hasAdminAuthorization;
-        }
+        };
 
         vm.hasWriteAccess = function(entity) {
             var hasWriteAuthorization = false;
@@ -78,7 +78,7 @@
             }
 
             return hasWriteAuthorization;
-        }
+        };
 
         vm.checkWriteAccess = function(entity) {
             vm.hasWriteAuthorization = false;
@@ -118,7 +118,7 @@
                     break;
                 }
             }
-        }
+        };
 
         vm.teamContainsUser = function(team, userSlug) {
             if (!team || !team.teamUsers) {
@@ -135,7 +135,7 @@
             }
 
             return containsUser;
-        }
+        };
 
         vm.doDeletePermission = function(permissionSlug) {
             permissionService
@@ -148,11 +148,11 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.deletePermission = function(permissionSlug) {
             vm.permissionSlug = permissionSlug;
-        }
+        };
 
         vm.insertPermission = function() {
             vm.updatePermission = false;
@@ -163,7 +163,7 @@
                 user: {},
                 team: {}
             };
-        }
+        };
 
         vm.editPermission = function(permissionSlug) {
             vm.permissionSaveTitle = 'Update permission';
@@ -178,7 +178,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.doSavePermission = function() {
             vm.permission[vm.entityName] = {
@@ -215,7 +215,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     }); 
             }
-        }
+        };
 
         vm.changePermissionPage = function() {
             vm.loadingPermission = true;
@@ -235,6 +235,7 @@
                     vm.loadingPermission = false;
                     toastr.error('Error while loading permissions.', 'Unexpected error!');
                 });
-        }
+        };
     }
+
 })();

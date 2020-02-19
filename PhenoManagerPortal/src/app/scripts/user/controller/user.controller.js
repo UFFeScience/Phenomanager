@@ -5,7 +5,7 @@
         .module('pheno-manager.user')
         .controller('UserController', UserController);
 
-        UserController.$inject = ['$scope', '$location', '$filter', 'userService', '$rootScope', '$state', 'toastr'];
+    UserController.$inject = ['$scope', '$location', '$filter', 'userService', '$rootScope', '$state', 'toastr'];
 
     function UserController($scope, $location, $filter, userService, $rootScope, $state, toastr) {
         var vm = this;
@@ -34,12 +34,11 @@
                 vm.loading = false;
                 toastr.error('Error while performing action.', 'Unexpected error!');
             });
-            
-        }
+        };
 
         vm.syncWithSciManager = function(userSlug) {
             vm.userSlug = userSlug;
-        }
+        };
 
         vm.doSyncSciManager = function(userSlug) {
             $rootScope.loadingAsync++;
@@ -56,24 +55,24 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.doDelete = function(userSlug) {
             $rootScope.loadingAsync++;
 
             userService
                 .delete(userSlug)
-                    .then(function(resp) {
-                        vm.changePage();
-                        toastr.success('Action performed with success.', 'Success!');
-                        $rootScope.loadingAsync--;
-                    })
-                    .catch(function(resp) {
-                        console.log(resp);
-                        toastr.error('Error while performing action.', 'Unexpected error!');
-                        $rootScope.loadingAsync--;
-                    });
-            }
+                .then(function(resp) {
+                    vm.changePage();
+                    toastr.success('Action performed with success.', 'Success!');
+                    $rootScope.loadingAsync--;
+                })
+                .catch(function(resp) {
+                    console.log(resp);
+                    toastr.error('Error while performing action.', 'Unexpected error!');
+                    $rootScope.loadingAsync--;
+                });
+        };
 
         vm.deleteUser = function(userSlug) {
             vm.userSlug = userSlug;
@@ -85,20 +84,20 @@
 
             userService
                 .getBySlug(userSlug)
-                    .then(function(resp) {
-                        vm.user = resp.data;
-                    })
-                    .catch(function(resp) {
-                        console.log(resp);
-                        toastr.error('Error while performing action.', 'Unexpected error!');
-                    });
-        }
+                .then(function(resp) {
+                    vm.user = resp.data;
+                })
+                .catch(function(resp) {
+                    console.log(resp);
+                    toastr.error('Error while performing action.', 'Unexpected error!');
+                });
+        };
 
         vm.insertUser = function() {
             vm.user = {};
             vm.updateUser = false;
             vm.userSaveTitle = 'Create user';
-        }
+        };
 
         vm.doSave = function() {
             if (!vm.updateUser) {
@@ -130,7 +129,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         init();
         

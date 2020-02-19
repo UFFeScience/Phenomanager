@@ -9,6 +9,7 @@
 
     function LoginController($scope, $location, authLoginService, $window, jwtHelper, localStorageService, $rootScope, $state) {
         var vm = this;
+        
         vm.user = {};
         vm.loading = false;
 
@@ -28,6 +29,7 @@
                     vm.error = true;
     	            vm.message = resp.data.message;
                 });
-        }
+        };
     }
+
 })();

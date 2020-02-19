@@ -5,7 +5,7 @@
         .module('pheno-manager.experiment')
         .controller('ExperimentDetailsController', ExperimentDetailsController);
 
-        ExperimentDetailsController.$inject = ['$scope', '$q', '$controller', 'Blob', 'FileSaver', '$stateParams', '$timeout', 'toastr', '$location', 'experimentService', 'computationalModelService', '$rootScope', '$state', '$filter'];
+    ExperimentDetailsController.$inject = ['$scope', '$q', '$controller', 'Blob', 'FileSaver', '$stateParams', '$timeout', 'toastr', '$location', 'experimentService', 'computationalModelService', '$rootScope', '$state', '$filter'];
 
     function ExperimentDetailsController($scope, $q, $controller, Blob, FileSaver, $stateParams, $timeout, toastr, $location, experimentService, computationalModelService, $rootScope, $state, $filter) {
         var vm = this;
@@ -118,7 +118,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
-        }
+        };
 
         vm.doDeleteComputationalModel = function(computationalModelSlug) {
             $rootScope.loadingAsync++;
@@ -135,11 +135,11 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.deleteComputationalModel = function(computationalModelSlug) {
             vm.computationalModelSlug = computationalModelSlug;
-        }
+        };
 
         vm.editComputationalModel = function(computationalModelSlug) {
             vm.computationalModelSaveTitle = 'Update computational model';
@@ -154,13 +154,13 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertComputationalModel = function() {
             vm.computationalModel = {};
             vm.updateComputationalModel = false;
             vm.computationalModelSaveTitle = 'Create computational model';
-        }
+        };
 
         vm.doSaveComputationalModel = function() {
             vm.computationalModel.experiment = {
@@ -190,7 +190,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.changeComputationalModelPage = function() {
             vm.loadingComputationalModel = true;
@@ -215,7 +215,7 @@
                     vm.loadingComputationalModel = false;
                     toastr.error('Error while loading computational models.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.doDeletePhase = function(phaseSlug) {
             experimentService
@@ -228,11 +228,11 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.deletePhase = function(phaseSlug) {
             vm.phaseSlug = phaseSlug;
-        }
+        };
 
         vm.editPhase = function(phaseSlug) {
             vm.phaseSaveTitle = 'Update phase';
@@ -247,13 +247,13 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertPhase = function() {
             vm.phase = {};
             vm.updatePhase = false;
             vm.phaseSaveTitle = 'Create phase';
-        }
+        };
 
         vm.doSavePhase = function() {
             vm.phase.experiment = {
@@ -283,7 +283,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.changePhasePage = function() {
             vm.loadingPhase = true;
@@ -308,7 +308,7 @@
                     vm.loadingPhase = false;
                     toastr.error('Error while loading phases.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.doDeleteConceptualParam = function(conceptualParamSlug) {
             $rootScope.loadingAsync++;
@@ -325,11 +325,11 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.deleteConceptualParam = function(conceptualParamSlug) {
             vm.conceptualParamSlug = conceptualParamSlug;
-        }
+        };
 
         vm.editConceptualParam = function(conceptualParamSlug) {
             vm.conceptualParamSaveTitle = 'Update conceptual param';
@@ -344,13 +344,13 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertConceptualParam = function() {
             vm.conceptualParam = {};
             vm.updateConceptualParam = false;
             vm.conceptualParamSaveTitle = 'Create conceptual param';
-        }
+        };
 
         vm.doSaveConceptualParam = function() {
             vm.conceptualParam.experiment = {
@@ -380,7 +380,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.changeConceptualParamPage = function() {
             vm.loadingConceptualParam = true;
@@ -405,7 +405,7 @@
                     vm.loadingConceptualParam = false;
                     toastr.error('Error while loading conceptual params.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.doDeleteValidationItem = function(conceptualParamSlug) {
             $rootScope.loadingAsync++;
@@ -422,11 +422,11 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.deleteValidationItem = function(validationItemSlug) {
             vm.validationItemSlug = validationItemSlug;
-        }
+        };
 
         vm.editValidationItem = function(validationItemSlug) {
             vm.validationItemSaveTitle = 'Update validation item';
@@ -441,13 +441,13 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertValidationItem = function() {
             vm.validationItem = {};
             vm.updateValidationItem = false;
             vm.validationItemSaveTitle = 'Create validation item';
-        }
+        };
 
         vm.doSaveValidationItem = function() {
             vm.validationItem.experiment = {
@@ -477,7 +477,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.changeValidationItemPage = function() {
             vm.loadingValidationItem = true;
@@ -497,7 +497,7 @@
                     vm.loadingValidationItem = false;
                     toastr.error('Error while loading validation items.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.doSaveExperiment = function() {
             experimentService
@@ -509,7 +509,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         function getExperiment() {
             vm.loadingExperiment = true;

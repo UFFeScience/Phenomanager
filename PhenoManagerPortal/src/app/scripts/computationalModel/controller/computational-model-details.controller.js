@@ -5,7 +5,7 @@
         .module('pheno-manager.computational-model')
         .controller('ComputationalModelDetailsController', ComputationalModelDetailsController);
 
-        ComputationalModelDetailsController.$inject = ['$scope', '$q', '$controller', 'Blob', 'FileSaver', '$window', '$stateParams', '$timeout', 'toastr', '$location', 'permissionService', 'computationalModelService', '$rootScope', '$state', '$filter'];
+    ComputationalModelDetailsController.$inject = ['$scope', '$q', '$controller', 'Blob', 'FileSaver', '$window', '$stateParams', '$timeout', 'toastr', '$location', 'permissionService', 'computationalModelService', '$rootScope', '$state', '$filter'];
 
     function ComputationalModelDetailsController($scope, $q, $controller, Blob, FileSaver, $window, $stateParams, $timeout, toastr, $location, permissionService, computationalModelService, $rootScope, $state, $filter) {
         var vm = this;
@@ -19,7 +19,7 @@
         vm.openExecutionOutput = function(executionSlug) {
             vm.updateLogOutput = true;
             vm.getExecution(executionSlug);           
-        }
+        };
 
         vm.getExecution = function(executionSlug) {
             computationalModelService
@@ -47,7 +47,7 @@
                     vm.updateLogOutput = false;
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.changeExecutionPage = function() {
             vm.loadingExecution = true;
@@ -94,7 +94,7 @@
                     vm.loadingExecution = false;
                     toastr.error('Error while loading executions.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.refreshExecutions = function() {
             computationalModelService
@@ -138,7 +138,7 @@
                     vm.loadingExecution = false;
                     toastr.error('Error while refreshing model result metadatas.', 'Unexpected error!');
                 });
-        }
+        };
 
         $scope.setValueFile = function(fileInput) {
             var files = fileInput.files;
@@ -221,7 +221,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
-        }
+        };
 
         vm.doDeleteInstanceParam = function(instanceParamSlug) {
             $rootScope.loadingAsync++;
@@ -238,12 +238,12 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--; 
                 });
-        }
+        };
 
         vm.deleteInstanceParam = function(instanceParamSlug) {
             vm.instanceParamSlug = instanceParamSlug;
             vm.valueFile = null;
-        }
+        };
 
         vm.editInstanceParam = function(instanceParamSlug) {
             vm.instanceParamSaveTitle = 'Update instance param';
@@ -259,7 +259,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertInstanceParam = function() {
             vm.instanceParam = {
@@ -268,7 +268,7 @@
             };
             vm.updateInstanceParam = false;
             vm.instanceParamSaveTitle = 'Create instance param';
-        }
+        };
 
         vm.doSaveInstanceParam = function() {
             vm.instanceParam.computationalModel = {
@@ -312,7 +312,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.changeInstanceParamPage = function() {
             vm.loadingInstanceParam = true;
@@ -337,7 +337,7 @@
                     vm.loadingInstanceParam = false;
                     toastr.error('Error while loading instance params.', 'Unexpected error!');
                 });
-        }
+        };
 
         $scope.setExecutor = function(fileInput) {
             var files = fileInput.files;
@@ -421,7 +421,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
-        }
+        };
 
         vm.downloadExecutorMetadata = function(executionSlug) {
             $rootScope.loadingAsync++;
@@ -455,7 +455,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
-        }
+        };
 
         vm.downloadAbortionMetadata = function(executionSlug) {
             $rootScope.loadingAsync++;
@@ -489,7 +489,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
-        }
+        };
 
         vm.downloadExtractorMetadata = function(extractorExecutionSlug) {
             $rootScope.loadingAsync++;
@@ -523,7 +523,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
-        }
+        };
 
         vm.generateResearchObject = function(executionSlug) {
             $rootScope.loadingAsync++;
@@ -541,7 +541,7 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.doDeleteExecutor = function(executorSlug) {
             $rootScope.loadingAsync++;
@@ -558,12 +558,12 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.deleteExecutor = function(executorSlug) {
             vm.executorSlug = executorSlug;
             vm.executorFile = null;
-        }
+        };
 
         vm.editExecutor = function(executorSlug) {
             vm.executorSaveTitle = 'Update executor';
@@ -578,13 +578,13 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertExecutor = function() {
             vm.executor = {};
             vm.updateExecutor = false;
             vm.executorSaveTitle = 'Create executor';
-        }
+        };
 
         vm.doSaveExecutor = function() {
             vm.executor.computationalModel = {
@@ -626,7 +626,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.doAbortExecutor = function(executionSlug, uploadMetadata) {
             var requestBody = {
@@ -652,28 +652,28 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.runExecutor = function(executorSlug) {
             vm.executionData = {
                 uploadMetadata: false
             };
             vm.executorSlug = executorSlug;
-        }
+        };
 
         vm.abortExecution = function(executionSlug) {
             vm.executionData = {
                 uploadMetadata: false
             };
             vm.executionSlug = executionSlug;
-        }
+        };
 
         vm.runExtractor = function(extractorSlug) {
             vm.executionData = {
                 uploadMetadata: false
             };
             vm.extractorSlug = extractorSlug;
-        }
+        };
 
         vm.doRunExecutor = function(executorSlug, environmentForExecution, executionExtractors, uploadMetadata) {
             var requestBody = {
@@ -713,7 +713,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.changeExecutorPage = function() {
             vm.loadingExecutor = true;
@@ -738,7 +738,7 @@
                     vm.loadingExecutor = false;
                     toastr.error('Error while loading executors.', 'Unexpected error!');
                 });
-        }
+        };
 
         $scope.setExtractorFile = function(fileInput) {
             var files = fileInput.files;
@@ -761,7 +761,7 @@
                     $scope.$apply();
                 }
             }
-        }
+        };
 
         vm.doUploadExtractorFile = function() {
             $rootScope.loadingAsync++;
@@ -785,8 +785,7 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-            
-        }
+        };
 
         vm.doRunExtractor = function(extractorSlug, environmentForExecution, uploadMetadata) {
             var requestBody = {
@@ -810,7 +809,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.downloadExtractorFile = function(extractorSlug) {
             $rootScope.loadingAsync++;
@@ -844,7 +843,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                         $rootScope.loadingAsync--;
                     });
-        }
+        };
 
         vm.doDeleteExtractor = function(extractorSlug) {
             $rootScope.loadingAsync++;
@@ -861,12 +860,12 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.deleteExtractor = function(extractorSlug) {
             vm.extractorSlug = extractorSlug;
             vm.extractor = null;
-        }
+        };
 
         vm.editExtractor = function(extractorSlug) {
             vm.extractorSaveTitle = 'Update extractor';
@@ -881,13 +880,13 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertExtractor = function() {
             vm.extractor = {};
             vm.updateExtractor = false;
             vm.extractorSaveTitle = 'Create extractor';
-        }
+        };
 
         vm.doSaveExtractor = function() {
             vm.extractor.computationalModel = {
@@ -928,7 +927,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.doActivateExtractor = function() {
             vm.extractor.active = true;
@@ -946,7 +945,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.doDeactivateExtractor = function() {
             vm.extractor.active = false;
@@ -964,7 +963,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.changeExtractorPage = function() {
             vm.loadingExtractor = true;
@@ -989,7 +988,7 @@
                     vm.loadingExtractor = false;
                     toastr.error('Error while loading extractors.', 'Unexpected error!');
                 });
-        }
+        };
         
         vm.doSaveComputationalModel = function() {
             computationalModelService
@@ -1001,7 +1000,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.doDeleteEnvironment = function(environmentSlug) {
             computationalModelService
@@ -1014,11 +1013,11 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.deleteEnvironment = function(environmentSlug) {
             vm.environmentSlug = environmentSlug;
-        }
+        };
 
         vm.editEnvironment = function(environmentSlug) {
             vm.environmentSaveTitle = 'Update execution environment';
@@ -1046,7 +1045,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertEnvironment = function() {
             vm.environment = {
@@ -1065,7 +1064,7 @@
             vm.gflops = undefined;
             vm.platform = undefined;
             vm.numberOfCores = undefined;
-        }
+        };
 
         vm.doSaveEnvironment = function() {
             vm.environment.computationalModel = {
@@ -1100,7 +1099,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.addVirtualMachine = function(type, financialCost, diskSpace, ram, gflops, platform, numberOfCores) {
             if (type && financialCost && diskSpace && ram && gflops && platform && numberOfCores) {
@@ -1126,17 +1125,17 @@
                 vm.platform = undefined;
                 vm.numberOfCores = undefined;
             } 
-        }
+        };
 
         vm.toggleNewVirtualMachine = function(toggle) {
             vm.showNewVirtualMachine = toggle;
-        }
+        };
 
         vm.removeVirtualMachine = function(i) {
             if (vm.environment.virtualMachines) {
                 vm.environment.virtualMachines.splice(i, 1);
             }
-        }
+        };
 
         vm.changeEnvironmentPage = function() {
             vm.loadingEnvironment = true;
@@ -1161,7 +1160,7 @@
                     vm.loadingEnvironment = false;
                     toastr.error('Error while loading execution environments.', 'Unexpected error!');
                 });
-        }
+        };
 
         function getComputationalModel() {
             vm.loadingComputationalModel = true;

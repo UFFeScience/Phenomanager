@@ -5,7 +5,7 @@
         .module('pheno-manager.hypothesis')
         .controller('HypothesisDetailsController', HypothesisDetailsController);
 
-        HypothesisDetailsController.$inject = ['$scope', '$q', '$controller', '$stateParams', '$timeout', 'toastr', '$location', 'experimentService', 'permissionService', 'hypothesisService', '$rootScope', '$state', '$filter'];
+    HypothesisDetailsController.$inject = ['$scope', '$q', '$controller', '$stateParams', '$timeout', 'toastr', '$location', 'experimentService', 'permissionService', 'hypothesisService', '$rootScope', '$state', '$filter'];
 
     function HypothesisDetailsController($scope, $q, $controller, $stateParams, $timeout, toastr, $location, experimentService, permissionService, hypothesisService, $rootScope, $state, $filter) {
         var vm = this;
@@ -31,11 +31,11 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.deleteHypothesis = function(hypothesisSlug) {
             vm.hypothesisSlug = hypothesisSlug;
-        }
+        };
 
         vm.doDeleteExperiment = function(experimentSlug) {
             $rootScope.loadingAsync++;
@@ -52,11 +52,11 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.deleteExperiment = function(experimentSlug) {
             vm.experimentSlug = experimentSlug;
-        }
+        };
 
         vm.editExperiment = function(experimentSlug) {
             vm.experimentSaveTitle = 'Update experiment';
@@ -71,13 +71,13 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertExperiment = function() {
             vm.experiment = {};
             vm.updateExperiment = false;
             vm.experimentSaveTitle = 'Create experiment';
-        }
+        };
 
         vm.doSaveExperiment = function() {
             vm.experiment.hypothesis = {
@@ -107,7 +107,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.editChildHypothesis = function(hypothesisSlug) {
             vm.childHypothesisSaveTitle = 'Update child hypothesis';
@@ -122,14 +122,14 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertBranchHypothesis = function(parentHypothesis) {
             vm.childHypothesis = {};
             vm.parentHypothesis = angular.copy(parentHypothesis);
             vm.updateChildHypothesis = false;
             vm.childHypothesisSaveTitle = 'Create child hypothesis';
-        }
+        };
 
         vm.doSaveChildHypothesis = function() {
             vm.childHypothesis.phenomenon = {
@@ -176,7 +176,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.changeExperimentPage = function() {
             vm.loadingExperiment = true;
@@ -201,7 +201,7 @@
                     vm.loadingExperiment = false;
                     toastr.error('Error while loading experiments.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.changeHypothesisChildrenPage = function() {
             vm.loadingHypothesisChildren = true;
@@ -226,7 +226,7 @@
                     vm.loadingHypothesisChildren = false;
                     toastr.error('Error while loading children hypotheses.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.doSaveHypothesis = function() {
             hypothesisService
@@ -238,7 +238,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         function getHypothesis() {
             vm.loadingHypothesis = true;

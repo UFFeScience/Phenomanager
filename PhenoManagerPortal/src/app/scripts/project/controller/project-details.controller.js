@@ -5,7 +5,7 @@
         .module('pheno-manager.project')
         .controller('ProjectDetailsController', ProjectDetailsController);
 
-        ProjectDetailsController.$inject = ['$scope', '$controller', '$stateParams', '$q', '$timeout', 'toastr','$location', 'phenomenonService', 'permissionService', 'userService', 'localStorageService', 'projectService', '$rootScope', '$state', '$filter'];
+    ProjectDetailsController.$inject = ['$scope', '$controller', '$stateParams', '$q', '$timeout', 'toastr','$location', 'phenomenonService', 'permissionService', 'userService', 'localStorageService', 'projectService', '$rootScope', '$state', '$filter'];
 
     function ProjectDetailsController($scope, $controller, $stateParams, $q, $timeout, toastr, $location, phenomenonService, permissionService, userService, localStorageService, projectService, $rootScope, $state, $filter) {
         var vm = this;
@@ -31,11 +31,11 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.deletePhenomenon = function(phenomenonSlug) {
             vm.phenomenonSlug = phenomenonSlug;
-        }
+        };
 
         vm.editPhenomenon = function(phenomenonSlug) {
             vm.phenomenonSaveTitle = 'Update phenomenon';
@@ -50,13 +50,13 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertPhenomenon = function() {
             vm.phenomenon = {};
             vm.updatePhenomenon = false;
             vm.phenomenonSaveTitle = 'Create phenomenon';
-        }
+        };
 
         vm.doSavePhenomenon = function() {
             vm.phenomenon.project = {
@@ -86,7 +86,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.changePhenomenonPage = function() {
             vm.loadingPhenomenon = true;
@@ -111,7 +111,7 @@
                     vm.loadingPhenomenon = false;
                     toastr.error('Error while loading phenomenons.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.doSyncSciManager = function(projectSlug) {
             $rootScope.loadingAsync++;
@@ -127,7 +127,7 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.doSave = function() {
             projectService
@@ -139,7 +139,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         function getProject() {
             vm.loadingProject = true;

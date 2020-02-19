@@ -17,4 +17,5 @@
             baseUrl: hosts[host]
         }
     }
+
 })();

@@ -13,4 +13,5 @@
             templateUrl: '/scripts/core/view/templates/loading-small.html'
         }
     }
+
 })();

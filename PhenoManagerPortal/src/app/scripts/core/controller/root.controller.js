@@ -10,4 +10,5 @@
     function RootController($rootScope,) {
         $rootScope.isLoading = false;
     }
+
 })();

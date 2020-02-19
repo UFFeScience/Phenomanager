@@ -5,27 +5,28 @@
         .module('pheno-manager.dashboard')
         .service('dashboardService', dashboardService);
   
-        dashboardService.$inject = ['$http', 'config'];
-  
-        function dashboardService($http, config) {
-            var baseUrl = config.baseUrl;
-  
-            return {
+    dashboardService.$inject = ['$http', 'config'];
 
-                getValidationStatistics: function() {
-                    var url = baseUrl + '/v1/dashboard/validation_item_statistics';
-                    return $http.get(url);
-                },
+    function dashboardService($http, config) {
+        var baseUrl = config.baseUrl;
 
-                getCountAllRunningModels: function() {
-                    var url = baseUrl + '/v1/dashboard/running_models';
-                    return $http.get(url);
-                },
+        return {
 
-                getCountAllErrorModels: function() {
-                    var url = baseUrl + '/v1/dashboard/error_models';
-                    return $http.get(url);
-                }
+            getValidationStatistics: function() {
+                var url = baseUrl + '/v1/dashboard/validation_item_statistics';
+                return $http.get(url);
+            },
+
+            getCountAllRunningModels: function() {
+                var url = baseUrl + '/v1/dashboard/running_models';
+                return $http.get(url);
+            },
+
+            getCountAllErrorModels: function() {
+                var url = baseUrl + '/v1/dashboard/error_models';
+                return $http.get(url);
             }
         }
+    }
+
 })();

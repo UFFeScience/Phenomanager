@@ -5,62 +5,63 @@
         .module('pheno-manager.project')
         .service('projectService', projectService);
   
-        projectService.$inject = ['$http', 'config'];
-  
-        function projectService($http, config) {
-            var baseUrl = config.baseUrl;
-  
-            return {
+    projectService.$inject = ['$http', 'config'];
 
-                insert: function(data) {
-                    return $http.post(
-                        baseUrl + '/v1/projects',
-                        JSON.stringify(data)
-                    );
-                },
+    function projectService($http, config) {
+        var baseUrl = config.baseUrl;
 
-                update: function(data) {
-                    return $http.put(
-                        baseUrl + '/v1/projects/' + data.slug,
-                        JSON.stringify(data)
-                    );
-                },
+        return {
 
-                delete: function(slug) {
-                    return $http.delete(
-                        baseUrl + '/v1/projects/' + slug,
-                        config
-                    );
-                },
-                
-                getAll: function(offset, limit, filter) {
-                    var url = baseUrl + '/v1/projects';
+            insert: function(data) {
+                return $http.post(
+                    baseUrl + '/v1/projects',
+                    JSON.stringify(data)
+                );
+            },
 
-                    if (filter) {
-                        url += '?filter=[' + filter + ']';
-                    }
+            update: function(data) {
+                return $http.put(
+                    baseUrl + '/v1/projects/' + data.slug,
+                    JSON.stringify(data)
+                );
+            },
 
-                    if (offset && !filter) {
-                        url += '?offset=' + (offset * limit) + '&sort=[insertDate=desc]';
-                    } else if (offset && filter) {
-                        url += '&offset=' + (offset * limit) + '&sort=[insertDate=desc]';
-                    } else if (!offset && !filter) {
-                        url += '?sort=[insertDate=desc]';
-                    }
+            delete: function(slug) {
+                return $http.delete(
+                    baseUrl + '/v1/projects/' + slug,
+                    config
+                );
+            },
+            
+            getAll: function(offset, limit, filter) {
+                var url = baseUrl + '/v1/projects';
 
-                    return $http.get(url, config);
-                },
+                if (filter) {
+                    url += '?filter=[' + filter + ']';
+                }
 
-                getBySlug: function(slug) {
-                    var url = baseUrl + '/v1/projects/' + slug;
-                    return $http.get(url);
-                },
+                if (offset && !filter) {
+                    url += '?offset=' + (offset * limit) + '&sort=[insertDate=desc]';
+                } else if (offset && filter) {
+                    url += '&offset=' + (offset * limit) + '&sort=[insertDate=desc]';
+                } else if (!offset && !filter) {
+                    url += '?sort=[insertDate=desc]';
+                }
 
-                syncSciManager: function(slug) {
-                    return $http.post(
-                        baseUrl + '/v1/projects/' + slug + '/sync'
-                    );
-                },
-            }
+                return $http.get(url, config);
+            },
+
+            getBySlug: function(slug) {
+                var url = baseUrl + '/v1/projects/' + slug;
+                return $http.get(url);
+            },
+
+            syncSciManager: function(slug) {
+                return $http.post(
+                    baseUrl + '/v1/projects/' + slug + '/sync'
+                );
+            },
         }
+    }
+
 })();

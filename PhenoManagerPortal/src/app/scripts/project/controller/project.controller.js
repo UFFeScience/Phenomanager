@@ -5,7 +5,7 @@
         .module('pheno-manager.project')
         .controller('ProjectController', ProjectController);
 
-        ProjectController.$inject = ['$scope', '$q', '$controller', '$timeout', 'toastr','$location', 'projectService', '$rootScope', '$state', '$filter'];
+    ProjectController.$inject = ['$scope', '$q', '$controller', '$timeout', 'toastr','$location', 'projectService', '$rootScope', '$state', '$filter'];
 
     function ProjectController($scope, $q, $controller, $timeout, toastr, $location, projectService, $rootScope, $state, $filter) {
         var vm = this;
@@ -39,11 +39,11 @@
                     vm.loading = false;
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.syncWithSciManager = function(projectSlug) {
             vm.projectSlug = projectSlug;
-        }
+        };
 
         vm.doSyncSciManager = function(projectSlug) {
             $rootScope.loadingAsync++;
@@ -59,7 +59,7 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.doDelete = function(projectSlug) {
             $rootScope.loadingAsync++;
@@ -76,11 +76,11 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.deleteProject = function(projectSlug) {
             vm.projectSlug = projectSlug;
-        }
+        };
 
         vm.editProject = function(projectSlug) {
             vm.projectSaveTitle = 'Update project';
@@ -95,13 +95,13 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertProject = function() {
             vm.project = {};
             vm.updateProject = false;
             vm.projectSaveTitle = 'Create project';
-        }
+        };
 
         vm.doSave = function() {
             if (!vm.updateProject) {
@@ -127,7 +127,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         init();
         

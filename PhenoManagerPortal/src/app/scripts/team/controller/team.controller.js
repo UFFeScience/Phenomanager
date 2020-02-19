@@ -5,7 +5,7 @@
         .module('pheno-manager.team')
         .controller('TeamController', TeamController);
 
-        TeamController.$inject = ['$scope', '$location', '$filter', 'teamService', '$rootScope', '$state', 'toastr'];
+    TeamController.$inject = ['$scope', '$location', '$filter', 'teamService', '$rootScope', '$state', 'toastr'];
 
     function TeamController($scope, $location, $filter, teamService, $rootScope, $state, toastr) {
         var vm = this;
@@ -33,25 +33,24 @@
                 vm.loading = false;
                 toastr.error('Error while performing action.', 'Unexpected error!');
             });
-            
-        }
+        };
 
         vm.doDelete = function(teamSlug) {
             teamService
                 .delete(teamSlug)
-                    .then(function(resp) {
-                        vm.changePage();
-                        toastr.success('Action performed with success.', 'Success!');
-                    })
-                    .catch(function(resp) {
-                        console.log(resp);
-                        toastr.error('Error while performing action.', 'Unexpected error!');
-                    });
-            }
+                .then(function(resp) {
+                    vm.changePage();
+                    toastr.success('Action performed with success.', 'Success!');
+                })
+                .catch(function(resp) {
+                    console.log(resp);
+                    toastr.error('Error while performing action.', 'Unexpected error!');
+                });
+        };
 
         vm.deleteTeam = function(teamSlug) {
             vm.teamSlug = teamSlug;
-        }
+        };
 
         vm.editTeam = function(teamSlug) {
             vm.teamSaveTitle = 'Update team';
@@ -59,14 +58,14 @@
 
             teamService
                 .getBySlug(teamSlug)
-                    .then(function(resp) {
-                        vm.team = resp.data;
-                    })
-                    .catch(function(resp) {
-                        console.log(resp);
-                        toastr.error('Error while performing action.', 'Unexpected error!');
-                    });
-        }
+                .then(function(resp) {
+                    vm.team = resp.data;
+                })
+                .catch(function(resp) {
+                    console.log(resp);
+                    toastr.error('Error while performing action.', 'Unexpected error!');
+                });
+        };
 
         vm.insertTeam = function() {
             vm.team = {
@@ -74,7 +73,7 @@
             };
             vm.updateTeam = false;
             vm.teamSaveTitle = 'Create team';
-        }
+        };
 
         vm.doSave = function() {
             if (!vm.updateTeam) {
@@ -102,7 +101,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         init();
         

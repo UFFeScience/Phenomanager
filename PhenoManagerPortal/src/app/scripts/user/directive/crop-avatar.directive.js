@@ -5,7 +5,7 @@
         .module('pheno-manager.user')
         .directive('cropAvatar', cropAvatar);
 
-        cropAvatar.$inject = ['$rootScope', '$filter', 'localStorageService', 'userService', '$state', '$timeout', 'toastr'];
+    cropAvatar.$inject = ['$rootScope', '$filter', 'localStorageService', 'userService', '$state', '$timeout', 'toastr'];
 
     function cropAvatar($rootScope, $filter, localStorageService, userService, $state, $timeout, toastr) {
         return {
@@ -162,4 +162,5 @@
             }
         }
     }
+
 })();

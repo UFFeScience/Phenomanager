@@ -5,7 +5,7 @@
         .module('pheno-manager.phenomenon')
         .controller('PhenomenonDetailsController', PhenomenonDetailsController);
 
-        PhenomenonDetailsController.$inject = ['$scope', '$controller', '$stateParams', '$q', '$timeout', 'toastr', 'FileSaver', 'Blob', '$location', 'phenomenonService', 'hypothesisService', 'userService', '$rootScope', '$state', '$filter'];
+    PhenomenonDetailsController.$inject = ['$scope', '$controller', '$stateParams', '$q', '$timeout', 'toastr', 'FileSaver', 'Blob', '$location', 'phenomenonService', 'hypothesisService', 'userService', '$rootScope', '$state', '$filter'];
 
     function PhenomenonDetailsController($scope, $controller, $stateParams, $q, $timeout, toastr, FileSaver, Blob, $location, phenomenonService, hypothesisService, userService, $rootScope, $state, $filter) {
         var vm = this;
@@ -31,11 +31,11 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-        }
+        };
 
         vm.deleteHypothesis = function(hypothesisSlug) {
             vm.hypothesisSlug = hypothesisSlug;
-        }
+        };
 
         vm.editHypothesis = function(hypothesisSlug) {
             vm.hypothesisSaveTitle = 'Update hypothesis';
@@ -50,12 +50,12 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertBranchHypothesis = function(parentHypothesis) {
             vm.childHypothesis = {};
             vm.parentHypothesis = angular.copy(parentHypothesis);
-        }
+        };
 
         vm.doSaveChildHypothesis = function() {
             vm.childHypothesis.phenomenon = {
@@ -89,13 +89,13 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.insertHypothesis = function() {
             vm.hypothesis = {};
             vm.updateHypothesis = false;
             vm.hypothesisSaveTitle = 'Create hypothesis';
-        }
+        };
 
         vm.doSaveHypothesis = function() {
             vm.hypothesis.phenomenon = {
@@ -125,7 +125,7 @@
                         toastr.error('Error while performing action.', 'Unexpected error!');
                     });
             }
-        }
+        };
 
         vm.changeHypothesisPage = function() {
             vm.loadingHypothesis = true;
@@ -150,7 +150,7 @@
                     vm.loadingHypothesis = false;
                     toastr.error('Error while loading hypotheses.', 'Unexpected error!');
                 });
-        }
+        };
 
         vm.doSavePhenomenon = function() {
             phenomenonService
@@ -162,7 +162,7 @@
                     console.log(resp);
                     toastr.error('Error while performing action.', 'Unexpected error!');
                 });
-        }
+        };
 
         function getPhenomenon() {
             vm.loadingPhenomenon = true;
