@@ -55,22 +55,6 @@ gulp.task('copy-html', function() {
         .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('copy-bower-files', function() {
-    return gulp.src(mainBowerFiles())
-        .pipe(gulp.dest('./dist/assets/vendor'));
-});
-
-gulp.task('copy-plugin-files', function() {
-    return gulp.src('src/app/plugins/**/*')
-        .pipe(gulp.dest('./dist/assets/plugins'));
-});
-
-gulp.task('copy-app-files', function() {
-    return gulp.src('src/app/scripts/**/*.js')
-        .pipe(concat('app.js'))
-        .pipe(gulp.dest('./dist/scripts'));
-});
-
 // Build local
 gulp.task('html-inject', function() {
     return gulp.src('src/app/index.html')
@@ -116,6 +100,22 @@ gulp.task('html-inject', function() {
 
 gulp.task('build-html', function() {
     runSequence('copy-html', 'html-inject');
+});
+
+gulp.task('copy-bower-files', function() {
+    return gulp.src(mainBowerFiles())
+        .pipe(gulp.dest('./dist/assets/vendor'));
+});
+
+gulp.task('copy-plugin-files', function() {
+    return gulp.src('src/app/plugins/**/*')
+        .pipe(gulp.dest('./dist/assets/plugins'));
+});
+
+gulp.task('copy-app-files', function() {
+    return gulp.src('src/app/scripts/**/*.js')
+        .pipe(concat('app.js'))
+        .pipe(gulp.dest('./dist/scripts'));
 });
 
 gulp.task('html', function() {
@@ -191,8 +191,27 @@ gulp.task('build-html-production', function() {
     runSequence('copy-html' , 'html-inject-production');
 });
 
+gulp.task('copy-bower-files-production', function() {
+    return gulp.src(mainBowerFiles())
+        .pipe(gulpif('*.js', uglify({ mangle: false })))
+        .pipe(gulp.dest('./dist/assets/vendor'));
+});
+
+gulp.task('copy-plugin-files-production', function() {
+    return gulp.src('src/app/plugins/**/*')
+        .pipe(gulpif('*.js', uglify({ mangle: false })))
+        .pipe(gulp.dest('./dist/assets/plugins'));
+});
+
+gulp.task('copy-app-files-production', function() {
+    return gulp.src('src/app/scripts/**/*.js')
+        .pipe(gulpif('*.js', uglify({ mangle: false })))
+        .pipe(concat('app.js'))
+        .pipe(gulp.dest('./dist/scripts'));
+});
+
 gulp.task('html-production', function() {
-    runSequence('copy-bower-files', 'copy-plugin-files', 'copy-app-files', 'build-html-production');
+    runSequence('copy-bower-files-production', 'copy-plugin-files-production', 'copy-app-files-production', 'build-html-production');
 });
 
 gulp.task('build-production', function() {

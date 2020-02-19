@@ -5,9 +5,9 @@
         .module('pheno-manager.team')
         .controller('TeamController', TeamController);
 
-        TeamController.$inject = ['$scope', 'localStorageService', '$location', '$filter', 'teamService', 'userService', '$rootScope', '$state', 'toastr'];
+        TeamController.$inject = ['$scope', '$location', '$filter', 'teamService', '$rootScope', '$state', 'toastr'];
 
-    function TeamController($scope, localStorageService, $location, $filter, teamService, userService, $rootScope, $state, toastr) {
+    function TeamController($scope, $location, $filter, teamService, $rootScope, $state, toastr) {
         var vm = this;
 
         vm.changePage = function() {
@@ -106,9 +106,7 @@
 
         init();
         
-        function init() {
-            vm.loggedUserSlug = localStorageService.getUserSlug();
-            
+        function init() {            
             vm.updateTeam = false;
             vm.team = {};
     

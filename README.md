@@ -1,12 +1,12 @@
 # PhenoManagerApi
 
-API Rest using *Spring Boot*, responsible for providing the data referring to the entities managed by the system.
-In this project, there is also a Worker service, which processes asynchronous messages regarding executions of scientific workflows, tasks, jobs and other commands that can be setup by the platform. For authentication *OAuth 2.0*, JWT was used.
+API Rest developed using *Spring Boot*, responsible for providing the data managed by the system.
+In this project, there is also a Worker service, which processes asynchronous messages regarding executions of scientific workflows, tasks, jobs and other commands that may be setup by the platform. For authentication *OAuth 2.0* and JWT was used.
 
 
 ## Setting up
 
-To test the project locally, simply clone the repository and import into *Eclipse* (or another IDE of your choice) as a *Gradle* project.
+To test the project locally, simply clone the repository and import into *Eclipse* (or any other IDE of your choice) as a *Gradle* project.
 After that, you will need to run the `gradle` build and run the SQLs from the *Docs / SQLs / 1.0.0* folder in your local *PostgreSQL* installation.
 
 ## Computational Model configuration
@@ -21,7 +21,7 @@ The platform allows the user to setup executors for the following types of compu
 
 - WEB SERVICE
 
-The platform allows the user to setup execution environments for the following types:
+The platform allows the user to setup execution environments of the following types:
 
 - CLOUD (AWS)
 
@@ -37,18 +37,18 @@ There is also a possibility to setup VPN conection for these environemnts:
 
 ## API
 
-The API is completely generic and accepts filters, sorting, aggregation functions, grouping and field projection.
-Another important point is that the API will only respond *success* if the correct credentials are passed in the *header* of the request.
+The API accepts filters, sorting, aggregation functions, grouping and field projection.
+Another important aspect is that the API will only answer *success* if the correct credentials are present in the *header* of the request.
 Every request (except for the login endpoint and some other specific endpoints) must contain the `Authorization` header with the value `Bearer {AUTENTICATION_TOKEN}`.
 An authentication token can be obtained by making a request to `/login` endpoint twith the correct credentials.
-Here is an example of the most complete filter operation possible:
+Here is an example of a possible filter operation:
 
 `localhost:9500/v1/computational_models?count=[name,currentVersion]&sort=[creationDate=asc]&groupBy=[creationDate]&filter=[currentVersion>1.0]`
 
 ### Filter
 The available options of filters to be applied:
 
-- Equals: "=eq=" or "=" (can be used to compare if value is equal to `null`)
+- Equals: "=eq=" or "=" (may be used to compare if value is equal to `null`)
 
 - Less than or equal: "=le=" or "<="
 
@@ -58,7 +58,7 @@ The available options of filters to be applied:
 
 - Less than: "=lt=" or "<"
 
-- Not equal: "=ne=" or "!=" (Can be used to compare if the value is other than `null`)
+- Not equal: "=ne=" or "!=" (may be used to compare if the value is other than `null`)
 
 - In: "=in="
 
@@ -72,37 +72,37 @@ Logical operators in the url:
 - OR: "\_or\_" or just ","
 
 ### Projection
-The projections follow the following syntax in the url, and the return json will only count with these specified fields:
+The Projection follows the following syntax, and the json response will only have with the specified fields:
 
 `projection = [field1, field2, field3...]`
 
 ### Sort
-The orderings follow the following syntax in the url (where `sortOrder` can be `asc` or `desc`):
+The Sorting follows the following syntax (where `sortOrder` may be `asc` or `desc`):
 
 `sort = [field1 = sortOrder, field2 = sortOrder...]`
 
 ### GroupBy
-GroupBy follows the following syntax in the url (*groupBy* does not accept the *projections* parameter and respects the limitations of the DBMS in these specified cases):
+GroupBy follows the following syntax (*groupBy* does not accept *projections* parameters and respects the limitations of the DBMS in these specified cases):
 
 `groupBy = [field1, field2, field3...]`
 
 ### Sum
-It performs Sum function in the specified fields, and follows the following syntax in the url:
+It performs Sum function in the specified fields, and follows the following syntax:
 
 `sum = [field1, field2, field3...]`
 
 ### Avg
-It performs function of Avg in the specified fields, and follows the following syntax in url:
+It performs function of Avg in the specified fields, and follows the following syntax:
 
 `avg = [field1, field2, field3...]`
 
 ### Count
-It performs Count function in the specified fields, and follows the following syntax in the url:
+It performs Count function in the specified fields, and follows the following syntax:
 
 `count = [field1, field2, field3...]`
 
 ### Count Distinct
-It performs Count Distinct function in the specified fields, and follows the following syntax in the url:
+It performs Count Distinct function in the specified fields, and follows the following syntax:
 
 `count_distinct = [field1, field2, field3...]`
 
@@ -118,8 +118,8 @@ There is also a *cron* task that verifies the status of models executing in Clus
 
 # PhenoManagerPortal
 
-Front end that consumes exposed API resources. The front-end design was written using *angular 1*.
-To install the project, simply run the commands in the portal project directory:
+Front-end that consumes exposed API resources. The front-end design was written using *angular 1*.
+To install the project, simply run the commands in the front-end project directory:
 
 - `npm install`
 - `bower install`

@@ -5,9 +5,9 @@
         .module('pheno-manager.user')
         .controller('UserController', UserController);
 
-        UserController.$inject = ['$scope', 'localStorageService', '$location', '$filter', 'userService', '$rootScope', '$state', 'toastr'];
+        UserController.$inject = ['$scope', '$location', '$filter', 'userService', '$rootScope', '$state', 'toastr'];
 
-    function UserController($scope, localStorageService, $location, $filter, userService, $rootScope, $state, toastr) {
+    function UserController($scope, $location, $filter, userService, $rootScope, $state, toastr) {
         var vm = this;
 
         vm.changePage = function() {
@@ -134,9 +134,7 @@
 
         init();
         
-        function init() {
-            vm.loggedUserSlug = localStorageService.getUserSlug();
-            
+        function init() {            
             vm.updateUser = false;
             vm.user = {};
     

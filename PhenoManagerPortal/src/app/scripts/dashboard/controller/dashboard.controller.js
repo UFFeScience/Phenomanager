@@ -5,9 +5,9 @@
         .module('pheno-manager.dashboard')
         .controller('DashboardController', DashboardController);
 
-        DashboardController.$inject = ['$scope', '$location', 'toastr', 'projectService', 'dashboardService', 'computationalModelService', 'hypothesisService', 'localStorageService', '$state', '$filter', '$timeout'];
+        DashboardController.$inject = ['$scope', '$location', 'toastr', 'projectService', 'dashboardService', 'computationalModelService', 'hypothesisService', '$state', '$filter', '$timeout'];
 
-    function DashboardController($scope, $location, toastr, projectService, dashboardService, computationalModelService, hypothesisService, localStorageService, $state, $filter, $timeout) {
+    function DashboardController($scope, $location, toastr, projectService, dashboardService, computationalModelService, hypothesisService, $state, $filter, $timeout) {
         var vm = this;
 
         init();
