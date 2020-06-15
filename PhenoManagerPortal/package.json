@@ -1,6 +1,6 @@
 {
 	"name": "pheno_manager_portal",
-	"version": "1.4.0",
+	"version": "1.5.0",
 	"description": "PhenoManager's Front-end",
 	"main": "index.js",
 	"directories": {

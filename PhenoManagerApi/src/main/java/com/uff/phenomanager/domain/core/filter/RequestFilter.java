@@ -24,7 +24,9 @@ public class RequestFilter {
 	public void processSymbols() {
 		if (filter != null) {
 			filter = StringParserUtils.replace(StringParserUtils.replace(filter, "[", ""), "]", "");
-			parseLogicOperators();
+			filter = StringParserUtils.replace(filter, LogicOperator.AND.getOperatorAlias(), LogicOperator.AND.getOperator());
+			filter = StringParserUtils.replace(filter, LogicOperator.OR.getOperatorAlias(), LogicOperator.OR.getOperator());
+			
 			parseFilterOperators();
 		}
 
@@ -74,57 +76,6 @@ public class RequestFilter {
 			filter = StringParserUtils.replace(filter, simpleCharfilterOperator.getOperatorCommonAlias(), simpleCharfilterOperator.getParseableOperator());
 			filter = StringParserUtils.replace(filter, simpleCharfilterOperator.getOperatorAlias(), simpleCharfilterOperator.getParseableOperator());
 		}
-	}
-	
-	private void parseLogicOperators() {
-		StringBuilder parsedFilter = new StringBuilder();
-		
-		Boolean appendFilter = Boolean.TRUE;
-		Boolean hasParentesis = Boolean.FALSE;
-		
-		int parentesisOpenIndex, parentesisCloseIndex, lastIndex;  
-		parentesisOpenIndex = parentesisCloseIndex = lastIndex = 0;
-
-		filter = StringParserUtils.replace(filter, LogicOperator.AND.getOperatorAlias(), LogicOperator.AND.getOperator());
-		
-		while (appendFilter) {
-			parentesisOpenIndex = filter.indexOf('(', parentesisCloseIndex);
-			   
-			if (parentesisOpenIndex < 0) {
-				appendFilter = Boolean.FALSE;
-			}
-			
-			if (parentesisOpenIndex >= 0 && parentesisOpenIndex < filter.length()) {
-				parsedFilter.append(StringParserUtils.replace(filter.substring(parentesisCloseIndex, parentesisOpenIndex),
-						LogicOperator.OR.getOperatorAlias(), LogicOperator.OR.getOperator()));
-				
-				if (parentesisCloseIndex < 0) {
-					appendFilter = Boolean.FALSE;
-				}
-			    
-				lastIndex = parentesisCloseIndex;
-				parentesisCloseIndex = filter.indexOf(')', parentesisOpenIndex);
-				
-				if (parentesisCloseIndex >= 0 && parentesisCloseIndex < filter.length()) {
-					parsedFilter.append(filter.substring(parentesisOpenIndex, parentesisCloseIndex));
-				}
-
-				hasParentesis = Boolean.TRUE;
-		   	}
-   		}
-		
-		if (parentesisCloseIndex < 0 || parentesisCloseIndex >= filter.length()) {
-			parentesisCloseIndex = lastIndex;
-		}
-		
-		parsedFilter.append(filter.substring(parentesisCloseIndex, filter.length()));
-		
-		if (!hasParentesis) {
-			filter = StringParserUtils.replace(filter, LogicOperator.OR.getOperatorAlias(), LogicOperator.OR.getOperator());
-			return;
-		}
-		
-		filter = parsedFilter.toString();
 	}
 	
 	public void addAndFilter(String filterName, Object filterValue, FilterOperator filterOperator) {

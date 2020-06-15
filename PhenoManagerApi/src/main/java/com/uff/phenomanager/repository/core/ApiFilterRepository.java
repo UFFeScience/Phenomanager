@@ -214,8 +214,7 @@ public class ApiFilterRepository<ENTITY extends BaseApiEntity> {
 	}
 	
 	private void mapSimpleValuesProjection(Class<ENTITY> entityClass, List<Selection<? extends Object>> projection,
-			List<ENTITY> entities, Object row) throws NoSuchMethodException, InstantiationException,
-			IllegalAccessException, InvocationTargetException, NoSuchFieldException, Exception {
+			List<ENTITY> entities, Object row) throws Exception {
 		
 		Object[] fieldData = (Object[]) row;
 		
@@ -290,8 +289,7 @@ public class ApiFilterRepository<ENTITY extends BaseApiEntity> {
 	}
 
 	private void mapSingleMultivaluedValueData(Class<ENTITY> entityClass, List<Selection<? extends Object>> projection,
-			List<ENTITY> entities, Object row) throws NoSuchMethodException, InstantiationException,
-			IllegalAccessException, InvocationTargetException, NoSuchFieldException, Exception {
+			List<ENTITY> entities, Object row) throws Exception {
 		
 		Constructor<?> constructor = entityClass.getConstructor();
 		ENTITY object = (ENTITY) constructor.newInstance();
@@ -323,8 +321,7 @@ public class ApiFilterRepository<ENTITY extends BaseApiEntity> {
 	}
 	
 	private void setProjectionAggregationField(Class<ENTITY> entityClass, Object fieldData, ENTITY object,
-			Path<Object> attributePath) throws NoSuchMethodException, InstantiationException, IllegalAccessException,
-			InvocationTargetException, NoSuchFieldException, Exception {
+			Path<Object> attributePath) throws Exception {
 		
 		if (attributePath.getParentPath() != null && !attributePath.getParentPath().getJavaType().equals(entityClass)) {
 			Constructor<?> constructorField = attributePath.getParentPath().getJavaType().getConstructor();

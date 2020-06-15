@@ -23,8 +23,8 @@ import org.springframework.util.StringUtils;
 
 import com.uff.phenomanager.Constants.MSG_ERROR;
 import com.uff.phenomanager.domain.Permission;
-import com.uff.phenomanager.domain.User;
 import com.uff.phenomanager.domain.Team;
+import com.uff.phenomanager.domain.User;
 import com.uff.phenomanager.domain.core.BaseApiEntity;
 import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.BadRequestApiException;
@@ -114,7 +114,7 @@ public class ApiFilterPermissionRepository<ENTITY extends BaseApiEntity> extends
 		} catch (NoResultException e) {
 			throw new NotFoundApiException(String.format(MSG_ERROR.ENTITIES_NOT_FOUND_ERROR, requestFilter), e);
 		
-		} catch (PSQLException | PersistenceException | NumberFormatException e) {
+		} catch (PSQLException | PersistenceException | IllegalArgumentException e) {
 			throw new BadRequestApiException(String.format(MSG_ERROR.BAD_REQUEST_ERROR, requestFilter), e);
 			
 		} catch (Exception e) {

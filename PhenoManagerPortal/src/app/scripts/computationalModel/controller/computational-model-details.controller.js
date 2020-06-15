@@ -185,7 +185,6 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-            
         };
 
         vm.downloadInstanceParamValueFile = function(instanceParamSlug) {
@@ -386,7 +385,6 @@
                     toastr.error('Error while performing action.', 'Unexpected error!');
                     $rootScope.loadingAsync--;
                 });
-            
         };
 
         vm.downloadExecuctorFile = function(executorSlug) {
