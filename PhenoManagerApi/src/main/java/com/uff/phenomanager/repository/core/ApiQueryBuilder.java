@@ -3,6 +3,7 @@ package com.uff.phenomanager.repository.core;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -13,7 +14,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -28,9 +29,25 @@ import com.uff.phenomanager.exception.BadRequestApiException;
 import com.uff.phenomanager.util.ReflectionUtils;
 import com.uff.phenomanager.util.StringParserUtils;
 
-@Repository
+@Component
 @SuppressWarnings({ "unchecked", "rawtypes" } )
-public class ApiFilterParser<ENTITY> {
+public class ApiQueryBuilder<ENTITY> {
+	
+	public Boolean containsMultiValuedProjection(List<Selection<? extends Object>> projection) {
+		if (projection == null || projection.isEmpty()) {
+			return Boolean.FALSE;
+		}
+		
+		for (Selection<? extends Object> projectionField : projection) {
+			Path<Object> attributePath = (Path<Object>) projectionField;
+			
+			if (Collection.class.isAssignableFrom(attributePath.getJavaType())) {
+				return Boolean.TRUE;
+			}
+		}
+		
+		return Boolean.FALSE;
+	}
 	
 	public List<Selection<? extends Object>> getGroupByFields(RequestFilter requestFilter, Root<?> root, Class<ENTITY> entityClass) throws BadRequestApiException {
 		try {

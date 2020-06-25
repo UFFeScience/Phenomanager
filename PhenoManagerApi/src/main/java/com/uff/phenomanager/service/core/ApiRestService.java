@@ -18,7 +18,7 @@ import com.uff.phenomanager.domain.core.BaseApiEntity;
 import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;
-import com.uff.phenomanager.repository.core.ApiFilterRepository;
+import com.uff.phenomanager.repository.core.ApiRepository;
 import com.uff.phenomanager.repository.core.BaseRepository;
 import com.uff.phenomanager.util.KeyUtils;
 import com.uff.phenomanager.util.TokenUtils;
@@ -27,7 +27,7 @@ import com.uff.phenomanager.util.TokenUtils;
 public abstract class ApiRestService<ENTITY extends BaseApiEntity, REPOSITORY extends BaseRepository<ENTITY>> {
 	
 	@Autowired
-	private ApiFilterRepository<ENTITY> apiFilterRepository;
+	private ApiRepository<ENTITY> apiRepository;
 	
 	@Autowired
 	protected TokenAuthenticationService tokenAuthenticationService;
@@ -66,11 +66,11 @@ public abstract class ApiRestService<ENTITY extends BaseApiEntity, REPOSITORY ex
 	}
 	
 	public Long countAll(RequestFilter requestFilter) throws ApiException {
-		return apiFilterRepository.countAll(getEntityClass(), requestFilter);
+		return apiRepository.countAll(getEntityClass(), requestFilter);
 	}
 	
 	public List<ENTITY> findAllRecords(RequestFilter requestFilter) throws ApiException {
-		return apiFilterRepository.findAll(getEntityClass(), requestFilter);
+		return apiRepository.findAll(getEntityClass(), requestFilter);
 	}
 	
 	public Page<ENTITY> findAll(Pageable pageable) {

@@ -17,7 +17,7 @@ import com.uff.phenomanager.domain.core.filter.RequestFilter;
 import com.uff.phenomanager.exception.ApiException;
 import com.uff.phenomanager.exception.BadRequestApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;
-import com.uff.phenomanager.repository.core.ApiFilterPermissionRepository;
+import com.uff.phenomanager.repository.core.ApiPermissionRepository;
 import com.uff.phenomanager.repository.core.BaseRepository;
 import com.uff.phenomanager.service.PermissionService;
 import com.uff.phenomanager.service.UserService;
@@ -28,7 +28,7 @@ import com.uff.phenomanager.util.TokenUtils;
 public abstract class ApiPermissionRestService<ENTITY extends BaseApiEntity, REPOSITORY extends BaseRepository<ENTITY>> extends ApiRestService<ENTITY, REPOSITORY> {
 	
 	@Autowired
-	private ApiFilterPermissionRepository<ENTITY> apiFilterPermissionRepository;
+	private ApiPermissionRepository<ENTITY> apiPermissionRepository;
 	
 	@Autowired
 	private UserService userService;
@@ -60,14 +60,14 @@ public abstract class ApiPermissionRestService<ENTITY extends BaseApiEntity, REP
 		String token = TokenUtils.getTokenFromAuthorizationHeader(authorization);
 		String slugUser = tokenAuthenticationService.getTokenClaim(token, Constants.JWT_AUTH.CLAIM_USER_SLUG);
 		
-		return apiFilterPermissionRepository.countAll(getEntityClass(), getPermissionEntityName(), requestFilter, slugUser);
+		return apiPermissionRepository.countAll(getEntityClass(), getPermissionEntityName(), requestFilter, slugUser);
 	}
 	
 	public List<ENTITY> findAllRecords(RequestFilter requestFilter, String authorization) throws ApiException {
 		String token = TokenUtils.getTokenFromAuthorizationHeader(authorization);
 		String slugUser = tokenAuthenticationService.getTokenClaim(token, Constants.JWT_AUTH.CLAIM_USER_SLUG);
 		
-		return apiFilterPermissionRepository.findAll(getEntityClass(), getPermissionEntityName(), requestFilter, slugUser);
+		return apiPermissionRepository.findAll(getEntityClass(), getPermissionEntityName(), requestFilter, slugUser);
 	}
 	
 	public ENTITY save(ENTITY entity, String authorization) throws ApiException {

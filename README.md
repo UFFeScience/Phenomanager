@@ -82,7 +82,7 @@ The Sorting follows the following syntax (where `sortOrder` may be `asc` or `des
 `sort = [field1 = sortOrder, field2 = sortOrder...]`
 
 ### GroupBy
-GroupBy follows the following syntax (*groupBy* does not accept *projections* parameters and respects the limitations of the DBMS in these specified cases):
+GroupBy follows the following syntax (*groupBy* does not accept *projections* parameters and is expected to be used along with an aggregation function):
 
 `groupBy = [field1, field2, field3...]`
 

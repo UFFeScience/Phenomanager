@@ -32,7 +32,7 @@ import com.uff.phenomanager.exception.InternalErrorApiException;
 import com.uff.phenomanager.exception.NotFoundApiException;
 
 @Repository
-public class ApiFilterPermissionRepository<ENTITY extends BaseApiEntity> extends ApiFilterRepository<ENTITY> {
+public class ApiPermissionRepository<ENTITY extends BaseApiEntity> extends ApiRepository<ENTITY> {
 	
 	@Autowired
 	private EntityManager entityManager;
@@ -48,7 +48,7 @@ public class ApiFilterPermissionRepository<ENTITY extends BaseApiEntity> extends
 
 		query.select(criteriaBuilder.count(root));
 		
-		List<Predicate> restrictions = apiFilterParser.getRestrictions(entityClass, requestFilter, criteriaBuilder, root); 
+		List<Predicate> restrictions = apiQueryBuilder.getRestrictions(entityClass, requestFilter, criteriaBuilder, root); 
 		List<Predicate> permissionsRestrictions = getPermissionsRestrictions(entityPermissionClassName, 
 				criteriaBuilder, root, query, slugUser);
 		
@@ -83,14 +83,14 @@ public class ApiFilterPermissionRepository<ENTITY extends BaseApiEntity> extends
 		CriteriaQuery<Object> query = criteriaBuilder.createQuery(Object.class);
 		Root<?> root = query.from(entityClass);
 
-		List<Selection<? extends Object>> projection = apiFilterParser.getProjectionFields(requestFilter, root, entityClass);
-		if (!projection.isEmpty() && (projection.size() == 1 || !containsMultiValuedProjection(projection))) {
+		List<Selection<? extends Object>> projection = apiQueryBuilder.getProjectionFields(requestFilter, root, entityClass);
+		if (!projection.isEmpty() && (projection.size() == 1 || !apiQueryBuilder.containsMultiValuedProjection(projection))) {
 			query.multiselect(projection.toArray(new Selection[]{}));
 		} else {
 			query.select(root);
 		}
 		
-		List<Predicate> restrictions = apiFilterParser.getRestrictions(entityClass, requestFilter, criteriaBuilder, root); 
+		List<Predicate> restrictions = apiQueryBuilder.getRestrictions(entityClass, requestFilter, criteriaBuilder, root); 
 		List<Predicate> permissionsRestrictions = getPermissionsRestrictions(entityPermissionClassName, 
 				criteriaBuilder, root, query, slugUser);
 		
@@ -98,7 +98,7 @@ public class ApiFilterPermissionRepository<ENTITY extends BaseApiEntity> extends
 		
 		query.where(restrictions.toArray(new Predicate[]{}));
 		
-		List<Order> orders = apiFilterParser.getOrders(requestFilter, criteriaBuilder, root, entityClass);
+		List<Order> orders = apiQueryBuilder.getOrders(requestFilter, criteriaBuilder, root, entityClass);
 		if (!orders.isEmpty()) {
 			query.orderBy(orders);
 		}
@@ -109,7 +109,7 @@ public class ApiFilterPermissionRepository<ENTITY extends BaseApiEntity> extends
 		    		.setFirstResult(requestFilter.getFetchOffset())
 		    		.getResultList();
 		    
-		    return super.mapResultSet(entityClass, result, projection);
+		    return apiResultMapper.mapResultSet(entityClass, result, projection);
 		    
 		} catch (NoResultException e) {
 			throw new NotFoundApiException(String.format(MSG_ERROR.ENTITIES_NOT_FOUND_ERROR, requestFilter), e);
@@ -129,7 +129,7 @@ public class ApiFilterPermissionRepository<ENTITY extends BaseApiEntity> extends
 		CriteriaQuery<Object> query = criteriaBuilder.createQuery(Object.class);
 		Root<?> root = query.from(entityClass);
 
-		List<Selection<? extends Object>> aggregationFields = apiFilterParser.buildAggregateSelection(root, criteriaBuilder, entityClass, requestFilter);
+		List<Selection<? extends Object>> aggregationFields = apiQueryBuilder.buildAggregateSelection(root, criteriaBuilder, entityClass, requestFilter);
 		
 		if (aggregationFields.isEmpty()) {
 			throw new BadRequestApiException(String.format(MSG_ERROR.INVALID_AGGREGATION_ERROR, requestFilter));
@@ -137,7 +137,7 @@ public class ApiFilterPermissionRepository<ENTITY extends BaseApiEntity> extends
 		
 		query.multiselect(aggregationFields.toArray(new Selection[]{}));
 		
-		List<Predicate> restrictions = apiFilterParser.getRestrictions(entityClass, requestFilter, criteriaBuilder, root);
+		List<Predicate> restrictions = apiQueryBuilder.getRestrictions(entityClass, requestFilter, criteriaBuilder, root);
 		List<Predicate> permissionsRestrictions = getPermissionsRestrictions(entityPermissionClassName, 
 				criteriaBuilder, root, query, slugUser);
 		
@@ -145,19 +145,19 @@ public class ApiFilterPermissionRepository<ENTITY extends BaseApiEntity> extends
 		
 		query.where(restrictions.toArray(new Predicate[]{}));
 		
-		List<Order> orders = apiFilterParser.getOrders(requestFilter, criteriaBuilder, root, entityClass);
+		List<Order> orders = apiQueryBuilder.getOrders(requestFilter, criteriaBuilder, root, entityClass);
 		if (!orders.isEmpty()) {
 			query.orderBy(orders);
 		}
 		
-		List<Selection<? extends Object>> groupBy = apiFilterParser.getGroupByFields(requestFilter, root, entityClass);
+		List<Selection<? extends Object>> groupBy = apiQueryBuilder.getGroupByFields(requestFilter, root, entityClass);
 		query.groupBy(groupBy.toArray(new Expression[]{}));
 		
 		try {
 		    List<Object> result = (List<Object>) entityManager.createQuery(query)
 		    		.getResultList();
 		    
-		    return mapResultSet(entityClass, result, aggregationFields);
+		    return apiResultMapper.mapResultSet(entityClass, result, aggregationFields);
 		    
 		} catch (NoResultException e) {
 			throw new NotFoundApiException(String.format(MSG_ERROR.ENTITIES_NOT_FOUND_ERROR, requestFilter), e);
