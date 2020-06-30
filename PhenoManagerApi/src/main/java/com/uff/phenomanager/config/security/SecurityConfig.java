@@ -1,5 +1,7 @@
 package com.uff.phenomanager.config.security;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,7 +13,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
-import com.google.common.collect.ImmutableList;
 import com.uff.phenomanager.Constants.JWT_AUTH;
 
 @Configuration
@@ -26,8 +27,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
         
-        configuration.setAllowedOrigins(ImmutableList.of(JWT_AUTH.ALL_PATH_ORIGIN_REGEX));
-        configuration.setAllowedMethods(ImmutableList.of(
+        configuration.setAllowedOrigins(Arrays.asList(JWT_AUTH.ALL_PATH_ORIGIN_REGEX));
+        configuration.setAllowedMethods(Arrays.asList(
         		HttpMethod.HEAD.name(), 
         		HttpMethod.OPTIONS.name(), 
         		HttpMethod.GET.name(), 
@@ -37,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         		HttpMethod.PATCH.name()));
         configuration.setAllowCredentials(true);
         configuration.addExposedHeader(JWT_AUTH.CONTENT_DISPOSITION);
-        configuration.setAllowedHeaders(ImmutableList.of(
+        configuration.setAllowedHeaders(Arrays.asList(
         		JWT_AUTH.AUTHORIZATION, 
         		JWT_AUTH.CACHE_CONTROL, 
         		JWT_AUTH.CONTENT_TYPE,

@@ -1,6 +1,5 @@
 package com.uff.phenomanager.domain.core;
 
-import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,16 +47,13 @@ public class BaseApiEntity {
 	private Calendar deleteDate;
 	
 	@Transient
-	private Map<String, BigDecimal> sum = new HashMap<String, BigDecimal>();
+	private Map<String, Object> sum = new HashMap<String, Object>();
 	
 	@Transient
-	private Map<String, BigDecimal> avg = new HashMap<String, BigDecimal>();
+	private Map<String, Object> avg = new HashMap<String, Object>();
 	
 	@Transient
-	private Map<String, Long> count = new HashMap<String, Long>();
-	
-	@Transient
-	private Map<String, Long> countDistinct = new HashMap<String, Long>();
+	private Map<String, Object> count = new HashMap<String, Object>();
 	
 	public BaseApiEntity() {}
 
@@ -71,7 +67,6 @@ public class BaseApiEntity {
 		this.sum = builder.sum;
 		this.avg = builder.avg;
 		this.count = builder.count;
-		this.countDistinct = builder.countDistinct;
 	}
 	
 	@JsonIgnore
@@ -123,38 +118,72 @@ public class BaseApiEntity {
 		this.deleteDate = deleteDate;
 	}
 	
-	public Map<String, BigDecimal> getSum() {
+	public Map<String, Object> getSum() {
 		return sum;
 	}
 
-	public void setSum(Map<String, BigDecimal> sum) {
+	public void setSum(Map<String, Object> sum) {
 		this.sum = sum;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public void addSum(Map<String, Object> sum) {
+		Map.Entry<String, Object> sumEntry = sum.entrySet().iterator().next();
+		Map<String, Object> sumCurrent = this.sum;
+		
+		while (sumCurrent.get(sumEntry.getKey()) != null) {
+			sumCurrent = (Map<String, Object>) sumCurrent.get(sumEntry.getKey());
+			sum = (Map<String, Object>) sumEntry.getValue();
+			sumEntry = sum.entrySet().iterator().next();
+		}
+		
+		sumCurrent.put(sumEntry.getKey(), sumEntry.getValue());
+	}
 
-	public Map<String, BigDecimal> getAvg() {
+	public Map<String, Object> getAvg() {
 		return avg;
 	}
 
-	public void setAvg(Map<String, BigDecimal> avg) {
+	public void setAvg(Map<String, Object> avg) {
 		this.avg = avg;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public void addAvg(Map<String, Object> avg) {
+		Map.Entry<String, Object> avgEntry = avg.entrySet().iterator().next();
+		Map<String, Object> avgCurrent = this.avg;
+		
+		while (avgCurrent.get(avgEntry.getKey()) != null) {
+			avgCurrent = (Map<String, Object>) avgCurrent.get(avgEntry.getKey());
+			avg = (Map<String, Object>) avgEntry.getValue();
+			avgEntry = avg.entrySet().iterator().next();
+		}
+		
+		avgCurrent.put(avgEntry.getKey(), avgEntry.getValue());
+	}
 
-	public Map<String, Long> getCount() {
+	public Map<String, Object> getCount() {
 		return count;
 	}
 
-	public void setCount(Map<String, Long> count) {
+	public void setCount(Map<String, Object> count) {
 		this.count = count;
 	}
 	
-	public Map<String, Long> getCountDistinct() {
-		return countDistinct;
+	@SuppressWarnings("unchecked")
+	public void addCount(Map<String, Object> count) {
+		Map.Entry<String, Object> countEntry = count.entrySet().iterator().next();
+		Map<String, Object> countCurrent = this.count;
+		
+		while (countCurrent.get(countEntry.getKey()) != null) {
+			countCurrent = (Map<String, Object>) countCurrent.get(countEntry.getKey());
+			count = (Map<String, Object>) countEntry.getValue();
+			countEntry = count.entrySet().iterator().next();
+		}
+		
+		countCurrent.put(countEntry.getKey(), countEntry.getValue());
 	}
-
-	public void setCountDistinct(Map<String, Long> countDistinct) {
-		this.countDistinct = countDistinct;
-	}
-
+	
 	public static BaseApiEntityBuilder builder() {
 		return new BaseApiEntityBuilder();
 	}
@@ -167,10 +196,9 @@ public class BaseApiEntity {
 		private Calendar insertDate;
 		private Calendar updateDate;
 		private Calendar removeDate;
-		private Map<String, BigDecimal> sum = new HashMap<String, BigDecimal>();
-		private Map<String, BigDecimal> avg = new HashMap<String, BigDecimal>();
-		private Map<String, Long> count = new HashMap<String, Long>();
-		private Map<String, Long> countDistinct = new HashMap<String, Long>();
+		private Map<String, Object> sum = new HashMap<String, Object>();
+		private Map<String, Object> avg = new HashMap<String, Object>();
+		private Map<String, Object> count = new HashMap<String, Object>();
 		
 		public BaseApiEntityBuilder id(Long id) {
 			this.id = id;
@@ -202,23 +230,18 @@ public class BaseApiEntity {
 			return this;
 		}
 		
-		public BaseApiEntityBuilder sum(Map<String, BigDecimal> sum) {
+		public BaseApiEntityBuilder sum(Map<String, Object> sum) {
 			this.sum = sum;
 			return this;
 		}
 		
-		public BaseApiEntityBuilder avg(Map<String, BigDecimal> avg) {
+		public BaseApiEntityBuilder avg(Map<String, Object> avg) {
 			this.avg = avg;
 			return this;
 		}
 		
-		public BaseApiEntityBuilder count(Map<String, Long> count) {
+		public BaseApiEntityBuilder count(Map<String, Object> count) {
 			this.count = count;
-			return this;
-		}
-		
-		public BaseApiEntityBuilder countDistinct(Map<String, Long> countDistinct) {
-			this.countDistinct = countDistinct;
 			return this;
 		}
 		
@@ -270,36 +293,28 @@ public class BaseApiEntity {
 			this.removeDate = removeDate;
 		}
 
-		public Map<String, BigDecimal> getSum() {
+		public Map<String, Object> getSum() {
 			return sum;
 		}
 
-		public void setSum(Map<String, BigDecimal> sum) {
+		public void setSum(Map<String, Object> sum) {
 			this.sum = sum;
 		}
 
-		public Map<String, BigDecimal> getAvg() {
+		public Map<String, Object> getAvg() {
 			return avg;
 		}
 
-		public void setAvg(Map<String, BigDecimal> avg) {
+		public void setAvg(Map<String, Object> avg) {
 			this.avg = avg;
 		}
 
-		public Map<String, Long> getCount() {
+		public Map<String, Object> getCount() {
 			return count;
 		}
 
-		public void setCount(Map<String, Long> count) {
+		public void setCount(Map<String, Object> count) {
 			this.count = count;
-		}
-
-		public Map<String, Long> getCountDistinct() {
-			return countDistinct;
-		}
-
-		public void setCountDistinct(Map<String, Long> countDistinct) {
-			this.countDistinct = countDistinct;
 		}
 	}
 	

@@ -1,4 +1,4 @@
-package com.uff.phenomanager.config.security;
+package com.uff.phenomanager.config;
 
 import java.util.TimeZone;
 import java.util.concurrent.Executor;

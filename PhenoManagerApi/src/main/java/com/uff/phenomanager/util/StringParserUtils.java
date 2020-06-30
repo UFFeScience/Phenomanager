@@ -57,24 +57,6 @@ public class StringParserUtils {
 	    return source;
 	}
 	
-	public static String getOnlyNumerics(String value) {
-	    if (value == null) {
-	        return null;
-	    }
-	    
-	    StringBuilder stringBuilder = new StringBuilder();
-	    char ch;
-	    
-	    for (int i = 0; i < value.length(); i++) {
-	        ch = value.charAt(i);
-	        if (Character.isDigit(ch) || ch == '.') {
-	        	stringBuilder.append(ch);
-	        }
-	    }
-	    
-	    return stringBuilder.toString();
-	}
-
 	public static Boolean isNumeric(String value) {
 		for (char ch : value.toCharArray()) {
 			if (!Character.isDigit(ch)) {

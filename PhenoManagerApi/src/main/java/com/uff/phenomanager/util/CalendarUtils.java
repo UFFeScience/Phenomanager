@@ -36,21 +36,6 @@ public class CalendarUtils {
 		return calendar;
 	}
 	
-	public static String formatCalendar(Calendar calendar, String dateFormat) {
-		if (calendar == null) {
-			return null;
-		}
-		
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat, 
-				new Locale(Constants.LOCALE_PT, Constants.LOCALE_BR));
-
-		return simpleDateFormat.format(calendar.getTime());
-	}
-	
-	public static Calendar createCalendarFromString(String dateText) {
-		return createCalendarFromString(dateText, Constants.DEFAULT_DATE_FORMAT);
-	}
-	
 	public static Calendar createCalendarFromMiliseconds(Long miliseconds) {
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(Constants.DATE_TIMEZONE), 
 				new Locale(Constants.LOCALE_PT, Constants.LOCALE_BR));

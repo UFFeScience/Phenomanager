@@ -5,13 +5,10 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Date;
 
 import javax.imageio.ImageIO;
@@ -29,14 +26,6 @@ public class FileUtils {
 		return new Tika().detect(file);
 	}
 	
-	public static String encodeBytes(byte[] imageByteArray) {
-		if (imageByteArray == null) {
-			return null;
-		}
-		
-        return Constants.IMAGE_BASE_64_PREFIX + Base64.encodeBase64String(imageByteArray);
-    }
-	
 	public static File multipartToFile(MultipartFile multipart, String fileName) throws IllegalStateException, IOException {
 	    File convertedFile = new File(buildTmpPath(fileName));
 	    multipart.transferTo(convertedFile);
@@ -52,34 +41,6 @@ public class FileUtils {
 				.append(new Date().getTime()).toString();
 	}
 
-	public static byte[] getBytesArray(File file) throws FileNotFoundException, IOException {
-		InputStream input = null;
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		
-		try {
-			input = new FileInputStream(file);
-			
-			int nRead;
-			byte[] data = new byte[16384];
-			
-			while ((nRead = input.read(data, 0, data.length)) != -1) {
-				buffer.write(data, 0, nRead);
-			}
-			
-			return buffer.toByteArray();
-		
-		} catch (Exception e) {
-			throw e;
-		
-		} finally {
-			buffer.flush();
-			
-			if (input != null) {
-				input.close();
-			}
-		}
-	}
-	
 	public static byte[] processImageData(String imageDataText) throws IOException {
 		File tempImageFile = File.createTempFile(Constants.TEMP_FILE_PREFIX, Constants.TEMP_FILE_SUFFIX, null);
 		byte dearr[] = Base64.decodeBase64(imageDataText.substring(Constants.IMAGE_BASE_64_PREFIX.length()));

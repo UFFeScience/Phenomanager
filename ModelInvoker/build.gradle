@@ -3,11 +3,11 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath('org.springframework.boot:spring-boot-gradle-plugin:1.5.9.RELEASE') 
+        classpath('org.springframework.boot:spring-boot-gradle-plugin:1.5.22.RELEASE') 
     }
 }
 
-version = '1.6.0'
+version = '1.7.0'
 
 apply plugin: 'java'
 apply plugin: 'eclipse-wtp'
@@ -27,14 +27,13 @@ dependencies {
     //spring
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-actuator')
-    compile('org.springframework.boot:spring-boot-starter-data-rest')
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
     compile("org.springframework.boot:spring-boot-starter-security")
     compile('org.springframework.boot:spring-boot-starter-mail')
 	compile('org.springframework:spring-test')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     
-     //database
+    //database
     compile('org.postgresql:postgresql:42.2.2')
     
     //rabbitMq
@@ -44,8 +43,7 @@ dependencies {
 	compile('com.google.api-client:google-api-client:1.23.0')
 	compile('com.google.apis:google-api-services-drive:v3-rev110-1.23.0')
 	
-    //util
-    compile('com.google.guava:guava:27.1-jre')
+	//util
     compile('com.google.code.gson:gson:2.8.5')
     compile('org.apache.tika:tika-core:1.20')
     

@@ -20,8 +20,14 @@ public interface Constants {
 	final String DEFAULT_PROFILE = "default";
 	final String CHECK_IP_FIRST_OPTION = "http://checkip.amazonaws.com/";
 	final String CHECK_IP_SECOND_OPTION = "https://ipv4.icanhazip.com/";
-	final String LOCALHOST = "localhost";
 	final String SYSTEM_HOST_ADDRESS_NAME = "phenomanager.ic.uff.br";
+	
+	public interface TOMCAT {
+		final String RELAXED_SERVER_CHARS_KEY = "relaxedQueryChars";
+		final String RELAXED_SERVER_CHARS_VALUE = "[]|{}^&#x5c;&#x60;&quot;&lt;&gt;";
+		final String RELAXED_SERVER_PATH_KEY = "relaxedPathChars";
+		final String RELAXED_SERVER_PATH_VALUE = "[]|";
+	}
 	
 	public interface API_CLIENT {
 		public interface SCI_MANAGER {

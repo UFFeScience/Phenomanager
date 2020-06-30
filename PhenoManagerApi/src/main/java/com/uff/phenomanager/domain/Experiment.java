@@ -44,7 +44,6 @@ public class Experiment extends ResearchObject {
 		this.setSum(builder.getSum());
 		this.setAvg(builder.getAvg());
 		this.setCount(builder.getCount());
-		this.setCountDistinct(builder.getCountDistinct());
 	}
 	
 
