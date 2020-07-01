@@ -1,5 +1,5 @@
 
-package com.uff.phenomanager.controller.core.advice;
+package com.uff.phenomanager.controller.advice;
 
 import java.util.Collections;
 import java.util.Map;

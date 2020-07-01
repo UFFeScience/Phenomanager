@@ -3,14 +3,21 @@ package com.uff.phenomanager.service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
 import com.uff.phenomanager.Constants;
+import com.uff.phenomanager.Constants.CONTROLLER.LOGIN;
+import com.uff.phenomanager.Constants.JWT_AUTH;
+import com.uff.phenomanager.Constants.MSG_ERROR;
 import com.uff.phenomanager.Constants.UPLOAD;
 import com.uff.phenomanager.domain.User;
 import com.uff.phenomanager.domain.api.google.DriveFile;
@@ -20,6 +27,7 @@ import com.uff.phenomanager.repository.UserRepository;
 import com.uff.phenomanager.service.api.SciManagerService;
 import com.uff.phenomanager.service.api.google.GoogleDriveService;
 import com.uff.phenomanager.service.core.ApiRestService;
+import com.uff.phenomanager.service.core.TokenAuthenticationService;
 import com.uff.phenomanager.util.EncrypterUtils;
 import com.uff.phenomanager.util.FileUtils;
 import com.uff.phenomanager.util.StringParserUtils;
@@ -40,6 +48,9 @@ public class UserService extends ApiRestService<User, UserRepository> {
 	@Autowired
 	private SciManagerService sciManagerService;
 	
+	@Autowired
+	private TokenAuthenticationService tokenAuthenticationService;
+	
 	@Override
 	protected UserRepository getRepository() {
 		return userRepository;
@@ -48,6 +59,20 @@ public class UserService extends ApiRestService<User, UserRepository> {
 	@Override
 	protected Class<User> getEntityClass() {
 		return User.class;
+	}
+	
+	public Map<String, String> attemptAuthentication(Map<String, String> credentials) throws AuthenticationException {
+		User userAccount = getUserByEmailAndActive(credentials.get(LOGIN.EMAIL_FIELD), Boolean.TRUE);
+		
+		if (userAccount == null) {
+			throw new AuthenticationCredentialsNotFoundException(MSG_ERROR.AUTHENTICATION_ERROR);
+		}
+		
+		if (!EncrypterUtils.matchPassword(credentials.get(LOGIN.PASSWORD_FIELD), userAccount.getPassword())) {
+			throw new AuthenticationCredentialsNotFoundException(MSG_ERROR.AUTHENTICATION_ERROR);
+		}
+		
+		return Collections.singletonMap(JWT_AUTH.TOKEN, tokenAuthenticationService.generateToken(userAccount));
 	}
 	
 	@Override
