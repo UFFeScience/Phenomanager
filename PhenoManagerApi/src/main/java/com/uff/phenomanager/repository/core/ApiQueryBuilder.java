@@ -205,32 +205,32 @@ public class ApiQueryBuilder<ENTITY> {
 						.in(ReflectionUtils.getFieldList(filterField.getValue(), field.getType())).not();
 			case GE:
 				return criteriaBuilder.greaterThanOrEqualTo(buildFieldExpression(
-						fields, root), (Comparable) getTipifiedValue(entityClass, filterField, root, fields));
+						fields, root), (Comparable) getTypifiedValue(entityClass, filterField, root, fields));
 			case GT:
 				return criteriaBuilder.greaterThan(buildFieldExpression(
-						fields, root), (Comparable) getTipifiedValue(entityClass, filterField, root, fields));
+						fields, root), (Comparable) getTypifiedValue(entityClass, filterField, root, fields));
 			case LE:
 				return criteriaBuilder.lessThanOrEqualTo(buildFieldExpression(
-						fields, root), (Comparable) getTipifiedValue(entityClass, filterField, root, fields));
+						fields, root), (Comparable) getTypifiedValue(entityClass, filterField, root, fields));
 			case LT:
 				return criteriaBuilder.lessThan(buildFieldExpression(
-						fields, root), (Comparable) getTipifiedValue(entityClass, filterField, root, fields));
+						fields, root), (Comparable) getTypifiedValue(entityClass, filterField, root, fields));
 			case NE:
 				if (Constants.NULL_VALUE.equals(filterField.getValue())) {
 					return criteriaBuilder.isNotNull(buildFieldExpression(fields, root));
 				}
 				return criteriaBuilder.notEqual(buildFieldExpression(
-						fields, root), (Comparable) getTipifiedValue(entityClass, filterField, root, fields));
+						fields, root), (Comparable) getTypifiedValue(entityClass, filterField, root, fields));
 			case LK:
 				return criteriaBuilder.like(criteriaBuilder.upper(buildFieldExpression(fields, root)), 
-						"%" + ((String) getTipifiedValue(entityClass, filterField, root, fields)).toUpperCase() + "%");
+						"%" + ((String) getTypifiedValue(entityClass, filterField, root, fields)).toUpperCase() + "%");
 			case EQ:
 			default:
 				if (Constants.NULL_VALUE.equals(filterField.getValue())) {
 					return criteriaBuilder.isNull(buildFieldExpression(fields, root));
 				}
 				return criteriaBuilder.equal(buildFieldExpression(
-						fields, root), (Comparable) getTipifiedValue(entityClass, filterField, root, fields));
+						fields, root), (Comparable) getTypifiedValue(entityClass, filterField, root, fields));
 		}
 	}
 
@@ -248,7 +248,7 @@ public class ApiQueryBuilder<ENTITY> {
 		return fields;
 	}
 
-	private Object getTipifiedValue(Class<ENTITY> entityClass, FilterField filterField, Root<?> root, List<Field> fields)
+	private Object getTypifiedValue(Class<ENTITY> entityClass, FilterField filterField, Root<?> root, List<Field> fields)
 			throws NoSuchFieldException, JsonParseException, JsonMappingException, IOException {
 		Field field = getSignificantField(entityClass, fields);
 		return ReflectionUtils.getEntityValueParsed(filterField.getValue(), field.getType());

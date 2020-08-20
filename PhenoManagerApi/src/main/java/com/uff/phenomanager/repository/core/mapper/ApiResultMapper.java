@@ -2,7 +2,6 @@ package com.uff.phenomanager.repository.core.mapper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,13 +39,13 @@ public class ApiResultMapper<ENTITY extends BaseApiEntity> {
 			
 			if (row != null) {
 				if (Object[].class.equals(row.getClass())) {
-					mapSimpleValuesSelection(entityClass, projection, entities, row);
+					entities.add(mapSimpleValuesSelection(entityClass, projection, row));
 					
 				} else if (entityClass.equals(row.getClass())) {
-					mapEntityObject(entityClass, projection, entities, row);
+					entities.add(mapEntityObject(entityClass, projection, row));
 					
 				} else {
-					mapEntityValues(entityClass, projection, entities, row);
+					entities.add(mapEntityValues(entityClass, projection, row));
 				}
 			}
 		}
@@ -54,8 +53,10 @@ public class ApiResultMapper<ENTITY extends BaseApiEntity> {
 		return entities;
 	}
 	
-	private void mapSimpleValuesSelection(Class<ENTITY> entityClass, List<Selection<? extends Object>> projection,
-			List<ENTITY> entities, Object row) throws Exception {
+	private ENTITY mapSimpleValuesSelection(
+			Class<ENTITY> entityClass, 
+			List<Selection<? extends Object>> projection, 
+			Object row) throws Exception {
 		
 		Object[] fieldData = (Object[]) row;
 		
@@ -92,18 +93,19 @@ public class ApiResultMapper<ENTITY extends BaseApiEntity> {
 			}
 		}
 		
-		entities.add(object);
+		return object;
 	}
 	
-	private void mapEntityObject(Class<ENTITY> entityClass, List<Selection<? extends Object>> projection,
-			List<ENTITY> entities, Object row)
-			throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+	private ENTITY mapEntityObject(
+			Class<ENTITY> entityClass, 
+			List<Selection<? extends Object>> projection,
+			Object row)
+			throws Exception {
 		
 		ENTITY entity = (ENTITY) row;
 		
 		if (projection == null || projection.isEmpty()) {
-			entities.add(entity);
-			return;
+			return entity;
 		}
 		
 		Constructor<?> constructor = entityClass.getConstructor();
@@ -117,7 +119,7 @@ public class ApiResultMapper<ENTITY extends BaseApiEntity> {
 			}
 		}
 		
-		entities.add(object);
+		return object;
 	}
 	
 	private Boolean isInProjection(String fieldName, List<Selection<? extends Object>> projection) {
@@ -134,8 +136,10 @@ public class ApiResultMapper<ENTITY extends BaseApiEntity> {
 		return Boolean.FALSE;
 	}
 
-	private void mapEntityValues(Class<ENTITY> entityClass, List<Selection<? extends Object>> projection,
-			List<ENTITY> entities, Object row) throws Exception {
+	private ENTITY mapEntityValues(
+			Class<ENTITY> entityClass, 
+			List<Selection<? extends Object>> projection,
+			Object row) throws Exception {
 		
 		Constructor<?> constructor = entityClass.getConstructor();
 		ENTITY object = (ENTITY) constructor.newInstance();
@@ -168,7 +172,7 @@ public class ApiResultMapper<ENTITY extends BaseApiEntity> {
 			mapProjectionField(entityClass, row, attributePath, object);
 		}
 		
-		entities.add(object);
+		return object;
 	}
 	
 	private void mapProjectionField(Class<ENTITY> entityClass, Object fieldData, Path<Object> attributePath, ENTITY entity) throws Exception {
@@ -301,5 +305,5 @@ public class ApiResultMapper<ENTITY extends BaseApiEntity> {
 			field.set(object, fieldDataValue);
 		}
 	}
-
+	
 }
